@@ -61,10 +61,8 @@ def network_calculate_network_noise(net):
     pass
 
 
-def get_edge_ids_in_network(net):
-    edges = net.getEdges()
-    edges = map(lambda x: x.getID(), edges)
-    pprint(list(edges))
+def get_edge_ids_in_network(net) -> list:
+    return list(map(lambda x: x.getID(), net.getEdges()))
 
 
 def print_test():
@@ -91,3 +89,4 @@ if __name__ == '__main__':
     # print_test()
     net = sumolib.net.readNet("example.net.xml")
     network_calculate_network_noise(net)
+    pprint(get_edge_ids_in_network(net))
