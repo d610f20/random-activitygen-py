@@ -1,9 +1,8 @@
 import decimal
 import os
 import sys
-import math
+import xml.etree.ElementTree as ET
 import numpy as np
-from pprint import pprint
 
 import noise
 
@@ -22,20 +21,20 @@ def drange(x, y, jump):
         x += decimal.Decimal(jump)
 
 
-def get_population_number(net, street) -> float:
+def get_population_number(net, edge) -> float:
     """
     Returns a Perlin simplex noise at centre of given street
     TODO: Find sane offset to combat zero-value at (0, 0)
     :param net:
-    :param street:
+    :param edge:
     :return:
     """
-    x, y = get_edge_pair_centroid(get_shape_of_edge_name(net, street))
+    x, y = get_edge_pair_centroid(get_shape_of_edge_name(net, edge))
     return noise.snoise2(x, y)
 
 
-def get_shape_of_edge_name(net, street: str) -> (int, int):
-    return net.getEdge(street).getShape()
+def get_shape_of_edge_name(net, edge: str) -> (int, int):
+    return net.getEdge(edge).getShape()
 
 
 def get_edge_pair_centroid(coords: list) -> (float, float):
@@ -57,8 +56,15 @@ def test_perlin_noise():
             print(f"[{x:.2},{y:.2}] {noise.snoise2(x, y)}")
 
 
-def network_calculate_network_noise(net):
-    pass
+def calculate_network_population(net, xml):
+    for edge in get_edge_ids_in_network(net):
+        pop = get_population_number(net, edge)
+        streets = xml.find("streets").findall("street")
+        for street in streets:
+            if street.attrib["edge"] == edge:
+                street.set("population", str(pop))
+
+    xml.write("out/stats2.xml")  # FIXME, testcode
 
 
 def get_edge_ids_in_network(net) -> list:
@@ -88,5 +94,6 @@ def print_test():
 if __name__ == '__main__':
     # print_test()
     net = sumolib.net.readNet("example.net.xml")
-    network_calculate_network_noise(net)
-    pprint(get_edge_ids_in_network(net))
+    stats = ET.parse("example.stat.xml")
+    calculate_network_population(net, stats)
+    # pprint(get_edge_ids_in_network(net))
