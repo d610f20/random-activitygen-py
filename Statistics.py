@@ -1,7 +1,7 @@
 import xml.etree.ElementTree as ET
 
 if __name__ == '__main__':
-    stats = ET.parse("in/test.stat.xml")
+    stats = ET.parse("in/example.stat.xml")
     brackets = stats.find("population").findall("bracket")
     dankPlaces = ET.SubElement(stats.getroot(), "dankPlaces")
     ET.SubElement(dankPlaces, "place", {"name": "Aalborg University"})
