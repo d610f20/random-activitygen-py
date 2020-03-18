@@ -57,7 +57,17 @@ def test_perlin_noise():
             print(f"[{x:.2},{y:.2}] {noise.snoise2(x, y)}")
 
 
-if __name__ == '__main__':
+def network_calculate_network_noise(net):
+    pass
+
+
+def get_edge_ids_in_network(net):
+    edges = net.getEdges()
+    edges = map(lambda x: x.getID(), edges)
+    pprint(list(edges))
+
+
+def print_test():
     # Read networks
     net = sumolib.net.readNet("example.net.xml")
     wavy_net = sumolib.net.readNet("example_wavy.net.xml")
@@ -75,3 +85,9 @@ if __name__ == '__main__':
 
     # Get perlin weight for centroid of edge
     print(get_population_number(net, "e11t12"))
+
+
+if __name__ == '__main__':
+    # print_test()
+    net = sumolib.net.readNet("example.net.xml")
+    network_calculate_network_noise(net)
