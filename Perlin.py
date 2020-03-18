@@ -56,9 +56,18 @@ def test_perlin_noise():
             print(f"[{x:.2},{y:.2}] {noise.snoise2(x, y)}")
 
 
+def scale_noise(noise: float):
+    """
+    The 'noise' lib returns a value in the range of [-1:1]. The noise value is scaled to the range of [0:1].
+    :param noise: a float [-1:1]
+    :return: the noise value scaled to [0:1]
+    """
+    return (noise + 1) / 2
+
+
 def calculate_network_population(net, xml):
     for edge in get_edge_ids_in_network(net):
-        pop = get_population_number(net, edge)
+        pop = scale_noise(get_population_number(net, edge))
         streets = xml.find("streets").findall("street")
         for street in streets:
             if street.attrib["edge"] == edge:
