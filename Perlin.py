@@ -2,6 +2,9 @@ import decimal
 import os
 import sys
 import xml.etree.ElementTree as ET
+from typing import Sequence
+from xml.etree import ElementTree
+
 import numpy as np
 
 import noise
@@ -10,7 +13,7 @@ if 'SUMO_HOME' in os.environ:
     tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
     sys.path.append(tools)
 else:
-    sys.exit("please declare environment variable 'SUMO_HOME'")
+    sys.exit("Please declare environment variable 'SUMO_HOME' to use sumolib")
 
 import sumolib
 
@@ -28,7 +31,13 @@ def test_perlin_noise():
             print(f"[{x:.2},{y:.2}] {noise.snoise2(x, y)}")
 
 
-def get_shape_of_edge_name(net, edge: str) -> (int, int):
+def get_shape_of_edge_name(net: sumolib.net.Net, edge: str) -> list:
+    """
+    Return the shape of an edge in coordinate form; [(x_1,y_1), (x_2,y_2), ... , (x_n,y_n)].
+    :param net: the SUMO network
+    :param edge: the edge ID
+    :return: a tuple or list of tuples that define the shape of the edge
+    """
     return net.getEdge(edge).getShape()
 
 
@@ -53,23 +62,34 @@ def scale_noise(noise: float) -> float:
     return (noise + 1) / 2
 
 
-def get_population_number(net, edge) -> float:
+def get_population_number(net: sumolib.net.Net, edge) -> float:
     """
     Returns a Perlin simplex noise at centre of given street
     TODO: Find sane offset to combat zero-value at (0, 0)
-    :param net:
-    :param edge:
-    :return:
+    :param net: the SUMO network
+    :param edge: the edge ID
+    :return: the scaled noise value as float in [0:1]
     """
     x, y = get_edge_pair_centroid(get_shape_of_edge_name(net, edge))
     return scale_noise(noise.snoise2(x, y))
 
 
-def get_edge_ids_in_network(net) -> list:
+def get_edge_ids_in_network(net: sumolib.net.Net) -> list:
+    """
+    Returns a list of all edge IDs in the given SUMO network
+    :param net: the SUMO network
+    :return: a list of all edge IDs in the SUMO network
+    """
     return list(map(lambda x: x.getID(), net.getEdges()))
 
 
-def calculate_network_population(net, xml):
+def calculate_network_population(net: sumolib.net.Net, xml: ElementTree):
+    """
+
+    :param net: the SUMO network
+    :param xml: the
+    :return:
+    """
     for edge in get_edge_ids_in_network(net):
         pop = get_population_number(net, edge)
         streets = xml.find("streets").findall("street")
@@ -82,11 +102,11 @@ def calculate_network_population(net, xml):
 
 def print_test():
     # Read networks
-    net = sumolib.net.readNet("example.net.xml")
+    grid_net = sumolib.net.readNet("example.net.xml")
     wavy_net = sumolib.net.readNet("example_wavy.net.xml")
 
     # Get shapes of edges. e01t11 is the bottom left vertical grid-street
-    e01t11_shape = get_shape_of_edge_name(net, "e11t12")
+    e01t11_shape = get_shape_of_edge_name(grid_net, "e11t12")
     gneE3_shape = get_shape_of_edge_name(wavy_net, "gneE3")
 
     print(e01t11_shape)
@@ -97,12 +117,15 @@ def print_test():
     print(get_edge_pair_centroid(gneE3_shape))
 
     # Get perlin weight for centroid of edge
-    print(get_population_number(net, "e11t12"))
+    print(get_population_number(grid_net, "e11t12"))
 
 
 if __name__ == '__main__':
-    # print_test()
+    # Read in example SUMO network
     net = sumolib.net.readNet("example.net.xml")
+
+    # Parse example statistics configuration
     stats = ET.parse("example.stat.xml")
+
+    # Calculate and apply Perlin noise for all edges in network to population i statistics
     calculate_network_population(net, stats)
-    # pprint(get_edge_ids_in_network(net))
