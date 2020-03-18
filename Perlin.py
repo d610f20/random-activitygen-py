@@ -21,16 +21,11 @@ def drange(x, y, jump):
         x += decimal.Decimal(jump)
 
 
-def get_population_number(net, edge) -> float:
-    """
-    Returns a Perlin simplex noise at centre of given street
-    TODO: Find sane offset to combat zero-value at (0, 0)
-    :param net:
-    :param edge:
-    :return:
-    """
-    x, y = get_edge_pair_centroid(get_shape_of_edge_name(net, edge))
-    return noise.snoise2(x, y)
+def test_perlin_noise():
+    # Print 2d simplex noise in from x, y in 0..1 with step 0.1
+    for x in drange(0, 1.01, 0.1):
+        for y in drange(0, 1.01, 0.1):
+            print(f"[{x:.2},{y:.2}] {noise.snoise2(x, y)}")
 
 
 def get_shape_of_edge_name(net, edge: str) -> (int, int):
@@ -49,14 +44,7 @@ def get_edge_pair_centroid(coords: list) -> (float, float):
     return x_avg, y_avg
 
 
-def test_perlin_noise():
-    # Print 2d simplex noise in from x, y in 0..1 with step 0.1
-    for x in drange(0, 1.01, 0.1):
-        for y in drange(0, 1.01, 0.1):
-            print(f"[{x:.2},{y:.2}] {noise.snoise2(x, y)}")
-
-
-def scale_noise(noise: float):
+def scale_noise(noise: float) -> float:
     """
     The 'noise' lib returns a value in the range of [-1:1]. The noise value is scaled to the range of [0:1].
     :param noise: a float [-1:1]
@@ -65,19 +53,31 @@ def scale_noise(noise: float):
     return (noise + 1) / 2
 
 
+def get_population_number(net, edge) -> float:
+    """
+    Returns a Perlin simplex noise at centre of given street
+    TODO: Find sane offset to combat zero-value at (0, 0)
+    :param net:
+    :param edge:
+    :return:
+    """
+    x, y = get_edge_pair_centroid(get_shape_of_edge_name(net, edge))
+    return scale_noise(noise.snoise2(x, y))
+
+
+def get_edge_ids_in_network(net) -> list:
+    return list(map(lambda x: x.getID(), net.getEdges()))
+
+
 def calculate_network_population(net, xml):
     for edge in get_edge_ids_in_network(net):
-        pop = scale_noise(get_population_number(net, edge))
+        pop = get_population_number(net, edge)
         streets = xml.find("streets").findall("street")
         for street in streets:
             if street.attrib["edge"] == edge:
                 street.set("population", str(pop))
 
     xml.write("out/stats2.xml")  # FIXME, testcode
-
-
-def get_edge_ids_in_network(net) -> list:
-    return list(map(lambda x: x.getID(), net.getEdges()))
 
 
 def print_test():
