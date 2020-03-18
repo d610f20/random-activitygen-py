@@ -126,5 +126,5 @@ if __name__ == '__main__':
     # Parse example statistics configuration
     stats = ET.parse("example.stat.xml")
 
-    # Calculate and apply Perlin noise for all edges in network to population i statistics
+    # Calculate and apply Perlin noise for all edges in network to population in statistics
     calculate_network_population(net, stats)
