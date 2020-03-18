@@ -2,7 +2,6 @@ import decimal
 import os
 import sys
 import xml.etree.ElementTree as ET
-from typing import Sequence
 from xml.etree import ElementTree
 
 import numpy as np
