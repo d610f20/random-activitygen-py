@@ -30,15 +30,15 @@ def get_population_number(net, street) -> float:
     :param street:
     :return:
     """
-    x, y = get_coords_edge_name(net, street)
+    x, y = get_edge_pair_centroid(get_shape_of_edge_name(net, street))
     return noise.snoise2(x, y)
 
 
-def get_coords_edge_name(net, street: str) -> (int, int):
+def get_shape_of_edge_name(net, street: str) -> (int, int):
     return net.getEdge(street).getShape()
 
 
-def get_edge_pair_centroid(coords: list):
+def get_edge_pair_centroid(coords: list) -> (float, float):
     """
     Centroid of rectangle (edge_pair) = (width/2, height/2)
     :param coords: [(x_1,y_1), (x_2,y_2), ... , (x_n,y_n)]
@@ -63,8 +63,8 @@ if __name__ == '__main__':
     wavy_net = sumolib.net.readNet("example_wavy.net.xml")
 
     # Get shapes of edges. e01t11 is the bottom left vertical grid-street
-    e01t11_shape = get_coords_edge_name(net, "e11t12")
-    gneE3_shape = get_coords_edge_name(wavy_net, "gneE3")
+    e01t11_shape = get_shape_of_edge_name(net, "e11t12")
+    gneE3_shape = get_shape_of_edge_name(wavy_net, "gneE3")
 
     print(e01t11_shape)
     print(gneE3_shape)
@@ -72,3 +72,6 @@ if __name__ == '__main__':
     # Get centroids of both edges
     print(get_edge_pair_centroid(e01t11_shape))
     print(get_edge_pair_centroid(gneE3_shape))
+
+    # Get perlin weight for centroid of edge
+    print(get_population_number(net, "e11t12"))
