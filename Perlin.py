@@ -61,16 +61,25 @@ def scale_noise(noise: float) -> float:
     return (noise + 1) / 2
 
 
+def get_perlin_noise(x, y) -> float:
+    """
+    TODO: Find sane offset to combat zero-value at (0, 0)
+    :param x:
+    :param y:
+    :return:
+    """
+    return scale_noise(noise.snoise2(x, y))
+
+
 def get_population_number(net: sumolib.net.Net, edge) -> float:
     """
     Returns a Perlin simplex noise at centre of given street
-    TODO: Find sane offset to combat zero-value at (0, 0)
     :param net: the SUMO network
     :param edge: the edge ID
     :return: the scaled noise value as float in [0:1]
     """
     x, y = get_edge_pair_centroid(get_shape_of_edge_name(net, edge))
-    return scale_noise(noise.snoise2(x, y))
+    return get_perlin_noise(x, y)
 
 
 def get_edge_ids_in_network(net: sumolib.net.Net) -> list:
