@@ -93,9 +93,9 @@ def get_edge_ids_in_network(net: sumolib.net.Net) -> list:
 
 def calculate_network_population(net: sumolib.net.Net, xml: ElementTree):
     """
-
+    Calculate and apply the Perlin noise in [0:1] range for each street
     :param net: the SUMO network
-    :param xml: the
+    :param xml: the statistics XML for the network
     :return:
     """
     for edge in get_edge_ids_in_network(net):
