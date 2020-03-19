@@ -24,7 +24,10 @@ def drange(x, y, jump):
 
 
 def test_perlin_noise():
-    # Print 2d simplex noise in from x, y in 0..1 with step 0.1
+    """
+    Print 2d simplex noise in from x, y in 0..1 with step 0.1
+    :return:
+    """
     for x in drange(0, 1.01, 0.1):
         for y in drange(0, 1.01, 0.1):
             print(f"[{x:.2},{y:.2}] {noise.snoise2(x, y)}")
@@ -46,7 +49,6 @@ def get_edge_pair_centroid(coords: list) -> (float, float):
     :param coords: [(x_1,y_1), (x_2,y_2), ... , (x_n,y_n)]
     :return: Centroid of given shape
     """
-
     x_avg = np.mean([pos[0] for pos in coords])
     y_avg = np.mean([pos[1] for pos in coords])
     return x_avg, y_avg
@@ -105,8 +107,6 @@ def calculate_network_population(net: sumolib.net.Net, xml: ElementTree):
             if street.attrib["edge"] == edge:
                 street.set("population", str(pop))
 
-    xml.write("out/stats2.xml")  # FIXME, testcode
-
 
 def print_test():
     # Read networks
@@ -128,12 +128,18 @@ def print_test():
     print(get_population_number(grid_net, "e11t12"))
 
 
-if __name__ == '__main__':
-    # Read in example SUMO network
-    net = sumolib.net.readNet("in/example.net.xml")
+def apply_perlin_noise(net_path: str, statistics_path: str):
+    # Read in SUMO network
+    net = sumolib.net.readNet(net_path)
 
-    # Parse example statistics configuration
-    stats = ET.parse("in/example.stat.xml")
+    # Parse statistics configuration
+    stats = ET.parse(statistics_path)
 
     # Calculate and apply Perlin noise for all edges in network to population in statistics
     calculate_network_population(net, stats)
+
+    stats.write("out/stats2.xml")
+
+
+if __name__ == '__main__':
+    apply_perlin_noise("in/example.net.xml", "in/example.stat.xml")
