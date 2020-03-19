@@ -12,12 +12,15 @@ Other Options:
     -h, --help                  Show this screen.
     --version                   Show version.
 """
+import math
 import os
+import random
 import sys
-from typing import Tuple
+from typing import Tuple, List
 
 import numpy as np
 from docopt import docopt
+import xml.etree.ElementTree as ET
 
 if 'SUMO_HOME' in os.environ:
     tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
@@ -36,11 +39,40 @@ def find_city_centre(net: sumolib.net.Net) -> Tuple[float, float]:
     return float(np.mean([c[0] for c in node_coords])), float(np.mean([c[1] for c in node_coords]))
 
 
+
+def setup_city_gates(net: sumolib.net.Net, stats: ET.ElementTree, gate_count: int):
+
+    centre = find_city_centre(net)
+
+    # Finds all nodes that are dead ends, i.e. nodes that only have one neighbouring node
+    dead_ends = [n for n in net.getNodes() if len(n.getNeighboringNodes()) == 1]
+
+    n = gate_count
+
+    # Find n unit vectors pointing in different directions
+    # If n = 4 and base_rad = 0 we get the cardinal directions:
+    #     A
+    #     |
+    # <---o--->
+    #     |
+    #     v
+    tau = math.pi * 2
+    base_rad = random.random() * tau
+    rads = [(base_rad + i * tau / n) % tau for i in range(0, n)]
+    dirs = [(math.cos(rad), math.sin(rad)) for rad in rads]
+
+    # Find the dead ends furthest in each direction. Those nodes will be our gates
+    print(f"Gates:")
+    for dir in dirs:
+        gate_index = int(np.argmax([np.dot(node.getCoord(), dir) for node in dead_ends]))
+        gate = dead_ends[gate_index]
+        print(gate.getID())
+    pass
+
+
 if __name__ == "__main__":
     args = docopt(__doc__, version="RandomActivityGen 0.1")
 
     net = sumolib.net.readNet(args["--net-file"])
 
-    centre = find_city_centre(net)
-    print(f"City centre: {centre}")
-
+    setup_city_gates(net, None, 5)
