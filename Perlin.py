@@ -1,4 +1,3 @@
-import decimal
 import os
 import sys
 import xml.etree.ElementTree as ET
@@ -14,22 +13,6 @@ else:
     sys.exit("Please declare environment variable 'SUMO_HOME' to use sumolib")
 
 import sumolib
-
-
-def drange(x, y, jump):
-    while x < y:
-        yield float(x)
-        x += decimal.Decimal(jump)
-
-
-def test_perlin_noise():
-    """
-    Print 2d simplex noise in from x, y in 0..1 with step 0.1
-    :return:
-    """
-    for x in drange(0, 1.01, 0.1):
-        for y in drange(0, 1.01, 0.1):
-            print(f"[{x:.2},{y:.2}] {noise.snoise2(x, y)}")
 
 
 def get_edge_pair_centroid(coords: list) -> (float, float):
