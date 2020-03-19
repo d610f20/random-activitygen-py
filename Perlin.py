@@ -98,7 +98,8 @@ def apply_perlin_noise(net_path: str, statistics_path: str):
     # Calculate and apply Perlin noise for all edges in network to population in statistics
     calculate_network_population(net, stats)
 
-    stats.write("out/stats2.xml")
+    # Write statistics back
+    stats.write(statistics_path)
 
 
 if __name__ == '__main__':
