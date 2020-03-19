@@ -68,7 +68,7 @@ def get_perlin_noise(x, y) -> float:
     :param y:
     :return:
     """
-    return scale_noise(noise.snoise2(x, y))
+    return scale_noise(noise.pnoise2(x, y))
 
 
 def get_population_number(net: sumolib.net.Net, edge) -> float:
@@ -110,8 +110,8 @@ def calculate_network_population(net: sumolib.net.Net, xml: ElementTree):
 
 def print_test():
     # Read networks
-    grid_net = sumolib.net.readNet("example.net.xml")
-    wavy_net = sumolib.net.readNet("example_wavy.net.xml")
+    grid_net = sumolib.net.readNet("in/example.net.xml")
+    wavy_net = sumolib.net.readNet("in/example_wavy.net.xml")
 
     # Get shapes of edges. e01t11 is the bottom left vertical grid-street
     e01t11_shape = get_shape_of_edge_name(grid_net, "e11t12")
@@ -130,10 +130,10 @@ def print_test():
 
 if __name__ == '__main__':
     # Read in example SUMO network
-    net = sumolib.net.readNet("example.net.xml")
+    net = sumolib.net.readNet("in/example.net.xml")
 
     # Parse example statistics configuration
-    stats = ET.parse("example.stat.xml")
+    stats = ET.parse("in/example.stat.xml")
 
     # Calculate and apply Perlin noise for all edges in network to population in statistics
     calculate_network_population(net, stats)
