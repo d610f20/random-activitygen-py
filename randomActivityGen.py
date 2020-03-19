@@ -14,6 +14,9 @@ Other Options:
 """
 from docopt import docopt
 
+from Perlin import apply_perlin_noise
+
 if __name__ == "__main__":
-    args = docopt(__doc__, version="RandomActivityGen 0.1")
-    print(f"Arguments: {args}")
+    args = docopt(__doc__, version="RandomActivityGen v0.1")
+    print("Writing Perlin noise to population")
+    apply_perlin_noise(args["--net-file"], args["--stat-file"], args["--output-file"])

@@ -71,18 +71,21 @@ def calculate_network_population(net: sumolib.net.Net, xml: ElementTree):
                 street.set("population", str(pop))
 
 
-def apply_perlin_noise(net_path: str, statistics_path: str):
+def apply_perlin_noise(net_path: str, stats_in_path: str, stats_out_path: str):
     # Read in SUMO network
     net = sumolib.net.readNet(net_path)
 
     # Parse statistics configuration
-    stats = ET.parse(statistics_path)
+    stats = ET.parse(stats_in_path)
 
     # Calculate and apply Perlin noise for all edges in network to population in statistics
     calculate_network_population(net, stats)
 
+    if stats_in_path == stats_out_path:
+        print(f"Warning: overwriting statistics: {stats_out_path}", file=sys.stderr)
+
     # Write statistics back
-    stats.write(statistics_path)
+    stats.write(stats_out_path)
 
 
 if __name__ == '__main__':
