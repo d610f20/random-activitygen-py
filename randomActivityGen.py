@@ -51,22 +51,21 @@ def setup_city_gates(net: sumolib.net.Net, stats: ET.ElementTree, gate_count: in
 
     # Find n unit vectors pointing in different directions
     # If n = 4 and base_rad = 0 we get the cardinal directions:
-    #     A
-    #     |
-    # <---o--->
-    #     |
-    #     v
+    #      N
+    #      |
+    # W<---o--->E
+    #      |
+    #      S
     tau = math.pi * 2
     base_rad = random.random() * tau
     rads = [(base_rad + i * tau / n) % tau for i in range(0, n)]
     dirs = [(math.cos(rad), math.sin(rad)) for rad in rads]
 
-    # Find the dead ends furthest in each direction. Those nodes will be our gates
-    print(f"Gates:")
-    for dir in dirs:
-        gate_index = int(np.argmax([np.dot(node.getCoord(), dir) for node in dead_ends]))
-        gate = dead_ends[gate_index]
-        print(gate.getID())
+    # Find the dead ends furthest in each direction using the dot product and argmax. Those nodes will be our gates
+    gate_indexes = [np.argmax([np.dot(node.getCoord(), dir) for node in dead_ends]) for dir in dirs]
+    # We store the gates in a set to avoid duplicates
+    gates = {dead_ends[i] for i in gate_indexes}
+    print({g.getID() for g in gates})
     pass
 
 
