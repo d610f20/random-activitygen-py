@@ -1,5 +1,5 @@
 """
-Usage: randomActivityGen.py --net-file=FILE --stat-file=FILE --output-file=FILE
+Usage: randomActivityGen.py --net-file=FILE --stat-file=FILE --output-file=FILE [--gates.count=N]
 
 Input Options:
     -n, --net-file FILE         Input road network file to create activity for
@@ -9,6 +9,7 @@ Output Options:
     -o, --output-file FILE      Write modified statistics to FILE
 
 Other Options:
+    --gates.count N             Number of city gates in the city [default: 4]
     -h, --help                  Show this screen.
     --version                   Show version.
 """
@@ -88,7 +89,7 @@ if __name__ == "__main__":
     net = sumolib.net.readNet(args["--net-file"])
     stats = ET.parse(args["--stat-file"])
 
-    setup_city_gates(net, stats, 5)
+    setup_city_gates(net, stats, int(args["--gates.count"]))
 
     stats.write(args["--output-file"])
 
