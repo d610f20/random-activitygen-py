@@ -23,11 +23,13 @@ from typing import Tuple
 import numpy as np
 from docopt import docopt
 
+from Perlin import apply_perlin_noise
+
 if 'SUMO_HOME' in os.environ:
     tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
     sys.path.append(tools)
 else:
-    sys.exit("please declare environment variable 'SUMO_HOME'")
+    sys.exit("Please declare environment variable 'SUMO_HOME' to use sumolib")
 
 import sumolib
 
@@ -41,11 +43,11 @@ def find_city_centre(net: sumolib.net.Net) -> Tuple[float, float]:
 
 
 def setup_city_gates(net: sumolib.net.Net, stats: ET.ElementTree, gate_count: int):
-
     # Find existing gates to determine how many we need to insert
     xml_gates = stats.find("cityGates")
-    xml_entrance = xml_gates.findall("entrance")
-    n = gate_count - len(xml_entrance)
+    xml_entrances = xml_gates.findall("entrance")
+    n = gate_count - len(xml_entrances)
+    print(xml_gates, [e.get("edge") for e in xml_entrances])
     print(f"Inserting {n} city gates")
 
     # Finds all nodes that are dead ends, i.e. nodes that only have one neighbouring node
@@ -74,6 +76,7 @@ def setup_city_gates(net: sumolib.net.Net, stats: ET.ElementTree, gate_count: in
         incoming = 1 + random.random()
         outgoing = 1 + random.random()
 
+        # Add entrance to stats file
         edge = gate.getOutgoing()[0]
         ET.SubElement(xml_gates, "entrance", attrib={
             "edge": edge.getID(),
@@ -84,12 +87,16 @@ def setup_city_gates(net: sumolib.net.Net, stats: ET.ElementTree, gate_count: in
 
 
 if __name__ == "__main__":
-    args = docopt(__doc__, version="RandomActivityGen 0.1")
+    args = docopt(__doc__, version="RandomActivityGen v0.1")
 
+    # Read in SUMO network
     net = sumolib.net.readNet(args["--net-file"])
+
+    # Parse statistics configuration
     stats = ET.parse(args["--stat-file"])
 
+    apply_perlin_noise(net, stats)
     setup_city_gates(net, stats, int(args["--gates.count"]))
 
+    # Write statistics back
     stats.write(args["--output-file"])
-
