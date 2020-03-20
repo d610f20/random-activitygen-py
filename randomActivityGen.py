@@ -47,7 +47,6 @@ def setup_city_gates(net: sumolib.net.Net, stats: ET.ElementTree, gate_count: in
     xml_gates = stats.find("cityGates")
     xml_entrances = xml_gates.findall("entrance")
     n = gate_count - len(xml_entrances)
-    print(xml_gates, [e.get("edge") for e in xml_entrances])
     print(f"Inserting {n} city gates")
 
     # Finds all nodes that are dead ends, i.e. nodes that only have one neighbouring node
