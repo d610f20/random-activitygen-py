@@ -43,11 +43,16 @@ def find_city_centre(net: sumolib.net.Net) -> Tuple[float, float]:
 
 
 def setup_city_gates(net: sumolib.net.Net, stats: ET.ElementTree, gate_count: int):
+    assert gate_count >= 0, "Number of city gates cannot be negative"
     # Find existing gates to determine how many we need to insert
     xml_gates = stats.find("cityGates")
     xml_entrances = xml_gates.findall("entrance")
     n = gate_count - len(xml_entrances)
-    print(f"Inserting {n} city gates")
+    if n < 0:
+        print(f"Warning: {gate_count} city gate was requested, but there are already {len(xml_entrances)} defined")
+    if n <= 0:
+        return
+    print(f"Inserting {n} new city gates")
 
     # Finds all nodes that are dead ends, i.e. nodes that only have one neighbouring node
     dead_ends = [n for n in net.getNodes() if len(n.getNeighboringNodes()) == 1]
