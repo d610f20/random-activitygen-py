@@ -34,7 +34,7 @@ if __name__ == "__main__":
     net = sumolib.net.readNet(args["--net-file"])
 
     # Parse statistics configuration
-    stats = ET.parse(args["--output-file"])
+    stats = ET.parse(args["--stat-file"])
 
     apply_perlin_noise(net, stats)
 
