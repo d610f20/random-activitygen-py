@@ -17,32 +17,32 @@
     </workHours>
 
     <streets>
-        <street edge="e01t11" population="0.44461511075496674" workPosition="100" />
-        <street edge="e11t12" population="0.5684595108032227" workPosition="100" />
-        <street edge="e12t13" population="0.43154048919677734" workPosition="100" />
-        <street edge="e13t14" population="0.286712110042572" workPosition="100" />
-        <street edge="e11t21" population="0.3744613379240036" workPosition="100" />
-        <street edge="e12t22" population="0.6255353093147278" workPosition="100" />
-        <street edge="e13t23" population="0.43153804540634155" workPosition="100" />
-        <street edge="e14t24" population="0.38657596707344055" workPosition="100" />
-        <street edge="e21t22" population="0.6255353093147278" workPosition="100" />
-        <street edge="e22t23" population="0.5570733435451984" workPosition="100" />
-        <street edge="e23t24" population="0.44292665645480156" workPosition="100" />
-        <street edge="e21t31" population="0.31738215684890747" workPosition="100" />
-        <street edge="e22t32" population="0.5" workPosition="10" />
-        <street edge="e23t33" population="0.6826086640357971" workPosition="10" />
-        <street edge="e24t34" population="0.3744646906852722" workPosition="10" />
-        <street edge="e31t32" population="0.43153803050518036" workPosition="10" />
-        <street edge="e32t33" population="0.3173913359642029" workPosition="10" />
-        <street edge="e33t34" population="0.6255353093147278" workPosition="10" />
-        <street edge="e31t41" population="0.6715957969427109" workPosition="10" />
-        <street edge="e32t42" population="0.5684619545936584" workPosition="10" />
-        <street edge="e33t43" population="0.6826086640357971" workPosition="10" />
-        <street edge="e34t44" population="0.6826086640357971" workPosition="10" />
-        <street edge="e41t42" population="0.3433810621500015" workPosition="10" />
-        <street edge="e42t43" population="0.5570733435451984" workPosition="10" />
-        <street edge="e43t44" population="0.5570733435451984" workPosition="10" />
-        <street edge="e44t51" population="0.567145325243473" workPosition="10" />
+        <street edge="e01t11" population="0.5629409849643707" workPosition="0.5629409849643707" />
+        <street edge="e11t12" population="0.43154048919677734" workPosition="0.43154048919677734" />
+        <street edge="e12t13" population="0.43154048919677734" workPosition="0.43154048919677734" />
+        <street edge="e13t14" population="0.65087890625" workPosition="0.43154048919677734" />
+        <street edge="e11t21" population="0.3744613379240036" workPosition="0.5" />
+        <street edge="e12t22" population="0.3744646906852722" workPosition="0.5" />
+        <street edge="e13t23" population="0.6255353093147278" workPosition="0.5" />
+        <street edge="e14t24" population="0.4267578125" workPosition="0.4267578125" />
+        <street edge="e21t22" population="0.43153803050518036" workPosition="0.43153803050518036" />
+        <street edge="e22t23" population="0.3744646906852722" workPosition="0.43153803050518036" />
+        <street edge="e23t24" population="0.3173913359642029" workPosition="0.43153803050518036" />
+        <street edge="e21t31" population="0.3744613379240036" workPosition="0.5" />
+        <street edge="e22t32" population="0.3744646906852722" workPosition="0.5" />
+        <street edge="e23t33" population="0.6255353093147278" workPosition="0.5" />
+        <street edge="e24t34" population="0.5" workPosition="0.5" />
+        <street edge="e31t32" population="0.5570733435451984" workPosition="0.43153803050518036" />
+        <street edge="e32t33" population="0.43153803050518036" workPosition="0.43153803050518036" />
+        <street edge="e33t34" population="0.6826086640357971" workPosition="0.43153803050518036" />
+        <street edge="e31t41" population="0.5878621935844421" workPosition="0.5732421875" />
+        <street edge="e32t42" population="0.44292664527893066" workPosition="0.5" />
+        <street edge="e33t43" population="0.3744646906852722" workPosition="0.5" />
+        <street edge="e34t44" population="0.3744646906852722" workPosition="0.5" />
+        <street edge="e41t42" population="0.43153803050518036" workPosition="0.43153803050518036" />
+        <street edge="e42t43" population="0.43153803050518036" workPosition="0.43153803050518036" />
+        <street edge="e43t44" population="0.5" workPosition="0.43153803050518036" />
+        <street edge="e44t51" population="0.5672426223754883" workPosition="0.5672426223754883" />
     </streets>
 
     <cityGates>
