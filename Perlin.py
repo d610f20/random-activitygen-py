@@ -2,6 +2,7 @@ import os
 import sys
 import xml.etree.ElementTree as ET
 from xml.etree import ElementTree
+import random
 
 import noise
 import numpy as np
@@ -13,6 +14,10 @@ else:
     sys.exit("Please declare environment variable 'SUMO_HOME' to use sumolib")
 
 import sumolib
+
+# The 'noise' lib has good resolution until above 10 mil.
+POPULATION_BASE = random.randrange(-1000000, 1000000)
+INDUSTRY_BASE = random.randrange(-1000000, 1000000)
 
 
 def get_edge_pair_centroid(coords: list) -> (float, float):
@@ -35,14 +40,14 @@ def normalise_noise(noise: float) -> float:
     return (noise + 1) / 2
 
 
-def get_perlin_noise(x, y) -> float:
+def get_perlin_noise(x, y, base) -> float:
     """
     TODO: Find sane offset to combat zero-value at (0, 0)
     :param x:
     :param y:
     :return:
     """
-    return normalise_noise(noise.pnoise2(x, y))
+    return normalise_noise(noise.pnoise2(x, y, base=base))
 
 
 def get_population_number(net: sumolib.net.Net, edge) -> float:
@@ -53,7 +58,7 @@ def get_population_number(net: sumolib.net.Net, edge) -> float:
     :return: the scaled noise value as float in [0:1]
     """
     x, y = get_edge_pair_centroid(net.getEdge(edge).getShape())
-    return get_perlin_noise(x, y)
+    return get_perlin_noise(x, y, POPULATION_BASE)
 
 
 def calculate_network_population(net: sumolib.net.Net, xml: ElementTree):
