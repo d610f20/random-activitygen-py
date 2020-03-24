@@ -57,7 +57,9 @@ def setup_city_gates(net: sumolib.net.Net, stats: ET.ElementTree, gate_count: in
     print(f"Inserting {n} new city gates")
 
     # Finds all nodes that are dead ends, i.e. nodes that only have one neighbouring node
-    dead_ends = [n for n in net.getNodes() if len(n.getNeighboringNodes()) == 1]
+    # and at least one of the connecting edges is a road (as opposed to path) and allows private vehicles
+    dead_ends = [node for node in net.getNodes() if len(node.getNeighboringNodes()) == 1
+                 and any([any([lane.allows("private") for lane in edge.getLanes()]) for edge in node.getIncoming() + node.getOutgoing()])]
 
     # Find n unit vectors pointing in different directions
     # If n = 4 and base_rad = 0 we get the cardinal directions:
