@@ -46,6 +46,8 @@ def setup_city_gates(net: sumolib.net.Net, stats: ET.ElementTree, gate_count: in
     assert gate_count >= 0, "Number of city gates cannot be negative"
     # Find existing gates to determine how many we need to insert
     xml_gates = stats.find("cityGates")
+    if xml_gates is None:
+        xml_gates = ET.SubElement(stats.getroot(), "cityGates")
     xml_entrances = xml_gates.findall("entrance")
     n = gate_count - len(xml_entrances)
     if n < 0:
@@ -81,7 +83,7 @@ def setup_city_gates(net: sumolib.net.Net, stats: ET.ElementTree, gate_count: in
         outgoing = 1 + random.random()
 
         # Add entrance to stats file
-        edge = gate.getOutgoing()[0]
+        edge = gate.getOutgoing()[0] if len(gate.getOutgoing()) > 0 else gate.getIncoming()[0]
         ET.SubElement(xml_gates, "entrance", attrib={
             "edge": edge.getID(),
             "incoming": str(incoming),
