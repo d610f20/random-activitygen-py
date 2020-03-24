@@ -81,15 +81,18 @@ def setup_city_gates(net: sumolib.net.Net, stats: ET.ElementTree, gate_count: in
 
         # Decide proportion of the incoming and outgoing vehicles coming through this gate
         # These numbers are relatively to the values of the other gates
-        incoming = 1 + random.random()
-        outgoing = 1 + random.random()
+        # The number is proportional to the number of lanes allowing private vehicles
+        incoming_lanes = sum([len([lane for lane in edge.getLanes() if lane.allows("private")]) for edge in gate.getIncoming()])
+        outgoing_lanes = sum([len([lane for lane in edge.getLanes() if lane.allows("private")]) for edge in gate.getOutgoing()])
+        incoming_traffic = (1 + random.random()) * outgoing_lanes
+        outgoing_traffic = (1 + random.random()) * incoming_lanes
 
         # Add entrance to stats file
         edge = gate.getOutgoing()[0] if len(gate.getOutgoing()) > 0 else gate.getIncoming()[0]
         ET.SubElement(xml_gates, "entrance", attrib={
             "edge": edge.getID(),
-            "incoming": str(incoming),
-            "outgoing": str(outgoing),
+            "incoming": str(incoming_traffic),
+            "outgoing": str(outgoing_traffic),
             "pos": "0"
         })
 
