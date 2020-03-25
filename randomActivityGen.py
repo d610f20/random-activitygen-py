@@ -25,6 +25,8 @@ from docopt import docopt
 
 from Perlin import apply_perlin_noise
 
+from scipy.spatial import Voronoi, voronoi_plot_2d
+
 if 'SUMO_HOME' in os.environ:
     tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
     sys.path.append(tools)
@@ -90,6 +92,21 @@ def setup_city_gates(net: sumolib.net.Net, stats: ET.ElementTree, gate_count: in
         })
 
 
+
+def setup_schools(net: sumolib.net.Net, stats: ET.ElementTree):
+    # Voodoo parameter, seems to be about the value for a couple of danish cities.
+    # In general one high school, per 5000-7000 inhabitant in a city
+    inhabitants_per_school = 5000
+
+    xml_general = stats.find('general')
+    inhabitants = xml_general.get('inhabitants')
+    num_schools = math.ceil(int(inhabitants)/inhabitants_per_school)
+
+    for i in range(num_schools):
+        potential_school_coord = np.argmax([random.random() * perlin_noise(node.getCoord()) for node in net.getNodes()])
+
+
+
 if __name__ == "__main__":
     args = docopt(__doc__, version="RandomActivityGen v0.1")
 
@@ -101,6 +118,8 @@ if __name__ == "__main__":
 
     apply_perlin_noise(net, stats)
     setup_city_gates(net, stats, int(args["--gates.count"]))
+
+    setup_schools(net, stats)
 
     # Write statistics back
     stats.write(args["--output-file"])
