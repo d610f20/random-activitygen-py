@@ -19,8 +19,11 @@ else:
 import sumolib
 
 # The 'noise' lib has good resolution until above 10 mil, but a SIGSEGV is had on values above [-100000, 100000]
-POPULATION_BASE = random.randrange(-1000, 1000)
-INDUSTRY_BASE = random.randrange(-1000, 1000)
+# FIXME: these values result in a noisemap which contains CRT-like lines and patterns. Find better, sane values.
+# POPULATION_BASE = random.randrange(-1000, 1000)
+POPULATION_BASE: float = 0.0005
+# INDUSTRY_BASE = random.randrange(-1000, 1000)
+INDUSTRY_BASE: float = 0
 
 
 def get_edge_pair_centroid(coords: list) -> (float, float):
@@ -34,29 +37,18 @@ def get_edge_pair_centroid(coords: list) -> (float, float):
     return x_avg, y_avg
 
 
-def normalise_noise(noise_val: float) -> float:
+def get_perlin_noise(x: float, y: float, base: float, scale: float, octaves: int) -> float:
     """
     The 'noise' lib returns a value in the range of [-1:1]. The noise value is scaled to the range of [0:1].
-    :param noise_val: a float [-1:1]
-    :return: the noise value scaled to [0:1]
-    """
-    return (noise_val + 1) / 2
-
-
-def get_perlin_noise(x: float, y: float, scale: float, octaves: float, base: float) -> float:
-    """
     :param base: offset into noisemap
     :param x: the sample point for x
     :param y: the sample point for y
-    :param scale:
-    :param octaves:
     :return: a normalised float of the sample in noisemap
     """
-    return normalise_noise(noise.pnoise2(x=x * scale, y=y * scale, octaves=octaves, base=base))
+    return (noise.pnoise2(x=x * scale, y=y * scale, octaves=octaves, base=base) + 1) / 2
 
 
-def get_population_number(edge: sumolib.net.edge.Edge, base: float, scale: float, octaves: float, centre,
-                          radius) -> float:
+def get_population_number(net: sumolib.net.Net, edge, base: float, scale: float, octaves: int, centre, radius) -> float:
     """
     Returns a Perlin simplex noise at centre of given street
     :param base: offset into noisemap
@@ -65,18 +57,20 @@ def get_population_number(edge: sumolib.net.edge.Edge, base: float, scale: float
     :param radius:
     :return: the scaled noise value as float in [0:1]
     """
-    x, y = get_edge_pair_centroid(edge.getShape())
-    return get_perlin_noise(x=float(x), y=float(y), scale=scale, octaves=octaves, base=base) + (
+    x, y = get_edge_pair_centroid(net.getEdge(edge).getShape())
+    return get_perlin_noise(x=float(x), y=float(y), base=base, scale=scale, octaves=octaves) + (
             1 - (distance((x, y), centre) / radius))
 
 
-def apply_network_noise(net: sumolib.net.Net, xml: ElementTree, scale: float, octaves: float):
+def apply_network_noise(net: sumolib.net.Net, xml: ElementTree, scale: float, octaves: int):
     """
     Calculate and apply Perlin noise in [0:1] range for each street for population and industry
     :param net: the SUMO network
     :param xml: the statistics XML for the network
     :return:
     """
+    # Calculate and apply Perlin noise for all edges in network to population in statistics
+    print("Writing Perlin noise to population and industry")
 
     from randomActivityGen import find_city_centre
     centre = find_city_centre(net)
@@ -93,8 +87,10 @@ def apply_network_noise(net: sumolib.net.Net, xml: ElementTree, scale: float, oc
         eid = edge.getID()
         if eid not in known_streets:
             # This edge is missing a street entry. Find population and industry for this edge
-            population = get_population_number(edge, POPULATION_BASE, scale, octaves, centre, radius)
-            industry = get_population_number(edge, INDUSTRY_BASE, scale, octaves, centre, radius)
+            population = get_population_number(net=net, edge=edge, base=POPULATION_BASE, scale=scale, octaves=octaves,
+                                               centre=centre, radius=radius)
+            industry = get_population_number(net=net, edge=edge, base=INDUSTRY_BASE, scale=scale, octaves=octaves,
+                                             centre=centre, radius=radius)
 
             ET.SubElement(streets, "street", {
                 "edge": eid,
@@ -103,15 +99,10 @@ def apply_network_noise(net: sumolib.net.Net, xml: ElementTree, scale: float, oc
             })
 
 
-def apply_perlin_noise(net: sumolib.net.Net, stats: ET.ElementTree, scale: float, octaves: float):
-    # Calculate and apply Perlin noise for all edges in network to population in statistics
-    print("Writing Perlin noise to population and industry")
-    apply_network_noise(net, stats, scale, octaves)
-
-
 def radius_of_network(net: sumolib.net.Net, centre):
     """
     Get distance from centre to outermost node. Use this for computing radius of network.
+    FIXME: if centre is given off-center, it will return the largest distance from the centre which is not the radius
     :return: the radius of the network
     """
     return np.max([distance(centre, node.getCoord()) for node in net.getNodes()])
@@ -127,7 +118,7 @@ def distance(pos1, pos2):
     return np.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
 
 
-def display_noisemap(net: sumolib.net.Net):
+def display_noisemap(net: sumolib.net.Net, scale: float, octave: int):
     """
     Draw an image of the noisemap applied to a given network. Currently only displaying residential densities.
     FIXME: do residential and industrial in different colours
@@ -143,8 +134,7 @@ def display_noisemap(net: sumolib.net.Net):
     arr = [[0 for x in range(int(size[0]))] for x in range(int(size[1]))]
     for i in range(0, int(size[0])):
         for j in range(0, int(size[1])):
-            p_noise = get_perlin_noise(i, j, 0.005, 3, 0)
+            p_noise = get_perlin_noise(i, j, base=POPULATION_BASE, scale=scale, octaves=octave)
             arr[i][j] = p_noise + (1 - (distance((i, j), centre) / radius))
-            # arr[i][j] = p_noise
 
     toimage(arr).show()

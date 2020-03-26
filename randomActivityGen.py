@@ -23,7 +23,7 @@ from typing import Tuple
 import numpy as np
 from docopt import docopt
 
-from perlin import apply_perlin_noise, display_noisemap
+from perlin import apply_network_noise, display_noisemap
 
 if 'SUMO_HOME' in os.environ:
     tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
@@ -100,7 +100,7 @@ if __name__ == "__main__":
     stats = ET.parse(args["--stat-file"])
 
     # Scale and octave seems like sane values for the moment
-    apply_perlin_noise(net, stats, 0.005, 3)
+    apply_network_noise(net, stats, 0.005, 3)
 
     setup_city_gates(net, stats, int(args["--gates.count"]))
 
@@ -109,4 +109,4 @@ if __name__ == "__main__":
 
     centre = (500, 500)
 
-    display_noisemap(net)
+    display_noisemap(net, 0.005, 3)
