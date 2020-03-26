@@ -19,8 +19,8 @@ else:
 import sumolib
 
 # The 'noise' lib has good resolution until above 10 mil, but a SIGSEGV is had on values above [-100000, 100000]
-POPULATION_BASE = random.randrange(-100000, 100000)
-INDUSTRY_BASE = random.randrange(-100000, 100000)
+POPULATION_BASE = random.randrange(-1000, 1000)
+INDUSTRY_BASE = random.randrange(-1000, 1000)
 
 
 def get_edge_pair_centroid(coords: list) -> (float, float):
@@ -55,18 +55,17 @@ def get_perlin_noise(x: float, y: float, scale: float, octaves: float, base: flo
     return normalise_noise(noise.pnoise2(x=x * scale, y=y * scale, octaves=octaves, base=base))
 
 
-def get_population_number(net: sumolib.net.Net, edge, base: float, scale: float, octaves: float, centre,
+def get_population_number(edge: sumolib.net.edge.Edge, base: float, scale: float, octaves: float, centre,
                           radius) -> float:
     """
     Returns a Perlin simplex noise at centre of given street
     :param base: offset into noisemap
-    :param net: the SUMO network
-    :param edge: the edge ID
+    :param edge: the edge
     :param centre:
     :param radius:
     :return: the scaled noise value as float in [0:1]
     """
-    x, y = get_edge_pair_centroid(net.getEdge(edge).getShape())
+    x, y = get_edge_pair_centroid(edge.getShape())
     return get_perlin_noise(x=float(x), y=float(y), scale=scale, octaves=octaves, base=base) + (
             1 - (distance((x, y), centre) / radius))
 
@@ -83,14 +82,25 @@ def apply_network_noise(net: sumolib.net.Net, xml: ElementTree, scale: float, oc
     centre = find_city_centre(net)
     radius = radius_of_network(net, centre)
 
-    for edge in list(map(lambda x: x.getID(), net.getEdges())):
-        population = get_population_number(net, edge, POPULATION_BASE, scale, octaves, centre, radius)
-        industry = get_population_number(net, edge, INDUSTRY_BASE, scale, octaves, centre, radius)
+    streets = xml.find("streets")
+    if streets is None:
+        streets = ET.SubElement(xml.getroot(), "streets")
 
-        for street in xml.find("streets").findall("street"):
-            if street.attrib["edge"] == edge:
-                street.set("population", str(population))
-                street.set("workPosition", str(industry))
+    # Some edges might already have a street, so we want to ignore those
+    known_streets = {street.attrib["edge"]: street for street in streets.findall("street")}
+
+    for edge in net.getEdges():
+        eid = edge.getID()
+        if eid not in known_streets:
+            # This edge is missing a street entry. Find population and industry for this edge
+            population = get_population_number(edge, POPULATION_BASE, scale, octaves, centre, radius)
+            industry = get_population_number(edge, INDUSTRY_BASE, scale, octaves, centre, radius)
+
+            ET.SubElement(streets, "street", {
+                "edge": eid,
+                "population": str(population),
+                "workPosition": str(industry)
+            })
 
 
 def apply_perlin_noise(net: sumolib.net.Net, stats: ET.ElementTree, scale: float, octaves: float):
