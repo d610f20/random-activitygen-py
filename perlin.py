@@ -45,7 +45,7 @@ def get_perlin_noise(x: float, y: float, base: float, scale: float, octaves: int
     :param y: the sample point for y
     :return: a normalised float of the sample in noisemap
     """
-    return (noise.pnoise2(x=x * scale, y=y * scale, octaves=octaves, base=base) + 1) / 2
+    return (noise.pnoise2(x=x * scale, y=y * scale, octaves=octaves, base=int(base)) + 1) / 2
 
 
 def get_population_number(edge: sumolib.net.edge.Edge, base: float, scale: float, octaves: int, centre, radius) -> float:
