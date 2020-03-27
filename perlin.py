@@ -48,7 +48,7 @@ def get_perlin_noise(x: float, y: float, base: float, scale: float, octaves: int
     return (noise.pnoise2(x=x * scale, y=y * scale, octaves=octaves, base=base) + 1) / 2
 
 
-def get_population_number(net: sumolib.net.Net, edge, base: float, scale: float, octaves: int, centre, radius) -> float:
+def get_population_number(edge: sumolib.net.edge.Edge, base: float, scale: float, octaves: int, centre, radius) -> float:
     """
     Returns a Perlin simplex noise at centre of given street
     :param base: offset into noisemap
@@ -57,7 +57,7 @@ def get_population_number(net: sumolib.net.Net, edge, base: float, scale: float,
     :param radius:
     :return: the scaled noise value as float in [0:1]
     """
-    x, y = get_edge_pair_centroid(net.getEdge(edge).getShape())
+    x, y = get_edge_pair_centroid(edge.getShape())
     return get_perlin_noise(x=float(x), y=float(y), base=base, scale=scale, octaves=octaves) + (
             1 - (distance((x, y), centre) / radius))
 
@@ -87,9 +87,9 @@ def apply_network_noise(net: sumolib.net.Net, xml: ElementTree, scale: float, oc
         eid = edge.getID()
         if eid not in known_streets:
             # This edge is missing a street entry. Find population and industry for this edge
-            population = get_population_number(net=net, edge=edge, base=POPULATION_BASE, scale=scale, octaves=octaves,
+            population = get_population_number(edge=edge, base=POPULATION_BASE, scale=scale, octaves=octaves,
                                                centre=centre, radius=radius)
-            industry = get_population_number(net=net, edge=edge, base=INDUSTRY_BASE, scale=scale, octaves=octaves,
+            industry = get_population_number(edge=edge, base=INDUSTRY_BASE, scale=scale, octaves=octaves,
                                              centre=centre, radius=radius)
 
             ET.SubElement(streets, "street", {
