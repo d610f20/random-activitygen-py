@@ -46,6 +46,8 @@ def setup_city_gates(net: sumolib.net.Net, stats: ET.ElementTree, gate_count: in
     assert gate_count >= 0, "Number of city gates cannot be negative"
     # Find existing gates to determine how many we need to insert
     xml_gates = stats.find("cityGates")
+    if xml_gates is None:
+        xml_gates = ET.SubElement(stats.getroot(), "cityGates")
     xml_entrances = xml_gates.findall("entrance")
     n = gate_count - len(xml_entrances)
     if n < 0:
@@ -55,7 +57,9 @@ def setup_city_gates(net: sumolib.net.Net, stats: ET.ElementTree, gate_count: in
     print(f"Inserting {n} new city gates")
 
     # Finds all nodes that are dead ends, i.e. nodes that only have one neighbouring node
-    dead_ends = [n for n in net.getNodes() if len(n.getNeighboringNodes()) == 1]
+    # and at least one of the connecting edges is a road (as opposed to path) and allows private vehicles
+    dead_ends = [node for node in net.getNodes() if len(node.getNeighboringNodes()) == 1
+                 and any([any([lane.allows("private") for lane in edge.getLanes()]) for edge in node.getIncoming() + node.getOutgoing()])]
 
     # Find n unit vectors pointing in different directions
     # If n = 4 and base_rad = 0 we get the cardinal directions:
@@ -77,15 +81,18 @@ def setup_city_gates(net: sumolib.net.Net, stats: ET.ElementTree, gate_count: in
 
         # Decide proportion of the incoming and outgoing vehicles coming through this gate
         # These numbers are relatively to the values of the other gates
-        incoming = 1 + random.random()
-        outgoing = 1 + random.random()
+        # The number is proportional to the number of lanes allowing private vehicles
+        incoming_lanes = sum([len([lane for lane in edge.getLanes() if lane.allows("private")]) for edge in gate.getIncoming()])
+        outgoing_lanes = sum([len([lane for lane in edge.getLanes() if lane.allows("private")]) for edge in gate.getOutgoing()])
+        incoming_traffic = (1 + random.random()) * outgoing_lanes
+        outgoing_traffic = (1 + random.random()) * incoming_lanes
 
         # Add entrance to stats file
-        edge = gate.getOutgoing()[0]
+        edge = gate.getOutgoing()[0] if len(gate.getOutgoing()) > 0 else gate.getIncoming()[0]
         ET.SubElement(xml_gates, "entrance", attrib={
             "edge": edge.getID(),
-            "incoming": str(incoming),
-            "outgoing": str(outgoing),
+            "incoming": str(incoming_traffic),
+            "outgoing": str(outgoing_traffic),
             "pos": "0"
         })
 
