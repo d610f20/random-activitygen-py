@@ -37,25 +37,29 @@ def get_edge_pair_centroid(coords: list) -> (float, float):
     return x_avg, y_avg
 
 
-def get_perlin_noise(x: float, y: float, base: float, scale: float, octaves: int) -> float:
+def get_perlin_noise(x: float, y: float, base: float, scale: float = 0.005, octaves: int = 3) -> float:
     """
     The 'noise' lib returns a value in the range of [-1:1]. The noise value is scaled to the range of [0:1].
     :param base: offset into noisemap
     :param x: the sample point for x
     :param y: the sample point for y
+    :param scale: the scale to multiply to each coordinate, default is 0.005
+    :param octaves: the octaves to use when sampling, default is 3
     :return: a normalised float of the sample in noisemap
     """
     return (noise.pnoise2(x=x * scale, y=y * scale, octaves=octaves, base=base) + 1) / 2
 
 
-def get_population_number(edge: sumolib.net.edge.Edge, base: float, scale: float, octaves: int, centre,
-                          radius) -> float:
+def get_population_number(edge: sumolib.net.edge.Edge, base: float, centre,
+                          radius, scale: float = 0.005, octaves: int = 3) -> float:
     """
     Returns a Perlin simplex noise at centre of given street
     :param base: offset into noisemap
     :param edge: the edge
-    :param centre:
-    :param radius:
+    :param centre: centre of the city
+    :param radius: radius of the city
+    :param scale: the scale to multiply to each coordinate, default is 0.005
+    :param octaves: the octaves to use when sampling, default is 3
     :return: the scaled noise value as float in [0:1]
     """
     x, y = get_edge_pair_centroid(edge.getShape())
@@ -63,11 +67,13 @@ def get_population_number(edge: sumolib.net.edge.Edge, base: float, scale: float
             1 - (distance((x, y), centre) / radius))
 
 
-def apply_network_noise(net: sumolib.net.Net, xml: ElementTree, scale: float, octaves: int):
+def apply_network_noise(net: sumolib.net.Net, xml: ElementTree, scale: float = 0.005, octaves: int = 3):
     """
     Calculate and apply Perlin noise in [0:1] range for each street for population and industry
     :param net: the SUMO network
     :param xml: the statistics XML for the network
+    :param scale: the scale to multiply to each coordinate, default is 0.005
+    :param octaves: the octaves to use when sampling, default is 3
     :return:
     """
     # Calculate and apply Perlin noise for all edges in network to population in statistics
@@ -119,11 +125,13 @@ def distance(pos1, pos2):
     return np.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
 
 
-def display_noisemap(net: sumolib.net.Net, scale: float, octave: int):
+def display_noisemap(net: sumolib.net.Net, scale: float = 0.005, octave: int = 3):
     """
     Draw an image of the noisemap applied to a given network. Currently only displaying residential densities.
     FIXME: do residential and industrial in different colours
-    :param net:
+    :param net: the network to display noisemap for
+    :param scale: the scale to multiply to each coordinate, default is 0.005
+    :param octave: the octaves to use when sampling, default is 3
     :return:
     """
     boundary = net.getBoundary()
@@ -132,7 +140,9 @@ def display_noisemap(net: sumolib.net.Net, scale: float, octave: int):
     centre = find_city_centre(net)
     radius = radius_of_network(net, centre)
 
+    # Initialise noisemap
     arr = [[0 for x in range(int(size[0]))] for x in range(int(size[1]))]
+    
     for i in range(0, int(size[0])):
         for j in range(0, int(size[1])):
             p_noise = get_perlin_noise(i, j, base=POPULATION_BASE, scale=scale, octaves=octave)
