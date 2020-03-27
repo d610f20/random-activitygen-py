@@ -21,7 +21,7 @@ import sumolib
 # The 'noise' lib has good resolution until above 10 mil, but a SIGSEGV is had on values above [-100000, 100000]
 # FIXME: these values result in a noisemap which contains CRT-like lines and patterns. Find better, sane values.
 # POPULATION_BASE = random.randrange(-1000, 1000)
-POPULATION_BASE: float = 0.0005
+POPULATION_BASE: float = 0
 # INDUSTRY_BASE = random.randrange(-1000, 1000)
 INDUSTRY_BASE: float = 0
 
@@ -48,7 +48,8 @@ def get_perlin_noise(x: float, y: float, base: float, scale: float, octaves: int
     return (noise.pnoise2(x=x * scale, y=y * scale, octaves=octaves, base=base) + 1) / 2
 
 
-def get_population_number(edge: sumolib.net.edge.Edge, base: float, scale: float, octaves: int, centre, radius) -> float:
+def get_population_number(edge: sumolib.net.edge.Edge, base: float, scale: float, octaves: int, centre,
+                          radius) -> float:
     """
     Returns a Perlin simplex noise at centre of given street
     :param base: offset into noisemap
@@ -135,6 +136,6 @@ def display_noisemap(net: sumolib.net.Net, scale: float, octave: int):
     for i in range(0, int(size[0])):
         for j in range(0, int(size[1])):
             p_noise = get_perlin_noise(i, j, base=POPULATION_BASE, scale=scale, octaves=octave)
-            arr[i][j] = p_noise + (1 - (distance((i, j), centre) / radius))
+            arr[j][i] = p_noise + (1 - (distance((i, j), centre) / radius))
 
     toimage(arr).show()
