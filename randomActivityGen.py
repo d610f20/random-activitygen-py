@@ -23,9 +23,7 @@ from typing import Tuple
 import numpy as np
 from docopt import docopt
 
-from Perlin import apply_perlin_noise, get_perlin_noise
-
-from scipy.spatial import Voronoi, voronoi_plot_2d
+from Perlin import apply_perlin_noise, get_perlin_noise, get_edge_pair_centroid
 
 if 'SUMO_HOME' in os.environ:
     tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
@@ -95,11 +93,21 @@ def setup_city_gates(net: sumolib.net.Net, stats: ET.ElementTree, gate_count: in
 def random_school_edge(net: sumolib.net.Net, num_schools):
     edges = net.getEdges()
 
-    # Go through all edges, and pick every n'th element, e.g 50 edges, 10 schools, pick every 5th edge
-    stepsize = int(len(edges) / num_schools)
+    # Sort all edges based on their avg coord
+    edges.sort(key=lambda x: np.mean(get_edge_pair_centroid(x.getShape())))
 
-    school_edges = edges[0::stepsize]
+    # Split edges into districts
+    district_size = int(len(edges) / num_schools)
+    districts = [edges[x:x + district_size] for x in range(0, len(edges), district_size)]
 
+    # Pick out the one edge with highest perlin noise from each district and return these
+    school_edges = []
+    for district in districts:
+        district.sort(key=lambda x: get_perlin_noise(get_edge_pair_centroid(x.getShape())[0],
+                                                     get_edge_pair_centroid(x.getShape())[1]))
+        school_edges.append(district[-1])
+
+    print(school_edges)
     return school_edges
 
 
