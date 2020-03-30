@@ -119,9 +119,9 @@ def verify_stats(stats: ET.ElementTree):
     if population is None:
         # Population is missing, so we add a default population
         population = ET.SubElement(city, "population")
-        ET.SubElement(population, "bracket", {"beinAge": "0", "endAge": "30", "peopleNbr": "30"})
-        ET.SubElement(population, "bracket", {"beinAge": "30", "endAge": "60", "peopleNbr": "40"})
-        ET.SubElement(population, "bracket", {"beinAge": "60", "endAge": "90", "peopleNbr": "30"})
+        ET.SubElement(population, "bracket", {"beginAge": "0", "endAge": "30", "peopleNbr": "30"})
+        ET.SubElement(population, "bracket", {"beginAge": "30", "endAge": "60", "peopleNbr": "40"})
+        ET.SubElement(population, "bracket", {"beginAge": "60", "endAge": "90", "peopleNbr": "30"})
 
     # Similarly at least and one opening and closing workhour is required
     work_hours = city.find("workHours")
