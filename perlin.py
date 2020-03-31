@@ -109,7 +109,6 @@ def apply_network_noise(net: sumolib.net.Net, xml: ElementTree, scale: float = 0
 def radius_of_network(net: sumolib.net.Net, centre):
     """
     Get distance from centre to outermost node. Use this for computing radius of network.
-    FIXME: if centre is given off-center, it will return the largest distance from the centre which is not the radius
     :return: the radius of the network
     """
     return np.max([distance(centre, node.getCoord()) for node in net.getNodes()])
