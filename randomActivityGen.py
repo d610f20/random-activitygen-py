@@ -108,10 +108,12 @@ def find_school_edges(net: sumolib.net.Net, num_schools):
     edges.sort(key=lambda x: np.mean(get_edge_pair_centroid(x.getShape())))
 
     # Split edges into districts
+    # fixme something wrong with rounding, gets +1 districts than asked for in num_schools
     district_size = int(len(edges) / num_schools)
     districts = [edges[x:x + district_size] for x in range(0, len(edges), district_size)]
 
     # Pick out the one edge with highest perlin noise from each district and return these
+    print(len(districts))
     school_edges = []
     for district in districts:
         # Todo opimization to avoid calling get_edge_pair_centroid() twice. Get_perlin_noise() takes x,y,
@@ -153,7 +155,9 @@ def setup_schools(net: sumolib.net.Net, stats: ET.ElementTree, school_count: int
         number_new_schools = school_count - len(xml_schools.findall("school"))
 
     if number_new_schools < 0:
-        print(f"Warning: {school_count} schools was requested, but there are already {len(xml_schools)} defined")
+        if school_count != -1:
+            print(f"Warning: {school_count} schools was requested, but there are already {len(xml_schools)} defined")
+        return
     if number_new_schools <= 0:
         return
 
@@ -161,7 +165,7 @@ def setup_schools(net: sumolib.net.Net, stats: ET.ElementTree, school_count: int
     new_school_edges = find_school_edges(net, number_new_schools)
 
     # Insert schools, with random parameters
-    print("Inserting " + str(number_new_schools) + " new schools")
+    print("Inserting " + str(len(new_school_edges)) + " new schools")
     for school in new_school_edges:
         begin_age = random.choice(list(range(0, 19)))
         end_age = random.choice(list(range(begin_age + 1, 26)))
