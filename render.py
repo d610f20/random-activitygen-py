@@ -4,7 +4,7 @@ import noise
 import numpy as np
 import math
 import xml.etree.ElementTree as ET
-from PIL import Image, ImageOps, ImageChops
+from PIL import Image, ImageOps, ImageChops, ImageDraw
 
 from perlin import get_perlin_noise, POPULATION_BASE, INDUSTRY_BASE
 from utility import find_city_centre, radius_of_network, distance
@@ -49,10 +49,16 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, width: int, hei
             arr[y][x] = p_noise + (1 - (distance((x / width_scale, y / height_scale), centre) / radius))  # FIXME: Duplicate code
     ind_img = toimage(arr)
 
-    pop_img = ImageOps.colorize(pop_img, (0, 0, 0), (0, 200, 0))
-    ind_img = ImageOps.colorize(ind_img, (0, 0, 0), (0, 0, 200))
+    pop_img = ImageOps.colorize(pop_img, (0, 0, 0), (0, 220, 0))
+    ind_img = ImageOps.colorize(ind_img, (0, 0, 0), (0, 0, 220))
 
     combined = ImageChops.add(pop_img, ind_img)
+
+    draw = ImageDraw.Draw(combined)
+    for edge in net.getEdges():
+        x1, y1 = edge.getFromNode().getCoord()
+        x2, y2 = edge.getToNode().getCoord()
+        draw.line([x1 * width_scale, y1 * height_scale, x2 * width_scale, y2 * height_scale], (255, 0, 0), 3)
 
     combined.show()
 
