@@ -1,9 +1,8 @@
 import os
 import sys
 import xml.etree.ElementTree as ET
-from pprint import pprint
+from typing import List, Tuple
 from xml.etree import ElementTree
-import random
 
 from render import toimage
 
@@ -26,7 +25,7 @@ POPULATION_BASE: float = 0
 INDUSTRY_BASE: float = 0
 
 
-def get_edge_pair_centroid(coords: list) -> (float, float):
+def get_edge_pair_centroid(coords: List[Tuple[float, float]]) -> (float, float):
     """
     Centroid of rectangle (edge_pair) = (width/2, height/2)
     :param coords: [(x_1,y_1), (x_2,y_2), ... , (x_n,y_n)]
@@ -141,7 +140,7 @@ def display_noisemap(net: sumolib.net.Net, scale: float = 0.005, octave: int = 3
 
     # Initialise noisemap
     arr = [[0 for _ in range(int(size[0]))] for _ in range(int(size[1]))]
-    
+
     for i in range(0, int(size[0])):
         for j in range(0, int(size[1])):
             p_noise = get_perlin_noise(i, j, base=POPULATION_BASE, scale=scale, octaves=octave)
