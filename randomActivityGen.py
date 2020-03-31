@@ -23,7 +23,7 @@ from typing import Tuple
 import numpy as np
 from docopt import docopt
 
-from Perlin import apply_perlin_noise
+from perlin import apply_network_noise, display_noisemap
 
 if 'SUMO_HOME' in os.environ:
     tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
@@ -59,7 +59,8 @@ def setup_city_gates(net: sumolib.net.Net, stats: ET.ElementTree, gate_count: in
     # Finds all nodes that are dead ends, i.e. nodes that only have one neighbouring node
     # and at least one of the connecting edges is a road (as opposed to path) and allows private vehicles
     dead_ends = [node for node in net.getNodes() if len(node.getNeighboringNodes()) == 1
-                 and any([any([lane.allows("private") for lane in edge.getLanes()]) for edge in node.getIncoming() + node.getOutgoing()])]
+                 and any([any([lane.allows("private") for lane in edge.getLanes()]) for edge in
+                          node.getIncoming() + node.getOutgoing()])]
 
     # Find n unit vectors pointing in different directions
     # If n = 4 and base_rad = 0 we get the cardinal directions:
@@ -82,8 +83,10 @@ def setup_city_gates(net: sumolib.net.Net, stats: ET.ElementTree, gate_count: in
         # Decide proportion of the incoming and outgoing vehicles coming through this gate
         # These numbers are relatively to the values of the other gates
         # The number is proportional to the number of lanes allowing private vehicles
-        incoming_lanes = sum([len([lane for lane in edge.getLanes() if lane.allows("private")]) for edge in gate.getIncoming()])
-        outgoing_lanes = sum([len([lane for lane in edge.getLanes() if lane.allows("private")]) for edge in gate.getOutgoing()])
+        incoming_lanes = sum(
+            [len([lane for lane in edge.getLanes() if lane.allows("private")]) for edge in gate.getIncoming()])
+        outgoing_lanes = sum(
+            [len([lane for lane in edge.getLanes() if lane.allows("private")]) for edge in gate.getOutgoing()])
         incoming_traffic = (1 + random.random()) * outgoing_lanes
         outgoing_traffic = (1 + random.random()) * incoming_lanes
 
@@ -106,7 +109,9 @@ if __name__ == "__main__":
     # Parse statistics configuration
     stats = ET.parse(args["--stat-file"])
 
-    apply_perlin_noise(net, stats)
+    # Scale and octave seems like sane values for the moment
+    apply_network_noise(net, stats, 0.005, 3)
+
     setup_city_gates(net, stats, int(args["--gates.count"]))
 
     # Write statistics back
