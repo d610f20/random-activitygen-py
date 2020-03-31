@@ -1,9 +1,61 @@
-from pprint import pprint
-
+import os
+import sys
 import noise
 import numpy as np
 import math
-from PIL import Image
+import xml.etree.ElementTree as ET
+from PIL import Image, ImageOps, ImageChops
+
+from perlin import get_perlin_noise, POPULATION_BASE, INDUSTRY_BASE
+from utility import find_city_centre, radius_of_network, distance
+
+if 'SUMO_HOME' in os.environ:
+    tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
+    sys.path.append(tools)
+else:
+    sys.exit("Please declare environment variable 'SUMO_HOME' to use sumolib")
+
+import sumolib
+
+
+def display_network(net: sumolib.net.Net, stats: ET.ElementTree, width: int, height: int, perlin_scale: float = 0.005, octave: int = 3):
+    """
+    :param net: the network to display noisemap for
+    :param stats: the stats file describing the network
+    :param perlin_scale: the scale to multiply to each coordinate, default is 0.005
+    :param octave: the octaves to use when sampling, default is 3
+    :return:
+    """
+    boundary = net.getBoundary()
+    city_size = (boundary[2], boundary[3])
+    width_scale = width / city_size[0]
+    height_scale = height / city_size[1]
+    centre = find_city_centre(net)
+    radius = radius_of_network(net, centre)
+
+    # Population noise
+    arr = [[0 for _ in range(width)] for _ in range(height)]
+    for x in range(width):
+        for y in range(height):
+            p_noise = get_perlin_noise(x / width_scale, y / height_scale, base=POPULATION_BASE, scale=perlin_scale, octaves=octave)
+            arr[y][x] = p_noise + (1 - (distance((x / width_scale, y / height_scale), centre) / radius))  # FIXME: Duplicate code
+    pop_img = toimage(arr)
+
+    # Industry noise
+    arr = [[0 for _ in range(width)] for _ in range(height)]
+    for x in range(width):
+        for y in range(height):
+            p_noise = get_perlin_noise(x / width_scale, y / height_scale, base=INDUSTRY_BASE, scale=perlin_scale, octaves=octave)
+            arr[y][x] = p_noise + (1 - (distance((x / width_scale, y / height_scale), centre) / radius))  # FIXME: Duplicate code
+    ind_img = toimage(arr)
+
+    pop_img = ImageOps.colorize(pop_img, (0, 0, 0), (0, 200, 0))
+    ind_img = ImageOps.colorize(ind_img, (0, 0, 0), (0, 0, 200))
+
+    combined = ImageChops.add(pop_img, ind_img)
+
+    combined.show()
+
 
 _errstr = "Mode is unknown or incompatible with input array shape."
 

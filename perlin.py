@@ -22,7 +22,7 @@ import sumolib
 # POPULATION_BASE = random.randrange(-1000, 1000)
 POPULATION_BASE: float = 0
 # INDUSTRY_BASE = random.randrange(-1000, 1000)
-INDUSTRY_BASE: float = 2
+INDUSTRY_BASE: float = 100
 
 
 def get_edge_pair_centroid(coords: List[Tuple[float, float]]) -> Tuple[float, float]:
