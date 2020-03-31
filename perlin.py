@@ -141,7 +141,7 @@ def display_noisemap(net: sumolib.net.Net, scale: float = 0.005, octave: int = 3
     radius = radius_of_network(net, centre)
 
     # Initialise noisemap
-    arr = [[0 for x in range(int(size[0]))] for x in range(int(size[1]))]
+    arr = [[0 for _ in range(int(size[0]))] for _ in range(int(size[1]))]
     
     for i in range(0, int(size[0])):
         for j in range(0, int(size[1])):
