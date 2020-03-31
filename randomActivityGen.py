@@ -1,5 +1,5 @@
 """
-Usage: randomActivityGen.py --net-file=FILE --stat-file=FILE --output-file=FILE [--gates.count=N]
+Usage: randomActivityGen.py --net-file=FILE --stat-file=FILE --output-file=FILE [--gates.count=N] [--schools.count=H]
 
 Input Options:
     -n, --net-file FILE         Input road network file to create activity for
@@ -10,6 +10,7 @@ Output Options:
 
 Other Options:
     --gates.count N             Number of city gates in the city [default: 4]
+    --schools.count H           Number of schools in the city, if not used, number of schools is based on population [default: 0]
     -h, --help                  Show this screen.
     --version                   Show version.
 """
@@ -90,7 +91,7 @@ def setup_city_gates(net: sumolib.net.Net, stats: ET.ElementTree, gate_count: in
         })
 
 
-def random_school_edge(net: sumolib.net.Net, num_schools):
+def find_school_edges(net: sumolib.net.Net, num_schools):
     edges = net.getEdges()
 
     # Sort all edges based on their avg coord
@@ -107,11 +108,10 @@ def random_school_edge(net: sumolib.net.Net, num_schools):
                                                      get_edge_pair_centroid(x.getShape())[1]))
         school_edges.append(district[-1])
 
-    print(school_edges)
     return school_edges
 
 
-def setup_schools(net: sumolib.net.Net, stats: ET.ElementTree):
+def setup_schools(net: sumolib.net.Net, stats: ET.ElementTree, school_count: int):
     # Voodoo parameter, seems to be about the value for a couple of danish cities.
     # In general one high school, per 5000-7000 inhabitant in a city
     inhabitants_per_school = 5000
@@ -122,25 +122,35 @@ def setup_schools(net: sumolib.net.Net, stats: ET.ElementTree):
     school_closing_latest = 17 * 3600
     stepsize = int(0.25 * 3600)
 
-    # Find number of schools to be inserted on edges
-    xml_general = stats.find('general')
-    inhabitants = xml_general.get('inhabitants')
-    num_schools = math.ceil(int(inhabitants) / inhabitants_per_school)
-
     # Creates a list of school start times, in seconds. Ranges from 7am to 10am, with 15min intervals
     school_start_times = list(range(school_opening_earliest, school_opening_latest, stepsize))
 
     # Creates a list of school end times, in seconds. Ranges from 13pm to 17pm, with 15min intervals
     school_end_times = list(range(school_closing_earliest, school_closing_latest, stepsize))
 
-    # Find edges to place schools on
+    # Find number of schools to be inserted on edges
+    xml_general = stats.find('general')
+    inhabitants = xml_general.get('inhabitants')
     xml_schools = stats.find('schools')
-    school_edges = random_school_edge(net, num_schools)
+
+    num_schools_default = math.ceil(int(inhabitants) / inhabitants_per_school)
+
+    if school_count < 1:
+        number_new_schools = num_schools_default - len(xml_schools.findall("school"))
+    else:
+        number_new_schools = school_count - len(xml_schools.findall("school"))
+
+    if number_new_schools < 0:
+        print(f"Warning: {school_count} schools was requested, but there are already {len(xml_schools)} defined")
+    if number_new_schools <= 0:
+        return
+
+    # Find edges to place schools on
+    school_edges = find_school_edges(net, number_new_schools)
 
     # Insert schools, with random parameters
-    print("Inserting " + str(len(school_edges)) + " new schools")
-    for index in school_edges:
-        school: sumolib.net.edge.Edge = index
+    print("Inserting " + str(number_new_schools) + " new schools")
+    for school in school_edges:
         begin_age = random.choice(list(range(0, 19)))
         end_age = random.choice(list(range(begin_age + 1, 26)))
 
@@ -167,7 +177,7 @@ if __name__ == "__main__":
     apply_perlin_noise(net, stats)
     setup_city_gates(net, stats, int(args["--gates.count"]))
 
-    setup_schools(net, stats)
+    setup_schools(net, stats, int(args["--schools.count"]))
 
     # Write statistics back
     stats.write(args["--output-file"])
