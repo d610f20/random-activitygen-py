@@ -116,7 +116,7 @@ def radius_of_network(net: sumolib.net.Net, centre):
 
 def distance(pos1, pos2):
     """
-    Get hypotenuse using Phytagoras theorem
+    Return the distance between two points in a plane
     :return: the distance between pos1 and pos2
     """
     x1, y1 = pos1
