@@ -23,7 +23,6 @@ import numpy as np
 from docopt import docopt
 
 from perlin import apply_network_noise
-from render import render_network
 
 if 'SUMO_HOME' in os.environ:
     tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
@@ -108,5 +107,3 @@ if __name__ == "__main__":
 
     # Write statistics back
     stats.write(args["--output-file"])
-
-    render_network(net, stats, 600, 600)
