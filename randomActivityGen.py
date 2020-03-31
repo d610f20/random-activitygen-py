@@ -18,12 +18,12 @@ import os
 import random
 import sys
 import xml.etree.ElementTree as ET
-from typing import Tuple
 
 import numpy as np
 from docopt import docopt
 
-from perlin import apply_network_noise, display_noisemap
+from perlin import apply_network_noise
+from render import render_network
 
 if 'SUMO_HOME' in os.environ:
     tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
@@ -32,14 +32,6 @@ else:
     sys.exit("Please declare environment variable 'SUMO_HOME' to use sumolib")
 
 import sumolib
-
-
-def find_city_centre(net: sumolib.net.Net) -> Tuple[float, float]:
-    """
-    Finds the city centre; average node coord of all nodes in the net
-    """
-    node_coords = [node.getCoord() for node in net.getNodes()]
-    return float(np.mean([c[0] for c in node_coords])), float(np.mean([c[1] for c in node_coords]))
 
 
 def setup_city_gates(net: sumolib.net.Net, stats: ET.ElementTree, gate_count: int):
@@ -116,3 +108,5 @@ if __name__ == "__main__":
 
     # Write statistics back
     stats.write(args["--output-file"])
+
+    render_network(net, stats, 600, 600)
