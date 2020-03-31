@@ -10,7 +10,7 @@ Output Options:
 
 Other Options:
     --gates.count N             Number of city gates in the city [default: 4]
-    --schools.count H           Number of schools in the city, if not used, number of schools is based on population [default: 0]
+    --schools.count H           Number of schools in the city, if not used, number of schools is based on population [default: -1]
     -h, --help                  Show this screen.
     --version                   Show version.
 """
@@ -60,7 +60,8 @@ def setup_city_gates(net: sumolib.net.Net, stats: ET.ElementTree, gate_count: in
     # Finds all nodes that are dead ends, i.e. nodes that only have one neighbouring node
     # and at least one of the connecting edges is a road (as opposed to path) and allows private vehicles
     dead_ends = [node for node in net.getNodes() if len(node.getNeighboringNodes()) == 1
-                 and any([any([lane.allows("private") for lane in edge.getLanes()]) for edge in node.getIncoming() + node.getOutgoing()])]
+                 and any([any([lane.allows("private") for lane in edge.getLanes()]) for edge in
+                          node.getIncoming() + node.getOutgoing()])]
 
     # Find n unit vectors pointing in different directions
     # If n = 4 and base_rad = 0 we get the cardinal directions:
@@ -83,8 +84,10 @@ def setup_city_gates(net: sumolib.net.Net, stats: ET.ElementTree, gate_count: in
         # Decide proportion of the incoming and outgoing vehicles coming through this gate
         # These numbers are relatively to the values of the other gates
         # The number is proportional to the number of lanes allowing private vehicles
-        incoming_lanes = sum([len([lane for lane in edge.getLanes() if lane.allows("private")]) for edge in gate.getIncoming()])
-        outgoing_lanes = sum([len([lane for lane in edge.getLanes() if lane.allows("private")]) for edge in gate.getOutgoing()])
+        incoming_lanes = sum(
+            [len([lane for lane in edge.getLanes() if lane.allows("private")]) for edge in gate.getIncoming()])
+        outgoing_lanes = sum(
+            [len([lane for lane in edge.getLanes() if lane.allows("private")]) for edge in gate.getOutgoing()])
         incoming_traffic = (1 + random.random()) * outgoing_lanes
         outgoing_traffic = (1 + random.random()) * incoming_lanes
 
@@ -111,6 +114,8 @@ def find_school_edges(net: sumolib.net.Net, num_schools):
     # Pick out the one edge with highest perlin noise from each district and return these
     school_edges = []
     for district in districts:
+        # Todo opimization to avoid calling get_edge_pair_centroid() twice. Get_perlin_noise() takes x,y,
+        #  get_edge_pair_centroid returns list(), how to do inside lambda function?
         district.sort(key=lambda x: get_perlin_noise(get_edge_pair_centroid(x.getShape())[0],
                                                      get_edge_pair_centroid(x.getShape())[1]))
         school_edges.append(district[-1])
@@ -142,7 +147,7 @@ def setup_schools(net: sumolib.net.Net, stats: ET.ElementTree, school_count: int
 
     num_schools_default = math.ceil(int(inhabitants) / inhabitants_per_school)
 
-    if school_count < 1:
+    if school_count == -1:
         number_new_schools = num_schools_default - len(xml_schools.findall("school"))
     else:
         number_new_schools = school_count - len(xml_schools.findall("school"))
@@ -153,11 +158,11 @@ def setup_schools(net: sumolib.net.Net, stats: ET.ElementTree, school_count: int
         return
 
     # Find edges to place schools on
-    school_edges = find_school_edges(net, number_new_schools)
+    new_school_edges = find_school_edges(net, number_new_schools)
 
     # Insert schools, with random parameters
     print("Inserting " + str(number_new_schools) + " new schools")
-    for school in school_edges:
+    for school in new_school_edges:
         begin_age = random.choice(list(range(0, 19)))
         end_age = random.choice(list(range(begin_age + 1, 26)))
 
