@@ -1,5 +1,6 @@
-"""
-Usage: randomActivityGen.py --net-file=FILE --stat-file=FILE --output-file=FILE [--gates.count=N] [--schools.count=N]
+"""Usage: randomActivityGen.py --net-file=FILE --stat-file=FILE --output-file=FILE [--gates.count=N] [--schools.count=N]
+[--schools.ratio=F] [--schools.stepsize=F] [--schools.open-earliest=N] [--schools.open-latest=N]
+[--schools.close-earliest=N] [--schools.close-latest=N]
 
 Input Options:
     -n, --net-file FILE         Input road network file to create activity for
@@ -11,6 +12,12 @@ Output Options:
 Other Options:
     --gates.count N             Number of city gates in the city [default: 4]
     --schools.count N           Number of schools in the city, if not used, number of schools is based on population [default: auto]
+    --schools.ratio F           Number of schools per 1000 inhabitants [default: 0.2]
+    --schools.stepsize F        Stepsize in openening/closing hours, in parts of an hour, e.g 0.25 is every 15 mins [default: 0.25]
+    --schools.open-earliest N   The earliest time at which the schools can open (24h clock) [default: 7]
+    --schools.open-latest N     The latest time at which the schools can open (24h clock)   [default: 10]
+    --schools.close-earliest N  The earliest time at which the schools can close (24h clock)    [default: 13]
+    --schools.close-latest N    The latest time at which the schools can close (24h clock)  [default: 17]
     -h, --help                  Show this screen.
     --version                   Show version.
 """
@@ -115,30 +122,20 @@ def find_school_edges(net: sumolib.net.Net, num_schools):
 
 
 def setup_schools(net: sumolib.net.Net, stats: ET.ElementTree, school_count: int or None):
-    # Voodoo parameter, seems to be about the value for a couple of danish cities.
-    # In general one high school, per 5000-7000 inhabitant in a city
-    inhabitants_per_school = 5000
-
-    school_opening_earliest = 7 * 3600
-    school_opening_latest = 10 * 3600
-    school_closing_earliest = 13 * 3600
-    school_closing_latest = 17 * 3600
-    stepsize = int(0.25 * 3600)
-
-    # Creates a list of school start times, in seconds. Ranges from 7am to 10am, with 15min intervals
-    school_start_times = list(range(school_opening_earliest, school_opening_latest, stepsize))
-
-    # Creates a list of school end times, in seconds. Ranges from 13pm to 17pm, with 15min intervals
-    school_end_times = list(range(school_closing_earliest, school_closing_latest, stepsize))
+    args = docopt(__doc__, version="RandomActivityGen v0.1")
 
     xml_schools = stats.find('schools')
     if xml_schools is None:
         xml_schools = ET.SubElement(stats.getroot(), "schools")
     if school_count is None:
+        # Voodoo parameter, seems to be about the value for a couple of danish cities.
+        # In general one high school, per 5000-7000 inhabitant in a city, so 0.2 pr 1000 inhabitants
+        schools_per_1000_inhabitants = float(args["--schools.ratio"])
+
         # Calculate default number of schools, based on population if none input parameter
         xml_general = stats.find('general')
         inhabitants = xml_general.get('inhabitants')
-        num_schools_default = math.ceil(int(inhabitants) / inhabitants_per_school)
+        num_schools_default = math.ceil(int(inhabitants) * schools_per_1000_inhabitants / 1000)
 
         # Number of new schools to be placed
         number_new_schools = num_schools_default - len(xml_schools.findall("school"))
@@ -151,6 +148,18 @@ def setup_schools(net: sumolib.net.Net, stats: ET.ElementTree, school_count: int
     if number_new_schools < 0:
         print(f"Warning: {school_count} schools was requested, but there are already {len(xml_schools)} defined")
         return
+
+    school_open_earliest = int(args["--schools.open-earliest"]) * 3600
+    school_open_latest = int(args["--schools.open-latest"]) * 3600
+    school_close_earliest = int(args["--schools.close-earliest"]) * 3600
+    school_close_latest = int(args["--schools.close-latest"]) * 3600
+    stepsize = int((float(args["--schools.stepsize"]) * 3600))
+
+    # Creates a list of school start times, in seconds. Ranges from 7am to 10am, with 15min intervals
+    school_start_times = list(range(school_open_earliest, school_open_latest, stepsize))
+
+    # Creates a list of school end times, in seconds. Ranges from 13pm to 17pm, with 15min intervals
+    school_end_times = list(range(school_close_earliest, school_close_latest, stepsize))
 
     # Find edges to place schools on
     new_school_edges = find_school_edges(net, number_new_schools)
