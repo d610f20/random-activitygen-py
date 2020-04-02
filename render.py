@@ -18,7 +18,7 @@ else:
 import sumolib
 
 
-def display_network(net: sumolib.net.Net, stats: ET.ElementTree, width: int, height: int, perlin_scale: float = 0.005, octave: int = 3):
+def display_network(net: sumolib.net.Net, stats: ET.ElementTree, max_width: int, max_height: int, perlin_scale: float = 0.005, octave: int = 3):
     """
     :param net: the network to display noisemap for
     :param stats: the stats file describing the network
@@ -28,6 +28,8 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, width: int, hei
     """
     boundary = net.getBoundary()
     city_size = (boundary[2], boundary[3])
+    width_height_relation = city_size[1] / city_size[0]
+    width, height = (max_width, int(max_height * width_height_relation)) if city_size[0] > city_size[1] else (int(max_width / width_height_relation), max_height)
     width_scale = width / city_size[0]
     height_scale = height / city_size[1]
     centre = find_city_centre(net)
@@ -52,13 +54,19 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, width: int, hei
     pop_img = ImageOps.colorize(pop_img, (0, 0, 0), (0, 220, 0))
     ind_img = ImageOps.colorize(ind_img, (0, 0, 0), (0, 0, 220))
 
-    combined = ImageChops.add(pop_img, ind_img)
+    #combined = ImageChops.add(pop_img, ind_img)
+    combined = Image.new("RGB", (width, height))
 
     draw = ImageDraw.Draw(combined)
-    for edge in net.getEdges():
+    for street_xml in stats.find("streets").findall("street"):
+        edge = net.getEdge(street_xml.attrib["edge"])
+        population = float(street_xml.attrib["population"])
+        industry = float(street_xml.attrib["workPosition"])
         x1, y1 = edge.getFromNode().getCoord()
         x2, y2 = edge.getToNode().getCoord()
-        draw.line([x1 * width_scale, y1 * height_scale, x2 * width_scale, y2 * height_scale], (255, 0, 0), 3)
+        green = int(min(max(0, population * 180 - 20), 255))
+        blue = int(min(max(0, industry * 180 - 20), 255))
+        draw.line([x1 * width_scale, y1 * height_scale, x2 * width_scale, y2 * height_scale], (255, green, blue), int(0.5 + population * 4))
 
     combined.show()
 
