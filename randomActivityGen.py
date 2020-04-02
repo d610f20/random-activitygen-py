@@ -10,7 +10,7 @@ Output Options:
 
 Other Options:
     --gates.count N             Number of city gates in the city [default: 4]
-    --schools.count H           Number of schools in the city, if not used, number of schools is based on population [default: -1]
+    --schools.count H           Number of schools in the city, if not used, number of schools is based on population [default: population-based]
     -h, --help                  Show this screen.
     --version                   Show version.
 """
@@ -108,24 +108,24 @@ def find_school_edges(net: sumolib.net.Net, num_schools):
     edges.sort(key=lambda x: np.mean(get_edge_pair_centroid(x.getShape())))
 
     # Split edges into districts
-    # fixme something wrong with rounding, gets +1 districts than asked for in num_schools
-    district_size = int(len(edges) / num_schools)
+    district_size = int(np.ceil(len(edges) / num_schools))
     districts = [edges[x:x + district_size] for x in range(0, len(edges), district_size)]
 
     # Pick out the one edge with highest perlin noise from each district and return these
-    print(len(districts))
     school_edges = []
+
+    def noise(edge):
+        x, y = get_edge_pair_centroid(edge.getShape())
+        return get_perlin_noise(x, y)
+
     for district in districts:
-        # Todo opimization to avoid calling get_edge_pair_centroid() twice. Get_perlin_noise() takes x,y,
-        #  get_edge_pair_centroid returns list(), how to do inside lambda function?
-        district.sort(key=lambda x: get_perlin_noise(get_edge_pair_centroid(x.getShape())[0],
-                                                     get_edge_pair_centroid(x.getShape())[1]))
+        district.sort(key=noise)
         school_edges.append(district[-1])
 
     return school_edges
 
 
-def setup_schools(net: sumolib.net.Net, stats: ET.ElementTree, school_count: int):
+def setup_schools(net: sumolib.net.Net, stats: ET.ElementTree, school_count: int or None):
     # Voodoo parameter, seems to be about the value for a couple of danish cities.
     # In general one high school, per 5000-7000 inhabitant in a city
     inhabitants_per_school = 5000
@@ -149,7 +149,7 @@ def setup_schools(net: sumolib.net.Net, stats: ET.ElementTree, school_count: int
 
     num_schools_default = math.ceil(int(inhabitants) / inhabitants_per_school)
 
-    if school_count == -1:
+    if school_count is None:
         number_new_schools = num_schools_default - len(xml_schools.findall("school"))
     else:
         number_new_schools = school_count - len(xml_schools.findall("school"))
@@ -158,7 +158,7 @@ def setup_schools(net: sumolib.net.Net, stats: ET.ElementTree, school_count: int
         if school_count != -1:
             print(f"Warning: {school_count} schools was requested, but there are already {len(xml_schools)} defined")
         return
-    if number_new_schools <= 0:
+    if number_new_schools == 0:
         return
 
     # Find edges to place schools on
@@ -167,7 +167,7 @@ def setup_schools(net: sumolib.net.Net, stats: ET.ElementTree, school_count: int
     # Insert schools, with random parameters
     print("Inserting " + str(len(new_school_edges)) + " new schools")
     for school in new_school_edges:
-        begin_age = random.choice(list(range(0, 19)))
+        begin_age = random.choice(list(range(6, 19)))
         end_age = random.choice(list(range(begin_age + 1, 26)))
 
         ET.SubElement(xml_schools, "school", attrib={
@@ -193,7 +193,10 @@ if __name__ == "__main__":
     apply_perlin_noise(net, stats)
     setup_city_gates(net, stats, int(args["--gates.count"]))
 
-    setup_schools(net, stats, int(args["--schools.count"]))
+    if args["--schools.count"] == "population-based":
+        setup_schools(net, stats, None)
+    else:
+        setup_schools(net, stats, int(args["--schools.count"]))
 
     # Write statistics back
     stats.write(args["--output-file"])
