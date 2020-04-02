@@ -26,38 +26,22 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, max_width: int,
     :param octave: the octaves to use when sampling, default is 3
     :return:
     """
+    # Basics about the city and its size
     boundary = net.getBoundary()
     city_size = (boundary[2], boundary[3])
+    centre = find_city_centre(net)
+    city_radius = radius_of_network(net, centre)
+
+    # Determine the size of the picture and scalars for scaling the city to the correct size
+    # We might have a very wide city. In this case we want to produce a wide image
     width_height_relation = city_size[1] / city_size[0]
     width, height = (max_width, int(max_height * width_height_relation)) if city_size[0] > city_size[1] else (int(max_width / width_height_relation), max_height)
     width_scale = width / city_size[0]
     height_scale = height / city_size[1]
-    centre = find_city_centre(net)
-    radius = radius_of_network(net, centre)
 
-    # Population noise
-    arr = [[0 for _ in range(width)] for _ in range(height)]
-    for x in range(width):
-        for y in range(height):
-            p_noise = get_perlin_noise(x / width_scale, y / height_scale, base=POPULATION_BASE, scale=perlin_scale, octaves=octave)
-            arr[y][x] = p_noise + (1 - (distance((x / width_scale, y / height_scale), centre) / radius))  # FIXME: Duplicate code
-    pop_img = toimage(arr)
-
-    # Industry noise
-    arr = [[0 for _ in range(width)] for _ in range(height)]
-    for x in range(width):
-        for y in range(height):
-            p_noise = get_perlin_noise(x / width_scale, y / height_scale, base=INDUSTRY_BASE, scale=perlin_scale, octaves=octave)
-            arr[y][x] = p_noise + (1 - (distance((x / width_scale, y / height_scale), centre) / radius))  # FIXME: Duplicate code
-    ind_img = toimage(arr)
-
-    pop_img = ImageOps.colorize(pop_img, (0, 0, 0), (0, 220, 0))
-    ind_img = ImageOps.colorize(ind_img, (0, 0, 0), (0, 0, 220))
-
-    #combined = ImageChops.add(pop_img, ind_img)
-    combined = Image.new("RGB", (width, height))
-
-    draw = ImageDraw.Draw(combined)
+    # Make image and prepare for drawing
+    img = Image.new("RGB", (width, height))
+    draw = ImageDraw.Draw(img)
 
     # Draw streets
     for street_xml in stats.find("streets").findall("street"):
@@ -80,7 +64,7 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, max_width: int,
         r = int(2 + traffic / 1.3)
         draw.ellipse((x-r, y-r, x+r, y+r), fill=(255, 0, 0))
 
-    combined.show()
+    img.show()
 
 
 _errstr = "Mode is unknown or incompatible with input array shape."
