@@ -1,5 +1,5 @@
 """
-Usage: randomActivityGen.py --net-file=FILE --stat-file=FILE --output-file=FILE [--gates.count=N] [--schools.count=H]
+Usage: randomActivityGen.py --net-file=FILE --stat-file=FILE --output-file=FILE [--gates.count=N] [--schools.count=N]
 
 Input Options:
     -n, --net-file FILE         Input road network file to create activity for
@@ -10,7 +10,7 @@ Output Options:
 
 Other Options:
     --gates.count N             Number of city gates in the city [default: 4]
-    --schools.count H           Number of schools in the city, if not used, number of schools is based on population [default: population-based]
+    --schools.count H           Number of schools in the city, if not used, number of schools is based on population [default: auto]
     -h, --help                  Show this screen.
     --version                   Show version.
 """
@@ -160,8 +160,9 @@ def setup_schools(net: sumolib.net.Net, stats: ET.ElementTree, school_count: int
     # Insert schools, with semi-random parameters
     print("Inserting " + str(len(new_school_edges)) + " new schools")
     for school in new_school_edges:
-        begin_age = random.choice(list(range(6, 19)))
-        end_age = random.choice(list(range(begin_age + 1, 26)))
+        begin_age = random.randint(6, 19)
+        end_age = random.randint(begin_age + 1, 26)
+
 
         ET.SubElement(xml_schools, "school", attrib={
             "edge": str(school.getID()),
@@ -227,7 +228,7 @@ def main():
 
     setup_city_gates(net, stats, int(args["--gates.count"]))
 
-    if args["--schools.count"] == "population-based":
+    if args["--schools.count"] == "auto":
         setup_schools(net, stats, None)
     else:
         setup_schools(net, stats, int(args["--schools.count"]))
