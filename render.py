@@ -6,7 +6,7 @@ import math
 import xml.etree.ElementTree as ET
 from PIL import Image, ImageOps, ImageChops, ImageDraw
 
-from perlin import get_perlin_noise, POPULATION_BASE, INDUSTRY_BASE
+from perlin import get_perlin_noise, POPULATION_BASE, INDUSTRY_BASE, get_edge_pair_centroid
 from utility import find_city_centre, radius_of_network, distance
 
 if 'SUMO_HOME' in os.environ:
@@ -58,15 +58,27 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, max_width: int,
     combined = Image.new("RGB", (width, height))
 
     draw = ImageDraw.Draw(combined)
+
+    # Draw streets
     for street_xml in stats.find("streets").findall("street"):
         edge = net.getEdge(street_xml.attrib["edge"])
         population = float(street_xml.attrib["population"])
         industry = float(street_xml.attrib["workPosition"])
         x1, y1 = edge.getFromNode().getCoord()
         x2, y2 = edge.getToNode().getCoord()
-        green = int(min(max(0, population * 180 - 20), 255))
-        blue = int(min(max(0, industry * 180 - 20), 255))
-        draw.line([x1 * width_scale, y1 * height_scale, x2 * width_scale, y2 * height_scale], (255, green, blue), int(0.5 + population * 4))
+        green = int(min(max(0, population * 180 - 30), 255))
+        blue = int(min(max(0, industry * 180 - 30), 255))
+        draw.line([x1 * width_scale, y1 * height_scale, x2 * width_scale, y2 * height_scale], (0, green, blue), int(0.5 + population * 4))
+
+    # Draw city gates
+    for gate_xml in stats.find("cityGates").findall("entrance"):
+        edge = net.getEdge(gate_xml.attrib["edge"])
+        traffic = max(float(gate_xml.attrib["incoming"]), float(gate_xml.attrib["outgoing"]))
+        x, y = get_edge_pair_centroid(edge.getShape())
+        x *= width_scale
+        y *= height_scale
+        r = int(2 + traffic / 1.3)
+        draw.ellipse((x-r, y-r, x+r, y+r), fill=(255, 0, 0))
 
     combined.show()
 
