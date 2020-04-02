@@ -23,7 +23,7 @@ import xml.etree.ElementTree as ET
 import numpy as np
 from docopt import docopt
 
-from Perlin import apply_perlin_noise, get_perlin_noise, get_edge_pair_centroid
+from perlin import apply_network_noise, get_perlin_noise, get_edge_pair_centroid, POPULATION_BASE
 
 if 'SUMO_HOME' in os.environ:
     tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
@@ -91,6 +91,7 @@ def setup_city_gates(net: sumolib.net.Net, stats: ET.ElementTree, gate_count: in
             "pos": "0"
         })
 
+
 def find_school_edges(net: sumolib.net.Net, num_schools):
     edges = net.getEdges()
 
@@ -105,7 +106,7 @@ def find_school_edges(net: sumolib.net.Net, num_schools):
 
     def noise(edge):
         x, y = get_edge_pair_centroid(edge.getShape())
-        return get_perlin_noise(x, y)
+        return get_perlin_noise(x, y, POPULATION_BASE)
 
     # Pick out the one edge with highest perlin noise from each district and return these to later place school on
     for district in districts:
@@ -133,6 +134,8 @@ def setup_schools(net: sumolib.net.Net, stats: ET.ElementTree, school_count: int
     school_end_times = list(range(school_closing_earliest, school_closing_latest, stepsize))
 
     xml_schools = stats.find('schools')
+    if xml_schools is None:
+        xml_schools = ET.SubElement(stats.getroot(), "schools")
     if school_count is None:
         # Calculate default number of schools, based on population if none input parameter
         xml_general = stats.find('general')
@@ -169,6 +172,7 @@ def setup_schools(net: sumolib.net.Net, stats: ET.ElementTree, school_count: int
             "opening": str(random.choice(school_start_times)),
             "closing": str(random.choice(school_end_times))
         })
+
 
 def verify_stats(stats: ET.ElementTree):
     """
