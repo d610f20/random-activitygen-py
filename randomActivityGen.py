@@ -10,7 +10,7 @@ Output Options:
 
 Other Options:
     --gates.count N             Number of city gates in the city [default: 4]
-    --schools.count H           Number of schools in the city, if not used, number of schools is based on population [default: auto]
+    --schools.count N           Number of schools in the city, if not used, number of schools is based on population [default: auto]
     -h, --help                  Show this screen.
     --version                   Show version.
 """
@@ -23,7 +23,8 @@ import xml.etree.ElementTree as ET
 import numpy as np
 from docopt import docopt
 
-from perlin import apply_network_noise, get_perlin_noise, get_edge_pair_centroid, POPULATION_BASE
+from perlin import apply_network_noise, get_edge_pair_centroid, POPULATION_BASE, get_population_number
+from utility import find_city_centre, radius_of_network
 
 if 'SUMO_HOME' in os.environ:
     tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
@@ -102,15 +103,12 @@ def find_school_edges(net: sumolib.net.Net, num_schools):
     district_size = int(np.ceil(len(edges) / num_schools))
     districts = [edges[x:x + district_size] for x in range(0, len(edges), district_size)]
 
-    school_edges = []
-
-    def noise(edge):
-        x, y = get_edge_pair_centroid(edge.getShape())
-        return get_perlin_noise(x, y, POPULATION_BASE)
-
     # Pick out the one edge with highest perlin noise from each district and return these to later place school on
+    school_edges = []
+    centre = find_city_centre(net)
+    radius = radius_of_network(net, centre)
     for district in districts:
-        district.sort(key=noise)
+        district.sort(key=lambda x: get_population_number(x, centre=centre, radius=radius, base=POPULATION_BASE))
         school_edges.append(district[-1])
 
     return school_edges
@@ -162,7 +160,6 @@ def setup_schools(net: sumolib.net.Net, stats: ET.ElementTree, school_count: int
     for school in new_school_edges:
         begin_age = random.randint(6, 19)
         end_age = random.randint(begin_age + 1, 26)
-
 
         ET.SubElement(xml_schools, "school", attrib={
             "edge": str(school.getID()),
