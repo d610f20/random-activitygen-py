@@ -107,17 +107,17 @@ def find_school_edges(net: sumolib.net.Net, num_schools):
     # Sort all edges based on their avg coord
     edges.sort(key=lambda x: np.mean(get_edge_pair_centroid(x.getShape())))
 
-    # Split edges into districts
+    # Split edges into n districts, with n being number of schools
     district_size = int(np.ceil(len(edges) / num_schools))
     districts = [edges[x:x + district_size] for x in range(0, len(edges), district_size)]
 
-    # Pick out the one edge with highest perlin noise from each district and return these
     school_edges = []
 
     def noise(edge):
         x, y = get_edge_pair_centroid(edge.getShape())
         return get_perlin_noise(x, y)
 
+    # Pick out the one edge with highest perlin noise from each district and return these to later place school on
     for district in districts:
         district.sort(key=noise)
         school_edges.append(district[-1])
@@ -142,29 +142,29 @@ def setup_schools(net: sumolib.net.Net, stats: ET.ElementTree, school_count: int
     # Creates a list of school end times, in seconds. Ranges from 13pm to 17pm, with 15min intervals
     school_end_times = list(range(school_closing_earliest, school_closing_latest, stepsize))
 
-    # Find number of schools to be inserted on edges
-    xml_general = stats.find('general')
-    inhabitants = xml_general.get('inhabitants')
     xml_schools = stats.find('schools')
-
-    num_schools_default = math.ceil(int(inhabitants) / inhabitants_per_school)
-
     if school_count is None:
+        # Calculate default number of schools, based on population if none input parameter
+        xml_general = stats.find('general')
+        inhabitants = xml_general.get('inhabitants')
+        num_schools_default = math.ceil(int(inhabitants) / inhabitants_per_school)
+
+        # Number of new schools to be placed
         number_new_schools = num_schools_default - len(xml_schools.findall("school"))
     else:
+        # Else place new number of schools as according to input
         number_new_schools = school_count - len(xml_schools.findall("school"))
 
-    if number_new_schools < 0:
-        if school_count != -1:
-            print(f"Warning: {school_count} schools was requested, but there are already {len(xml_schools)} defined")
-        return
     if number_new_schools == 0:
+        return
+    if number_new_schools < 0:
+        print(f"Warning: {school_count} schools was requested, but there are already {len(xml_schools)} defined")
         return
 
     # Find edges to place schools on
     new_school_edges = find_school_edges(net, number_new_schools)
 
-    # Insert schools, with random parameters
+    # Insert schools, with semi-random parameters
     print("Inserting " + str(len(new_school_edges)) + " new schools")
     for school in new_school_edges:
         begin_age = random.choice(list(range(6, 19)))
