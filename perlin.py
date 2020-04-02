@@ -20,9 +20,9 @@ import sumolib
 # The 'noise' lib has good resolution until above 10 mil, but a SIGSEGV is had on values above [-100000, 100000]
 # FIXME: these values result in a noisemap which contains CRT-like lines and patterns. Find better, sane values.
 # POPULATION_BASE = random.randrange(-1000, 1000)
-POPULATION_BASE: float = 0
+POPULATION_BASE = 4
 # INDUSTRY_BASE = random.randrange(-1000, 1000)
-INDUSTRY_BASE: float = 0
+INDUSTRY_BASE = 1
 
 
 def get_edge_pair_centroid(coords: List[Tuple[float, float]]) -> (float, float):
@@ -36,7 +36,7 @@ def get_edge_pair_centroid(coords: List[Tuple[float, float]]) -> (float, float):
     return x_avg, y_avg
 
 
-def get_perlin_noise(x: float, y: float, base: float, scale: float = 0.005, octaves: int = 3) -> float:
+def get_perlin_noise(x: float, y: float, base: int, scale: float = 0.005, octaves: int = 3) -> float:
     """
     The 'noise' lib returns a value in the range of [-1:1]. The noise value is scaled to the range of [0:1].
     :param base: offset into noisemap
@@ -49,7 +49,7 @@ def get_perlin_noise(x: float, y: float, base: float, scale: float = 0.005, octa
     return (noise.pnoise2(x=x * scale, y=y * scale, octaves=octaves, base=base) + 1) / 2
 
 
-def get_population_number(edge: sumolib.net.edge.Edge, base: float, centre,
+def get_population_number(edge: sumolib.net.edge.Edge, base: int, centre,
                           radius, scale: float = 0.005, octaves: int = 3) -> float:
     """
     Returns a Perlin simplex noise at centre of given street
