@@ -20,9 +20,11 @@ More fields can be specified if desired. RandomActivityGen will generate any mis
 
 **Output:** A complete statistics file (`.stats.xml`) that can be used with ACTIVITYGEN.
 
+Use `--help` to see all parameters.
+
 ### Example
 
-The repository contains an example network and almost empty statistics file in the `in/` folder. Use RandomActivityGen with default parameters:
+The repository contains an example network and almost empty statistics file in the `in/` folder. Running RandomActivityGen with default parameters looks like this:
 ```
 python randomActivityGen.py --net-file=in/example.net.xml --stat-file=in/example.stat.xml --output-file=out/result.stat.xml
 ``` 
