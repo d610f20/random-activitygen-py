@@ -155,12 +155,6 @@ def setup_schools(net: sumolib.net.Net, stats: ET.ElementTree, school_count: int
     school_close_latest = int(args["--schools.close"].split(",")[1]) * 3600
     stepsize = int((float(args["--schools.stepsize"]) * 3600))
 
-    # Creates a list of school start times, in seconds. Ranges from 7am to 10am, with 15min intervals
-    school_start_times = list(range(school_open_earliest, school_open_latest, stepsize))
-
-    # Creates a list of school end times, in seconds. Ranges from 13pm to 17pm, with 15min intervals
-    school_end_times = list(range(school_close_earliest, school_close_latest, stepsize))
-
     # Find edges to place schools on
     new_school_edges = find_school_edges(net, number_new_schools)
 
@@ -179,8 +173,8 @@ def setup_schools(net: sumolib.net.Net, stats: ET.ElementTree, school_count: int
             "beginAge": str(begin_age),
             "endAge": str(end_age),
             "capacity": str(random.randint(100, 500)),
-            "opening": str(random.choice(school_start_times)),
-            "closing": str(random.choice(school_end_times))
+            "opening": str(random.randrange(school_open_earliest, school_open_latest, stepsize)),
+            "closing": str(random.randrange(school_close_earliest, school_close_latest, stepsize))
         })
 
 
