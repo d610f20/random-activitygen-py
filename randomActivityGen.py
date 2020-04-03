@@ -1,6 +1,6 @@
 """Usage: randomActivityGen.py --net-file=FILE --stat-file=FILE --output-file=FILE [--gates.count=N] [--schools.count=N]
 [--schools.ratio=F] [--schools.stepsize=F] [--schools.open=args] [--schools.close=args]  [--schools.begin-age=args]
-[--schools.end-age=args] [--display]
+[--schools.end-age=args] [--schools.capacity=args] [--display]
 
 Input Options:
     -n, --net-file FILE         Input road network file to create activity for
@@ -18,6 +18,7 @@ Other Options:
     --schools.close=args        The interval at which the schools closes (24h clock) [default: 13,17]
     --schools.begin-age=args    The range of ages at which students start going to school [default: 6,20]
     --schools.end-age=args      The range of ages at which students stops going to school [default: 10,30]
+    --schools.capacity=args     The range for capacity in schools [default: 100,500]
     --display                   Displays an image of cities elements and the noise used to generate them.
     -h, --help                  Show this screen.
     --version                   Show version.
@@ -174,7 +175,7 @@ def setup_schools(net: sumolib.net.Net, stats: ET.ElementTree, school_count: int
             "pos": str(random.randint(0, 100)),
             "beginAge": str(begin_age),
             "endAge": str(end_age),
-            "capacity": str(random.randint(100, 500)),
+            "capacity": str(random.randint(int(args["--schools.capacity"].split(",")[0]), int(args["--schools.capacity"].split(",")[1]))),
             "opening": str(random.randrange(school_open_earliest, school_open_latest, stepsize)),
             "closing": str(random.randrange(school_close_earliest, school_close_latest, stepsize))
         })
