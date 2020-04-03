@@ -71,7 +71,7 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, max_width: int,
         x, y = get_edge_pair_centroid(edge.getShape())
         x *= width_scale
         y *= height_scale
-        r = int(2 + 100 / 175)
+        r = int(2 + capacity / 175)
         draw.ellipse((x - r, y - r, x + r, y + r), fill=(255, 216, 0))
 
     img.show()
