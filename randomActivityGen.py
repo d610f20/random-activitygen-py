@@ -1,5 +1,5 @@
 """
-Usage: randomActivityGen.py --net-file=FILE --stat-file=FILE --output-file=FILE [--gates.count=N] [--display]
+Usage: randomActivityGen.py --net-file=FILE --stat-file=FILE --output-file=FILE [--gates.count=N] [--display] [--seed=S | --random]
 
 Input Options:
     -n, --net-file FILE         Input road network file to create activity for
@@ -11,6 +11,8 @@ Output Options:
 Other Options:
     --gates.count N             Number of city gates in the city [default: 4]
     --display                   Displays an image of cities elements and the noise used to generate them.
+    --seed S                    Initialises the random number generator with the given value S [default: 31415]
+    --random                    Initialises the random number generator with the current system time [default: false]
     -h, --help                  Show this screen.
     --version                   Show version.
 """
@@ -133,6 +135,14 @@ def verify_stats(stats: ET.ElementTree):
 
 def main():
     args = docopt(__doc__, version="RandomActivityGen v0.1")
+
+    if not args["--random"]:
+        random.seed(args["--seed"])
+    # The 'noise' lib has good resolution until above 10 mil, but a SIGSEGV is had on values above [-100000, 100000]
+    import perlin
+    perlin.POPULATION_BASE = random.randint(0, 65_536)
+    perlin.INDUSTRY_BASE = random.randint(0, 65_536)
+    while perlin.POPULATION_BASE == perlin.INDUSTRY_BASE: perlin.INDUSTRY_BASE = random.randint(0, 65_536)
 
     # Read in SUMO network
     net = sumolib.net.readNet(args["--net-file"])
