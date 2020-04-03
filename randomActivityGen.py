@@ -14,8 +14,8 @@ Other Options:
     --schools.count N           Number of schools in the city, if not used, number of schools is based on population [default: auto]
     --schools.ratio F           Number of schools per 1000 inhabitants [default: 0.2]
     --schools.stepsize F        Stepsize in openening/closing hours, in parts of an hour, e.g 0.25 is every 15 mins [default: 0.25]
-    --schools.open=args         The range of time at which the schools opens (24h clock) [default: 7,10]
-    --schools.close=args        The range of time at which the schools closes (24h clock) [default: 13,17]
+    --schools.open=args         The interval at which the schools opens (24h clock) [default: 7,10]
+    --schools.close=args        The interval at which the schools closes (24h clock) [default: 13,17]
     --schools.begin-age=args    The range of ages at which students start going to school [default: 6,20]
     --schools.end-age=args      The range of ages at which students stops going to school [default: 10,30]
     --display                   Displays an image of cities elements and the noise used to generate them.
