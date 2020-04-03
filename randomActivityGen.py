@@ -10,7 +10,7 @@ Output Options:
 
 Other Options:
     --gates.count N             Number of city gates in the city [default: 4]
-    --display                   Displays a image of cities elements and the noise used to generate them
+    --display                   Displays an image of cities elements and the noise used to generate them.
     -h, --help                  Show this screen.
     --version                   Show version.
 """
@@ -149,7 +149,7 @@ def main():
     # Write statistics back
     stats.write(args["--output-file"])
 
-    if (args["--display"]):
+    if args["--display"]:
         display_network(net, stats, 500, 500)
 
 
