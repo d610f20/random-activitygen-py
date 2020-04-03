@@ -7,7 +7,7 @@ import xml.etree.ElementTree as ET
 from PIL import Image, ImageOps, ImageChops, ImageDraw
 
 from perlin import get_perlin_noise, POPULATION_BASE, INDUSTRY_BASE, get_edge_pair_centroid
-from utility import find_city_centre, radius_of_network, distance
+from utility import find_city_centre, radius_of_network, distance, position_on_edge
 
 if 'SUMO_HOME' in os.environ:
     tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
@@ -63,6 +63,17 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, max_width: int,
         y *= height_scale
         r = int(2 + traffic / 1.3)
         draw.ellipse((x-r, y-r, x+r, y+r), fill=(255, 0, 0))
+
+    # Draw schools
+    for school_xml in stats.find("schools").findall("school"):
+        edge = net.getEdge(school_xml.attrib["edge"])
+        capacity = int(school_xml.get('capacity'))
+        x, y = position_on_edge(edge, int(school_xml.get('pos')))
+        x *= width_scale
+        y *= height_scale
+        r = int(2 + capacity / 175)
+        draw.ellipse((x - r, y - r, x + r, y + r), fill=(255, 216, 0))
+
 
     img.show()
 
