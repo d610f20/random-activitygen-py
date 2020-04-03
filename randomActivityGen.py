@@ -1,6 +1,6 @@
 """Usage: randomActivityGen.py --net-file=FILE --stat-file=FILE --output-file=FILE [--gates.count=N] [--schools.count=N]
 [--schools.ratio=F] [--schools.stepsize=F] [--schools.open=args] [--schools.close=args]  [--schools.begin-age=args]
-[--schools.end-age=args]
+[--schools.end-age=args] [--display]
 
 Input Options:
     -n, --net-file FILE         Input road network file to create activity for
