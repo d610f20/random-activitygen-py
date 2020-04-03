@@ -1,5 +1,5 @@
 """
-Usage: randomActivityGen.py --net-file=FILE --stat-file=FILE --output-file=FILE [--gates.count=N]
+Usage: randomActivityGen.py --net-file=FILE --stat-file=FILE --output-file=FILE [--gates.count=N] [--display]
 
 Input Options:
     -n, --net-file FILE         Input road network file to create activity for
@@ -10,6 +10,7 @@ Output Options:
 
 Other Options:
     --gates.count N             Number of city gates in the city [default: 4]
+    --display                   Displays an image of cities elements and the noise used to generate them.
     -h, --help                  Show this screen.
     --version                   Show version.
 """
@@ -23,6 +24,7 @@ import numpy as np
 from docopt import docopt
 
 from perlin import apply_network_noise
+from render import display_network
 
 if 'SUMO_HOME' in os.environ:
     tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
@@ -146,6 +148,9 @@ def main():
 
     # Write statistics back
     stats.write(args["--output-file"])
+
+    if args["--display"]:
+        display_network(net, stats, 500, 500)
 
 
 if __name__ == "__main__":
