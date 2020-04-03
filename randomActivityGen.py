@@ -142,7 +142,7 @@ def main():
     verify_stats(stats)
 
     # Scale and octave seems like sane values for the moment
-    apply_network_noise(net, stats, 0.005, 3)
+    apply_network_noise(net, stats)
 
     setup_city_gates(net, stats, int(args["--gates.count"]))
 
