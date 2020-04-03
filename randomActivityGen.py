@@ -1,6 +1,6 @@
 """Usage: randomActivityGen.py --net-file=FILE --stat-file=FILE --output-file=FILE [--gates.count=N] [--schools.count=N]
-[--schools.ratio=F] [--schools.stepsize=F] [--schools.open-earliest=N] [--schools.open-latest=N]
-[--schools.close-earliest=N] [--schools.close-latest=N]
+[--schools.ratio=F] [--schools.stepsize=F] [--schools.open=args] [--schools.close=args]  [--schools.begin-age=args]
+[--schools.end-age=args]
 
 Input Options:
     -n, --net-file FILE         Input road network file to create activity for
@@ -14,10 +14,10 @@ Other Options:
     --schools.count N           Number of schools in the city, if not used, number of schools is based on population [default: auto]
     --schools.ratio F           Number of schools per 1000 inhabitants [default: 0.2]
     --schools.stepsize F        Stepsize in openening/closing hours, in parts of an hour, e.g 0.25 is every 15 mins [default: 0.25]
-    --schools.open-earliest N   The earliest time at which the schools can open (24h clock) [default: 7]
-    --schools.open-latest N     The latest time at which the schools can open (24h clock)   [default: 10]
-    --schools.close-earliest N  The earliest time at which the schools can close (24h clock)    [default: 13]
-    --schools.close-latest N    The latest time at which the schools can close (24h clock)  [default: 17]
+    --schools.open=args         The range of time at which the schools opens (24h clock) [default: 7,10]
+    --schools.close=args        The range of time at which the schools closes (24h clock) [default: 13,17]
+    --schools.begin-age=args    The range of ages at which students start going to school [default: 6,20]
+    --schools.end-age=args      The range of ages at which students stops going to school [default: 10,30]
     -h, --help                  Show this screen.
     --version                   Show version.
 """
@@ -149,10 +149,10 @@ def setup_schools(net: sumolib.net.Net, stats: ET.ElementTree, school_count: int
         print(f"Warning: {school_count} schools was requested, but there are already {len(xml_schools)} defined")
         return
 
-    school_open_earliest = int(args["--schools.open-earliest"]) * 3600
-    school_open_latest = int(args["--schools.open-latest"]) * 3600
-    school_close_earliest = int(args["--schools.close-earliest"]) * 3600
-    school_close_latest = int(args["--schools.close-latest"]) * 3600
+    school_open_earliest = int(args["--schools.open"].split(",")[0]) * 3600
+    school_open_latest = int(args["--schools.open"].split(",")[1]) * 3600
+    school_close_earliest = int(args["--schools.close"].split(",")[0]) * 3600
+    school_close_latest = int(args["--schools.close"].split(",")[1]) * 3600
     stepsize = int((float(args["--schools.stepsize"]) * 3600))
 
     # Creates a list of school start times, in seconds. Ranges from 7am to 10am, with 15min intervals
@@ -167,8 +167,11 @@ def setup_schools(net: sumolib.net.Net, stats: ET.ElementTree, school_count: int
     # Insert schools, with semi-random parameters
     print("Inserting " + str(len(new_school_edges)) + " new schools")
     for school in new_school_edges:
-        begin_age = random.randint(6, 19)
-        end_age = random.randint(begin_age + 1, 26)
+        begin_age = random.randint(int(args["--schools.begin-age"].split(",")[0]),
+                                   int(args["--schools.begin-age"].split(",")[1]))
+        end_age = random.randint(int(args["--schools.end-age"].split(",")[1]) if begin_age + 1 <= int(
+            args["--schools.end-age"].split(",")[1]) else begin_age + 1,
+                                 int(args["--schools.end-age"].split(",")[1]))
 
         ET.SubElement(xml_schools, "school", attrib={
             "edge": str(school.getID()),
