@@ -64,6 +64,16 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, max_width: int,
         r = int(2 + traffic / 1.3)
         draw.ellipse((x-r, y-r, x+r, y+r), fill=(255, 0, 0))
 
+    # Draw schools
+    for school_xml in stats.find("schools").findall("school"):
+        edge = net.getEdge(school_xml.attrib["edge"])
+        capacity = int(school_xml.get('capacity'))
+        x, y = get_edge_pair_centroid(edge.getShape())
+        x *= width_scale
+        y *= height_scale
+        r = int(2 + 100 / 175)
+        draw.ellipse((x - r, y - r, x + r, y + r), fill=(255, 216, 0))
+
     img.show()
 
 
