@@ -36,9 +36,9 @@ def get_edge_pair_centroid(coords: List[Tuple[float, float]]) -> Tuple[float, fl
 def get_perlin_noise(x: float, y: float, base: int, scale: float = 0.005, octaves: int = 3) -> float:
     """
     The 'noise' lib returns a value in the range of [-1:1]. The noise value is scaled to the range of [0:1].
-    :param base: offset into noisemap
     :param x: the sample point for x
     :param y: the sample point for y
+    :param base: the offset for the 2d slice
     :param scale: the scale to multiply to each coordinate, default is 0.005
     :param octaves: the octaves to use when sampling, default is 3
     :return: a normalised float of the sample in noisemap
