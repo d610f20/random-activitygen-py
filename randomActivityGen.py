@@ -18,6 +18,7 @@ Other Options:
     --schools.close=args        The range of time at which the schools closes (24h clock) [default: 13,17]
     --schools.begin-age=args    The range of ages at which students start going to school [default: 6,20]
     --schools.end-age=args      The range of ages at which students stops going to school [default: 10,30]
+    --display                   Displays an image of cities elements and the noise used to generate them.
     -h, --help                  Show this screen.
     --version                   Show version.
 """
@@ -32,6 +33,7 @@ from docopt import docopt
 
 from perlin import apply_network_noise, get_edge_pair_centroid, POPULATION_BASE, get_population_number
 from utility import find_city_centre, radius_of_network
+from render import display_network
 
 if 'SUMO_HOME' in os.environ:
     tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
@@ -238,6 +240,9 @@ def main():
 
     # Write statistics back
     stats.write(args["--output-file"])
+
+    if args["--display"]:
+        display_network(net, stats, 500, 500)
 
 
 if __name__ == "__main__":
