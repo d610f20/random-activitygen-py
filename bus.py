@@ -85,7 +85,7 @@ def _disk_generator(inner_r, outer_r, point_gen):
             lambda point: filter_disc(point, inner_r, outer_r),
             point_gen)
 
-    return disk_points
+    yield from disk_points
 
 
 def _offset_disk_generator(inner_r, outer_r, offset, point_gen):
