@@ -240,7 +240,9 @@ def main():
         setup_schools(net, stats, int(args["--schools.count"]))
 
     # Write statistics back
-    stats.write(args["--output-file"])
+    output_file = args["--output-file"]
+    os.makedirs(os.path.dirname(output_file), exist_ok=True)
+    stats.write(output_file)
 
     if args["--display"]:
         display_network(net, stats, 500, 500)
