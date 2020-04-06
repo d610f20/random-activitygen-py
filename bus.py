@@ -1,10 +1,22 @@
 import random
 import math
+from typing import *
+import collections
 
 
 def firstn(n, gen):
     for _ in range(0, n):
         yield next(gen)
+
+
+def apply(func, gen):
+    """Modifies each element in generator with a given function"""
+    if isinstance(gen, collections.Sequence):
+        # Convert the Sequence to a Generator
+        gen = iter(gen)
+
+    for x in gen:
+        yield func(x)
 
 
 def dist(point1, point2):
@@ -13,14 +25,89 @@ def dist(point1, point2):
         (point1[1]-point2[1])**2.0)
 
 
+def road_point_generator(roads: List[Tuple[Tuple[float, float], Tuple[float, float]]]):
+    assert len(roads) > 0
+
+    # Compute and store the length of every road
+    roads = [road for road in apply(lambda road: (dist(road[0], road[1]), road), roads)]
+
+    # Length of all roads combined
+    total_length = sum(apply(lambda road_len: road_len[0], roads))
+
+    while True:
+        # Select a point on the combined stretch of road
+        distance = random.uniform(0, total_length)
+        # Find the selected road
+        length_sum = 0.0
+        found_road = False
+        for road_len in roads:
+            length = road_len[0]
+            road = road_len[1]
+
+            if length_sum >= distance:
+                # Compute the exact point on the selected road
+
+                # Distance along the road segment
+                remaining = length_sum - distance
+
+                # Vector for the road segment
+                vector = (
+                        road[1][0] - road[0][0],
+                        road[1][1] - road[0][1])
+
+                # Normalized vector used for direction
+                direction = (
+                        vector[0]/length,
+                        vector[1]/length)
+
+                yield (
+                        road[0][0] + remaining * direction[0],
+                        road[0][1] + remaining * direction[1],
+                        road,
+                        remaining)
+                found_road = True
+                break
+            else:
+                length_sum += length
+
+        if not found_road:
+            raise AssertionError("Failed to pick a road. A distance beyound the last road must have been erroneously picked: {} (total: {})".format(length_sum, total_length))
+
+
+example_roads = [
+        (( 0.0,  0.0), ( 0.0,  2.0)),
+        (( 0.0,  0.0), ( 2.0,  2.0)),
+        (( 0.0,  0.0), ( 2.0,  0.0)),
+        (( 0.0,  0.0), ( 2.0, -2.0)),
+        (( 0.0,  0.0), ( 0.0, -2.0)),
+        (( 0.0,  0.0), (-2.0, -2.0)),
+        (( 0.0,  0.0), (-2.0,  0.0)),
+        (( 0.0,  0.0), (-2.0,  2.0)),
+        (( 0.0,  2.0), ( 2.0,  0.0)),
+        (( 2.0,  0.0), ( 0.0, -2.0)),
+        (( 0.0, -2.0), (-2.0,  0.0)),
+        ((-2.0,  0.0), ( 0.0,  2.0)),
+        (( 2.0,  0.0), ( 2.0,  2.0)),
+        (( 2.0,  2.0), ( 2.0,  0.0)),
+        (( 2.0,  0.0), ( 2.0, -2.0)),
+        (( 2.0, -2.0), ( 0.0, -2.0)),
+        (( 0.0, -2.0), (-2.0, -2.0)),
+        ((-2.0, -2.0), (-2.0,  0.0)),
+        ((-2.0,  0.0), (-2.0, -2.0)),
+        ((-2.0, -2.0), ( 0.0,  2.0))
+        ]
+
+
 def disk_generator(inner_r, outer_r):
     # random number with in a the outer circle of the disk (only in 1D)
-    random_interval = lambda: random.uniform(-outer_r, outer_r)
+    #random_interval = lambda: random.uniform(-outer_r, outer_r)
 
     # points in a square
-    square_points = zip(
-        iter(random_interval, 1), 
-        iter(random_interval, 1))
+    #square_points = zip(
+    #    iter(random_interval, 1), 
+    #    iter(random_interval, 1))
+
+    square_points = road_point_generator(roads)
 
     # filter out points thats isn't on the disk
     def filter_disc(point, small_r, large_r):
