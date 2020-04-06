@@ -37,6 +37,7 @@ def _road_point_generator(roads: List[Tuple[Tuple[float, float], Tuple[float, fl
     while True:
         # Select a point on the combined stretch of road
         distance = random.uniform(0, total_length)
+
         # Find the selected road
         length_sum = 0.0
         found_road = False
@@ -44,7 +45,7 @@ def _road_point_generator(roads: List[Tuple[Tuple[float, float], Tuple[float, fl
             length = road_len[0]
             road = road_len[1]
 
-            if length_sum >= distance:
+            if (length_sum + length) >= distance:
                 # Compute the exact point on the selected road
 
                 # Distance along the road segment
@@ -71,7 +72,7 @@ def _road_point_generator(roads: List[Tuple[Tuple[float, float], Tuple[float, fl
                 length_sum += length
 
         if not found_road:
-            raise AssertionError("Failed to pick a road. A distance beyound the last road must have been erroneously picked: {} (length sum: {}) (total: {})".format(distance, length_sum, total_length))
+            raise AssertionError("Failed to pick a road. A distance beyound the last road must have been erroneously picked: {} (length sum: {}) (total length: {})".format(distance, length_sum, total_length))
 
 
 def _disk_generator(inner_r, outer_r, point_gen):
