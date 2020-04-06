@@ -67,7 +67,7 @@ def position_on_edge(edge: sumolib.net.edge.Edge, pos: int):
     # Find a linear equation from start to end of this stretch
     f = linear_equation(first_cord, second_cord)
 
-    # Some nice bruteforcing ahead :)
+    # TODO use lerp and vectors instead of computing equation
     # Potential coordinate for the correct position. Start at coord1.
     pos_coords = (first_cord[0], first_cord[1])
 
