@@ -143,7 +143,7 @@ def main():
     args = docopt(__doc__, version="RandomActivityGen v0.1")
 
     logger = logging.getLogger()
-    handler = logging.StreamHandler()
+    handler = logging.StreamHandler(sys.stdout)
     formatter = logging.Formatter('%(levelname)-8s %(message)s')
     handler.setFormatter(formatter)
     logger.addHandler(handler)
