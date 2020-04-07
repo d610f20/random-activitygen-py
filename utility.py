@@ -45,7 +45,7 @@ def position_on_edge(edge: sumolib.net.edge.Edge, pos: int):
     # Go through pair of coords, until meeting an edge, where if we travel through it, we have moved more than pos
     # meters in total
     remaining_distance = pos
-    for coord1, coord2 in (edge.getShape()[i:i + 2] for i in range(0, int(len(edge.getShape()) / 2 * 2), 2)):
+    for coord1, coord2 in (edge.getShape()[i:i + 2] for i in range(0, int(len(edge.getShape())), 2)):
         if 0 < remaining_distance - distance(coord1, coord2):
             remaining_distance -= distance(coord1, coord2)
         else:
