@@ -13,7 +13,7 @@ Other Options:
     --display                   Displays an image of cities elements and the noise used to generate them.
     --verbose                   Sets log-level to DEBUG
     --quiet                     Sets log-level to ERROR
-    --log-level=<LEVEL>         Explicitly set log-level {DEBUG, INFO, WARN, ERROR, CRITICAL} [default: WARN]
+    --log-level=<LEVEL>         Explicitly set log-level {DEBUG, INFO, WARN, ERROR, CRITICAL} [default: INFO]
     -h, --help                  Show this screen.
     --version                   Show version.
 """
@@ -47,10 +47,10 @@ def setup_city_gates(net: sumolib.net.Net, stats: ET.ElementTree, gate_count: in
     xml_entrances = xml_gates.findall("entrance")
     n = gate_count - len(xml_entrances)
     if n < 0:
-        print(f"Warning: {gate_count} city gate was requested, but there are already {len(xml_entrances)} defined")
+        logging.warning(f"{gate_count} city gate were requested, but there are already {len(xml_entrances)} defined")
     if n <= 0:
         return
-    print(f"Inserting {n} new city gates")
+    logging.info(f"Inserting {n} new city gates")
 
     # Finds all nodes that are dead ends, i.e. nodes that only have one neighbouring node
     # and at least one of the connecting edges is a road (as opposed to path) and allows private vehicles
@@ -88,6 +88,9 @@ def setup_city_gates(net: sumolib.net.Net, stats: ET.ElementTree, gate_count: in
 
         # Add entrance to stats file
         edge = gate.getOutgoing()[0] if len(gate.getOutgoing()) > 0 else gate.getIncoming()[0]
+        logging.debug(
+            f"Adding entrance to statistics, edge: {edge.getID()}, incoming traffic: {incoming_traffic}, outgoing "
+            f"traffic: {outgoing_traffic}")
         ET.SubElement(xml_gates, "entrance", attrib={
             "edge": edge.getID(),
             "incoming": str(incoming_traffic),
@@ -117,6 +120,7 @@ def verify_stats(stats: ET.ElementTree):
     population = city.find("population")
     if population is None:
         # Population is missing, so we add a default population
+        logging.info("Population is missing from statistics, adding a default configuration")
         population = ET.SubElement(city, "population")
         ET.SubElement(population, "bracket", {"beginAge": "0", "endAge": "30", "peopleNbr": "30"})
         ET.SubElement(population, "bracket", {"beginAge": "30", "endAge": "60", "peopleNbr": "40"})
@@ -126,6 +130,7 @@ def verify_stats(stats: ET.ElementTree):
     work_hours = city.find("workHours")
     if work_hours is None:
         # Work hours are missing, so we add some default work hours
+        logging.info("Work hours are missing from statistics, adding a default configuration")
         work_hours = ET.SubElement(city, "workHours")
         ET.SubElement(work_hours, "opening", {"hour": "28800", "proportion": "70"})  # 70% at 8.00
         ET.SubElement(work_hours, "opening", {"hour": "30600", "proportion": "30"})  # 30% at 8.30
@@ -143,7 +148,7 @@ def main():
     handler.setFormatter(formatter)
     logger.addHandler(handler)
 
-    # Parse log-level 
+    # Parse log-level
     if args["--quiet"]:
         log_level = logging.ERROR
     elif args["--verbose"]:
@@ -153,14 +158,8 @@ def main():
 
     logger.setLevel(log_level)
 
-    # Log test
-    logger.debug("debug message")
-    logger.info("info message")
-    logger.warning("warn message")
-    logger.error("error message")
-    logger.critical("critical message")
-
     # Read in SUMO network
+    logging.info(f"Reading network from: {args['--net-file']}")
     net = sumolib.net.readNet(args["--net-file"])
 
     # Parse statistics configuration
@@ -171,13 +170,17 @@ def main():
     # Scale and octave seems like sane values for the moment
     apply_network_noise(net, stats, 0.005, 3)
 
+    logging.info(f"Setting up {int(args['--gates.count'])} city gates ")
     setup_city_gates(net, stats, int(args["--gates.count"]))
 
     # Write statistics back
+    logging.info(f"Writing statistics file to {args['--output-file']}")
     stats.write(args["--output-file"])
 
     if args["--display"]:
-        display_network(net, stats, 500, 500)
+        x_size, y_size = 500, 500
+        logging.info(f"Displaying network as image sized: {x_size} x {y_size}")
+        display_network(net, stats, x_size, y_size)
 
 
 if __name__ == "__main__":
