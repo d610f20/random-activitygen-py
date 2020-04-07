@@ -1,3 +1,4 @@
+import logging
 import os
 import sys
 import xml.etree.ElementTree as ET
@@ -16,7 +17,6 @@ else:
     sys.exit("Please declare environment variable 'SUMO_HOME' to use sumolib")
 
 import sumolib
-
 
 POPULATION_BASE = -1  # Initialized in main
 INDUSTRY_BASE = -1  # Initialized in main
@@ -73,10 +73,11 @@ def apply_network_noise(net: sumolib.net.Net, xml: ElementTree, centre: Tuple[fl
     :return:
     """
     # Calculate and apply Perlin noise for all edges in network to population in statistics
-    print("Writing Perlin noise to population and industry")
-
+    logging.debug(f"City centre: {centre}")
     radius = radius_of_network(net, centre)
+    logging.debug(f"City radius: {radius:.2f}")
     noise_scale = 3.5 / radius
+    logging.debug(f"Using noise scale: {noise_scale:.2f}")
 
     streets = xml.find("streets")
     if streets is None:
@@ -94,6 +95,7 @@ def apply_network_noise(net: sumolib.net.Net, xml: ElementTree, centre: Tuple[fl
             industry = get_population_number(edge=edge, base=INDUSTRY_BASE, scale=noise_scale, octaves=3,
                                              centre=centre, radius=radius, centre_weight=centre_work_weight)
 
+            logging.debug(f"Adding street with eid: {eid},\t population: {population:.4f}, industry: {industry:.4f}")
             ET.SubElement(streets, "street", {
                 "edge": eid,
                 "population": str(population),
