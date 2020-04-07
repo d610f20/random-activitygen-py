@@ -2,14 +2,10 @@ import os
 import sys
 from typing import Tuple
 
-import noise
-import numpy as np
-import math
 import xml.etree.ElementTree as ET
-from PIL import Image, ImageOps, ImageChops, ImageDraw
+from PIL import Image, ImageDraw
 
 from perlin import get_perlin_noise, POPULATION_BASE, INDUSTRY_BASE, get_edge_pair_centroid
-from utility import find_city_centre, radius_of_network, distance
 
 if 'SUMO_HOME' in os.environ:
     tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
@@ -20,25 +16,23 @@ else:
 import sumolib
 
 
-def display_network(net: sumolib.net.Net, stats: ET.ElementTree, max_width: int, max_height: int,
-                    centre: Tuple[float, float], perlin_scale: float = 0.005, octave: int = 3):
+def display_network(net: sumolib.net.Net, stats: ET.ElementTree, max_width: int, max_height: int):
     """
     :param net: the network to display noisemap for
     :param stats: the stats file describing the network
-    :param perlin_scale: the scale to multiply to each coordinate, default is 0.005
-    :param octave: the octaves to use when sampling, default is 3
+    :param max_width: maximum width of the resulting image
+    :param max_height: maximum width of the resulting image
     :return:
     """
     # Basics about the city and its size
     boundary = net.getBoundary()
     city_size = (boundary[2], boundary[3])
-    city_radius = radius_of_network(net, centre)
 
     # Determine the size of the picture and scalars for scaling the city to the correct size
     # We might have a very wide city. In this case we want to produce a wide image
     width_height_relation = city_size[1] / city_size[0]
     width, height = (max_width, int(max_height * width_height_relation)) if city_size[0] > city_size[1] else (
-    int(max_width / width_height_relation), max_height)
+        int(max_width / width_height_relation), max_height)
     width_scale = width / city_size[0]
     height_scale = height / city_size[1]
 
