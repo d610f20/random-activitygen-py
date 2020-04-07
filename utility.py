@@ -36,3 +36,30 @@ def distance(pos1: Tuple[float, float], pos2: Tuple[float, float]):
     x1, y1 = pos1
     x2, y2 = pos2
     return np.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
+
+
+def position_on_edge(edge: sumolib.net.edge.Edge, pos: int):
+    """
+    :return: coordinate for pos meters from the start of the edge, following any shapes along edge
+    """
+    # Go through pair of coords, until meeting an edge, where if we travel through it, we have moved more than pos
+    # meters in total
+    remaining_distance = pos
+    for coord1, coord2 in (edge.getShape()[i:i + 2] for i in range(0, int(len(edge.getShape())), 2)):
+        if 0 < remaining_distance - distance(coord1, coord2):
+            remaining_distance -= distance(coord1, coord2)
+        else:
+            break
+
+    # Subtract the vector coord1 from vector coord2
+    vec = np.subtract([coord2[0], coord2[1]], [coord1[0], coord1[1]])
+
+    # Normalize it by dividing by its own length
+    unit_vec = vec / np.linalg.norm(vec)
+
+    # Scale by remaining distance
+    unit_vec_scaled = unit_vec * remaining_distance
+
+    # Add this scaled vector to the start point, to find the correct coord that is at remaining distance from this
+    # coord, to coord2
+    return coord1[0] + unit_vec_scaled[0], coord1[1] + unit_vec_scaled[1]
