@@ -2,6 +2,7 @@ import os
 import sys
 import numpy as np
 from typing import Tuple
+from scipy.cluster.vq import kmeans
 
 if 'SUMO_HOME' in os.environ:
     tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
@@ -36,3 +37,33 @@ def distance(pos1: Tuple[float, float], pos2: Tuple[float, float]):
     x1, y1 = pos1
     x2, y2 = pos2
     return np.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
+
+def k_means_clusters(net: sumolib.net.Net, num_clusters: int):
+    from perlin import get_edge_pair_centroid
+    edges = net.getEdges()
+
+    centroid_edges = [get_edge_pair_centroid(edge.getShape()) for edge in edges]
+    centroids = kmeans(centroid_edges, num_clusters, iter=5)
+
+    # Empty 2d array to hold edges in clusters
+    clusters = [[] for x in range(num_clusters)]
+
+    # Iterate through each edge, to decide which cluster it belongs to
+    for edge in edges:
+        # Find the center point of the edge, and set distance to first centroid returned from kmeans
+        edge_centroid = get_edge_pair_centroid(edge.getShape())
+        min = distance(edge_centroid, centroids[0][0])
+
+        index = 0
+        correct_index = 0
+
+        for centroid in centroids[0]:
+            if distance(edge_centroid, centroid) < min:
+                min = distance(edge_centroid, centroid)
+                correct_index = index
+
+            index += 1
+
+        clusters[correct_index].append(edge)
+
+    return clusters
