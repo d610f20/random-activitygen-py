@@ -241,7 +241,7 @@ def main():
 
     # Write statistics back
     output_file = args["--output-file"]
-    os.makedirs(os.path.dirname(output_file), exist_ok=True)
+    os.mkdir(os.path.dirname(output_file))
     stats.write(output_file)
 
     if args["--display"]:
