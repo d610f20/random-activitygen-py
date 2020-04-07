@@ -4,6 +4,7 @@ import sys
 
 import numpy as np
 from typing import Tuple
+import collections
 
 from scipy.cluster.vq import kmeans
 
@@ -176,3 +177,23 @@ def setup_logging(args: Dict):
     # FIXME: Following line does not take effect
     log_file_handler.setLevel(logging.DEBUG)
     logger.addHandler(log_file_handler)
+
+
+def firstn(n, gen):
+    """
+    Restricts generator to yields at most N element
+    """
+    for _ in range(0, n):
+        yield next(gen)
+
+
+def apply(func, gen):
+    """
+    Modifies each element in generator with a given function
+    """
+    if isinstance(gen, collections.Sequence):
+        # Convert the Sequence to a Generator
+        gen = iter(gen)
+
+    for x in gen:
+        yield func(x)
