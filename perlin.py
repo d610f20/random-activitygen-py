@@ -1,3 +1,4 @@
+import logging
 import os
 import sys
 import xml.etree.ElementTree as ET
@@ -75,11 +76,10 @@ def apply_network_noise(net: sumolib.net.Net, xml: ElementTree, scale: float = 0
     :param octaves: the octaves to use when sampling, default is 3
     :return:
     """
-    # Calculate and apply Perlin noise for all edges in network to population in statistics
-    print("Writing Perlin noise to population and industry")
-
     centre = find_city_centre(net)
+    logging.debug(f"City centre: {centre}")
     radius = radius_of_network(net, centre)
+    logging.debug(f"City radius: {radius:.2f}")
 
     streets = xml.find("streets")
     if streets is None:
@@ -97,6 +97,7 @@ def apply_network_noise(net: sumolib.net.Net, xml: ElementTree, scale: float = 0
             industry = get_population_number(edge=edge, base=INDUSTRY_BASE, scale=scale, octaves=octaves,
                                              centre=centre, radius=radius)
 
+            logging.debug(f"Adding street with eid: {eid},\t population: {population:.4f}, industry: {industry:.4f}")
             ET.SubElement(streets, "street", {
                 "edge": eid,
                 "population": str(population),

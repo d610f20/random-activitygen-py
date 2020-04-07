@@ -1,5 +1,5 @@
 """Usage: randomActivityGen.py --net-file=FILE --stat-file=FILE --output-file=FILE [--gates.count=N] [--display]
-    ([--quiet] | [--verbose] | [--log-level=LEVEL])
+    ([--quiet] | [--verbose] | [--log-level=LEVEL]) [--log-file=FILENAME]
 
 Input Options:
     -n, --net-file FILE         Input road network file to create activity for
@@ -14,6 +14,7 @@ Other Options:
     --verbose                   Sets log-level to DEBUG
     --quiet                     Sets log-level to ERROR
     --log-level=<LEVEL>         Explicitly set log-level {DEBUG, INFO, WARN, ERROR, CRITICAL} [default: INFO]
+    --log-file=<FILENAME>       Set log filename [default: randomActivityGen-log.txt]
     -h, --help                  Show this screen.
     --version                   Show version.
 """
@@ -142,11 +143,19 @@ def verify_stats(stats: ET.ElementTree):
 def main():
     args = docopt(__doc__, version="RandomActivityGen v0.1")
 
+    # Setup logging
     logger = logging.getLogger()
-    handler = logging.StreamHandler(sys.stdout)
-    formatter = logging.Formatter('%(levelname)-8s %(message)s')
-    handler.setFormatter(formatter)
-    logger.addHandler(handler)
+    log_stream_handler = logging.StreamHandler(sys.stdout)
+    # Setup file logger, use given or default filename, and overwrite logs on each run
+    log_file_handler = logging.FileHandler(filename=args["--log-file"], mode="w")
+    # Write log-level and indent slightly for message
+    stream_formatter = logging.Formatter('%(levelname)-8s %(message)s')
+    # Use more verbose format for logfile
+    log_file_handler.setFormatter(logging.Formatter("%(asctime)s,%(msecs)d %(levelname)-8s %(message)s"))
+    log_stream_handler.setFormatter(stream_formatter)
+    logger.addHandler(log_stream_handler)
+    # FIXME: logfile should always print in DEBUG
+    logger.addHandler(log_file_handler)
 
     # Parse log-level
     if args["--quiet"]:
@@ -168,7 +177,11 @@ def main():
     verify_stats(stats)
 
     # Scale and octave seems like sane values for the moment
-    apply_network_noise(net, stats, 0.005, 3)
+    logging.info("Writing Perlin noise to population and industry")
+    noise_scale = 0.005
+    noise_octaves = 3
+    logging.debug(f"Perlin noise using scale: {noise_scale}, octaves: {noise_octaves}")
+    apply_network_noise(net, stats, noise_scale, noise_octaves)
 
     logging.info(f"Setting up {int(args['--gates.count'])} city gates ")
     setup_city_gates(net, stats, int(args["--gates.count"]))
