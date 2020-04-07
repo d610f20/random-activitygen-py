@@ -1,6 +1,7 @@
-"""Usage: randomActivityGen.py --net-file=FILE --stat-file=FILE --output-file=FILE [--centre=args] [--gates.count=N] [--schools.count=N]
-[--schools.ratio=F] [--schools.stepsize=F] [--schools.open=args] [--schools.close=args]  [--schools.begin-age=args]
-[--schools.end-age=args] [--schools.capacity=args] [--display]
+"""Usage: randomActivityGen.py --net-file=FILE --stat-file=FILE --output-file=FILE [--centre.pos=args]
+    [--centre.pop-weight=F] [--centre.work-weight=F] [--gates.count=N] [--schools.count=N] [--schools.ratio=F]
+    [--schools.stepsize=F] [--schools.open=args] [--schools.close=args]  [--schools.begin-age=args]
+    [--schools.end-age=args] [--schools.capacity=args] [--display]
 
 Input Options:
     -n, --net-file FILE         Input road network file to create activity for
@@ -10,7 +11,9 @@ Output Options:
     -o, --output-file FILE      Write modified statistics to FILE
 
 Other Options:
-    --centre args               The coordinates for the city's centre, e.g. "300,500" or "auto" [default: auto]
+    --centre.pos args           The coordinates for the city's centre, e.g. "300,500" or "auto" [default: auto]
+    --centre.pop-weight F       The increase in population near the city center [default: 0.8]
+    --centre.work-weight F      The increase in work places near the city center [default: 0.1]
     --gates.count N             Number of city gates in the city [default: 4]
     --schools.count N           Number of schools in the city, if not used, number of schools is based on population [default: auto]
     --schools.ratio F           Number of schools per 1000 inhabitants [default: 0.2]
@@ -230,10 +233,10 @@ def main():
     stats = ET.parse(args["--stat-file"])
     verify_stats(stats)
 
-    centre = find_city_centre(net) if args["--centre"] == "auto" else tuple(map(int, args["--centre"].split(",")))
+    centre = find_city_centre(net) if args["--centre.pos"] == "auto" else tuple(map(int, args["--centre.pos"].split(",")))
 
     # Populate network with street data
-    apply_network_noise(net, stats, centre)
+    apply_network_noise(net, stats, centre, float(args["--centre.pop-weight"]), float(args["--centre.work-weight"]))
 
     setup_city_gates(net, stats, int(args["--gates.count"]))
 

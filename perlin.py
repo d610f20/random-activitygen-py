@@ -67,7 +67,7 @@ def get_population_number(edge: sumolib.net.edge.Edge, base: int, centre,
             1 - (distance((x, y), centre) / radius)) * centre_weight
 
 
-def apply_network_noise(net: sumolib.net.Net, xml: ElementTree, centre: Tuple[float, float]):
+def apply_network_noise(net: sumolib.net.Net, xml: ElementTree, centre: Tuple[float, float], centre_pop_weight: float, centre_work_weight: float):
     """
     Calculate and apply Perlin noise in [0:1] range for each street for population and industry
     :param net: the SUMO network
@@ -93,9 +93,9 @@ def apply_network_noise(net: sumolib.net.Net, xml: ElementTree, centre: Tuple[fl
         if eid not in known_streets:
             # This edge is missing a street entry. Find population and industry for this edge
             population = get_population_number(edge=edge, base=POPULATION_BASE, scale=noise_scale, octaves=3,
-                                               centre=centre, radius=radius, centre_weight=0.8)
+                                               centre=centre, radius=radius, centre_weight=centre_pop_weight)
             industry = get_population_number(edge=edge, base=INDUSTRY_BASE, scale=noise_scale, octaves=3,
-                                             centre=centre, radius=radius, centre_weight=0.1)
+                                             centre=centre, radius=radius, centre_weight=centre_work_weight)
 
             ET.SubElement(streets, "street", {
                 "edge": eid,
