@@ -8,6 +8,8 @@ import numpy as np
 from typing import Tuple
 import xml.etree.ElementTree as ET
 
+from docopt import Dict
+
 if 'SUMO_HOME' in os.environ:
     tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
     sys.path.append(tools)
@@ -170,3 +172,39 @@ def position_on_edge(edge: sumolib.net.edge.Edge, pos: int):
     # Add this scaled vector to the start point, to find the correct coord that is at remaining distance from this
     # coord, to coord2
     return coord1[0] + unit_vec_scaled[0], coord1[1] + unit_vec_scaled[1]
+
+
+def setup_logging(args: Dict):
+    """
+    Create a stdout- and file-handler for logging framework.
+    FIXME: logfile should always print in DEBUG, this seems like a larger hurdle, see:
+    https://stackoverflow.com/questions/25187083/python-logging-to-multiple-handlers-at-different-log-levels
+    :return:
+    """
+    logger = logging.getLogger()
+    log_stream_handler = logging.StreamHandler(sys.stdout)
+    # Write log-level and indent slightly for message
+    stream_formatter = logging.Formatter('%(levelname)-8s %(message)s')
+
+    # Setup file logger, use given or default filename, and overwrite logs on each run
+    log_file_handler = logging.FileHandler(filename=args["--log-file"], mode="w")
+    # Use more verbose format for logfile
+    log_file_handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)-8s %(message)s"))
+    log_stream_handler.setFormatter(stream_formatter)
+
+    # Parse log-level
+    if args["--quiet"]:
+        log_level = logging.ERROR
+    elif args["--verbose"]:
+        log_level = logging.DEBUG
+    else:
+        log_level = getattr(logging, str(args["--log-level"]).upper())
+
+    # Set log-levels and add handlers
+    log_file_handler.setLevel(log_level)
+    logger.addHandler(log_stream_handler)
+    logger.setLevel(log_level)
+
+    # FIXME: Following line does not take effect
+    log_file_handler.setLevel(logging.DEBUG)
+    logger.addHandler(log_file_handler)
