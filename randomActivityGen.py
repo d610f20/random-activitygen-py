@@ -1,5 +1,5 @@
 """Usage: randomActivityGen.py --net-file=FILE --stat-file=FILE --output-file=FILE [--gates.count=N] [--display]
-    [--verbose] [--log-level=LEVEL]
+    ([--quiet] | [--verbose] | [--log-level=LEVEL])
 
 Input Options:
     -n, --net-file FILE         Input road network file to create activity for
@@ -12,6 +12,7 @@ Other Options:
     --gates.count N             Number of city gates in the city [default: 4]
     --display                   Displays an image of cities elements and the noise used to generate them.
     --verbose                   Sets log-level to DEBUG
+    --quiet                     Sets log-level to ERROR
     --log-level=<LEVEL>         Explicitly set log-level {DEBUG, INFO, WARN, ERROR, CRITICAL} [default: WARN]
     -h, --help                  Show this screen.
     --version                   Show version.
@@ -22,7 +23,6 @@ import random
 import sys
 import xml.etree.ElementTree as ET
 import logging
-
 import numpy as np
 from docopt import docopt
 
@@ -143,8 +143,15 @@ def main():
     handler.setFormatter(formatter)
     logger.addHandler(handler)
 
-    # Set log-level to verbose if set, otherwise log-level which defaults to WARNING
-    logger.setLevel(logging.DEBUG if args["--verbose"] else getattr(logging, str(args["--log-level"]).upper()))
+    # Parse log-level 
+    if args["--quiet"]:
+        log_level = logging.ERROR
+    elif args["--verbose"]:
+        log_level = logging.DEBUG
+    else:
+        log_level = getattr(logging, str(args["--log-level"]).upper())
+
+    logger.setLevel(log_level)
 
     # Log test
     logger.debug("debug message")
