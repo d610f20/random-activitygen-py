@@ -323,9 +323,9 @@ def main():
     stats.write(args["--output-file"])
 
     if args["--display"]:
-        x_size, y_size = 500, 500
-        logging.info(f"Displaying network as image sized: {x_size} x {y_size}")
-        display_network(net, stats, x_size, y_size, centre)
+        x_max_size, y_max_size = 500, 500
+        logging.info(f"Displaying network as image of max: {x_max_size} x {y_max_size} dimensions")
+        display_network(net, stats, x_max_size, y_max_size, centre)
 
 
 if __name__ == "__main__":
