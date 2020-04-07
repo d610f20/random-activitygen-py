@@ -1,5 +1,7 @@
 import os
 import sys
+from typing import Tuple
+
 import noise
 import numpy as np
 import math
@@ -18,7 +20,7 @@ else:
 import sumolib
 
 
-def display_network(net: sumolib.net.Net, stats: ET.ElementTree, max_width: int, max_height: int, perlin_scale: float = 0.005, octave: int = 3):
+def display_network(net: sumolib.net.Net, stats: ET.ElementTree, max_width: int, max_height: int, centre: Tuple[float, float], perlin_scale: float = 0.005, octave: int = 3):
     """
     :param net: the network to display noisemap for
     :param stats: the stats file describing the network
@@ -29,7 +31,6 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, max_width: int,
     # Basics about the city and its size
     boundary = net.getBoundary()
     city_size = (boundary[2], boundary[3])
-    centre = find_city_centre(net)
     city_radius = radius_of_network(net, centre)
 
     # Determine the size of the picture and scalars for scaling the city to the correct size

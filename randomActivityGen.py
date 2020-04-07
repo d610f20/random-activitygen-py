@@ -1,4 +1,4 @@
-"""Usage: randomActivityGen.py --net-file=FILE --stat-file=FILE --output-file=FILE [--gates.count=N] [--schools.count=N]
+"""Usage: randomActivityGen.py --net-file=FILE --stat-file=FILE --output-file=FILE [--centre=args] [--gates.count=N] [--schools.count=N]
 [--schools.ratio=F] [--schools.stepsize=F] [--schools.open=args] [--schools.close=args]  [--schools.begin-age=args]
 [--schools.end-age=args] [--schools.capacity=args] [--display]
 
@@ -10,6 +10,7 @@ Output Options:
     -o, --output-file FILE      Write modified statistics to FILE
 
 Other Options:
+    --centre args               The coordinates for the city's centre, e.g. "300,500" or "auto" [default: auto]
     --gates.count N             Number of city gates in the city [default: 4]
     --schools.count N           Number of schools in the city, if not used, number of schools is based on population [default: auto]
     --schools.ratio F           Number of schools per 1000 inhabitants [default: 0.2]
@@ -28,6 +29,7 @@ import os
 import random
 import sys
 import xml.etree.ElementTree as ET
+from typing import Tuple
 
 import numpy as np
 from docopt import docopt
@@ -103,7 +105,7 @@ def setup_city_gates(net: sumolib.net.Net, stats: ET.ElementTree, gate_count: in
         })
 
 
-def find_school_edges(net: sumolib.net.Net, num_schools):
+def find_school_edges(net: sumolib.net.Net, num_schools: int , centre: Tuple[float, float]):
     edges = net.getEdges()
 
     # Sort all edges based on their avg coord
@@ -115,7 +117,6 @@ def find_school_edges(net: sumolib.net.Net, num_schools):
 
     # Pick out the one edge with highest perlin noise from each district and return these to later place school on
     school_edges = []
-    centre = find_city_centre(net)
     radius = radius_of_network(net, centre)
     for district in districts:
         district.sort(key=lambda x: get_population_number(x, centre=centre, radius=radius, base=POPULATION_BASE))
@@ -124,7 +125,7 @@ def find_school_edges(net: sumolib.net.Net, num_schools):
     return school_edges
 
 
-def setup_schools(net: sumolib.net.Net, stats: ET.ElementTree, school_count: int or None):
+def setup_schools(net: sumolib.net.Net, stats: ET.ElementTree, school_count: int or None, centre: Tuple[float, float]):
     args = docopt(__doc__, version="RandomActivityGen v0.1")
 
     xml_schools = stats.find('schools')
@@ -159,7 +160,7 @@ def setup_schools(net: sumolib.net.Net, stats: ET.ElementTree, school_count: int
     stepsize = int((float(args["--schools.stepsize"]) * 3600))
 
     # Find edges to place schools on
-    new_school_edges = find_school_edges(net, number_new_schools)
+    new_school_edges = find_school_edges(net, number_new_schools, centre)
 
     # Insert schools, with semi-random parameters
     print("Inserting " + str(len(new_school_edges)) + " new schools")
@@ -229,21 +230,23 @@ def main():
     stats = ET.parse(args["--stat-file"])
     verify_stats(stats)
 
-    # Scale and octave seems like sane values for the moment
-    apply_network_noise(net, stats)
+    centre = find_city_centre(net) if args["--centre"] == "auto" else tuple(map(int, args["--centre"].split(",")))
+
+    # Populate network with street data
+    apply_network_noise(net, stats, centre)
 
     setup_city_gates(net, stats, int(args["--gates.count"]))
 
     if args["--schools.count"] == "auto":
-        setup_schools(net, stats, None)
+        setup_schools(net, stats, None, centre)
     else:
-        setup_schools(net, stats, int(args["--schools.count"]))
+        setup_schools(net, stats, int(args["--schools.count"]), centre)
 
     # Write statistics back
     stats.write(args["--output-file"])
 
     if args["--display"]:
-        display_network(net, stats, 500, 500)
+        display_network(net, stats, 500, 500, centre)
 
 
 if __name__ == "__main__":
