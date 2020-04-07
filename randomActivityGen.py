@@ -109,7 +109,8 @@ def verify_stats(stats: ET.ElementTree):
     """
     city = stats.getroot()
     assert city.tag == "city", "Stat file does not seem to be a valid stat file. The root element is not city"
-    # According to ActivityGen (https://github.com/eclipse/sumo/blob/master/src/activitygen/AGActivityGenHandler.cpp#L124-L161)
+    # According to ActivityGen
+    # (https://github.com/eclipse/sumo/blob/master/src/activitygen/AGActivityGenHandler.cpp#L124-L161)
     # only general::inhabitants and general::households are required. Everything else has default values.
     general = stats.find("general")
     # TODO Maybe guestimate the number of inhabitants and households based on the network's size
@@ -146,16 +147,14 @@ def main():
     # Setup logging
     logger = logging.getLogger()
     log_stream_handler = logging.StreamHandler(sys.stdout)
-    # Setup file logger, use given or default filename, and overwrite logs on each run
-    log_file_handler = logging.FileHandler(filename=args["--log-file"], mode="w")
     # Write log-level and indent slightly for message
     stream_formatter = logging.Formatter('%(levelname)-8s %(message)s')
+
+    # Setup file logger, use given or default filename, and overwrite logs on each run
+    log_file_handler = logging.FileHandler(filename=args["--log-file"], mode="w")
     # Use more verbose format for logfile
-    log_file_handler.setFormatter(logging.Formatter("%(asctime)s,%(msecs)d %(levelname)-8s %(message)s"))
+    log_file_handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)-8s %(message)s"))
     log_stream_handler.setFormatter(stream_formatter)
-    logger.addHandler(log_stream_handler)
-    # FIXME: logfile should always print in DEBUG
-    logger.addHandler(log_file_handler)
 
     # Parse log-level
     if args["--quiet"]:
@@ -165,7 +164,15 @@ def main():
     else:
         log_level = getattr(logging, str(args["--log-level"]).upper())
 
+    # Set log-levels and add handlers
+    log_file_handler.setLevel(log_level)
+    logger.addHandler(log_stream_handler)
     logger.setLevel(log_level)
+
+    # FIXME: logfile should always print in DEBUG, this seems like a larger hurdle:
+    # https://stackoverflow.com/questions/25187083/python-logging-to-multiple-handlers-at-different-log-levels
+    log_file_handler.setLevel(logging.DEBUG)
+    logger.addHandler(log_file_handler)
 
     # Read in SUMO network
     logging.info(f"Reading network from: {args['--net-file']}")
