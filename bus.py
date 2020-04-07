@@ -1,12 +1,12 @@
 import random
-from utility import distance, firstn, apply
+from utility import distance, firstn
 
 
 def _road_point_generator(roads):
     assert len(roads) > 0
 
     # Length of all roads combined
-    total_length = sum(apply(lambda road: road.getLength(), roads))
+    total_length = sum(map(lambda road: road.getLength(), roads))
 
     while True:
         # Select a point on the combined stretch of road

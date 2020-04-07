@@ -185,15 +185,3 @@ def firstn(n, gen):
     """
     for _ in range(0, n):
         yield next(gen)
-
-
-def apply(func, gen):
-    """
-    Modifies each element in generator with a given function
-    """
-    if isinstance(gen, collections.Sequence):
-        # Convert the Sequence to a Generator
-        gen = iter(gen)
-
-    for x in gen:
-        yield func(x)
