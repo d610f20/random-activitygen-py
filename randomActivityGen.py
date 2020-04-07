@@ -166,7 +166,12 @@ def setup_schools(net: sumolib.net.Net, stats: ET.ElementTree, school_count: int
     school_open_latest = int(args["--schools.open"].split(",")[1]) * 3600
     school_close_earliest = int(args["--schools.close"].split(",")[0]) * 3600
     school_close_latest = int(args["--schools.close"].split(",")[1]) * 3600
-    stepsize = int((float(args["--schools.stepsize"]) * 3600))
+    school_stepsize = int((float(args["--schools.stepsize"]) * 3600))
+    logging.debug(f"For school generation using:\n\tschool_open_earliest:\t {school_open_earliest}\n\t"
+                 f"school_open_latest:\t\t {school_open_latest}\n\t"
+                 f"school_close_earliest:\t {school_close_earliest}\n\t"
+                 f"school_close_latest:\t {school_close_latest}\n\t"
+                 f"school_stepsize:\t\t {school_stepsize}")
 
     # Find edges to place schools on
     new_school_edges = find_school_edges(net, number_new_schools)
@@ -179,6 +184,7 @@ def setup_schools(net: sumolib.net.Net, stats: ET.ElementTree, school_count: int
         end_age = random.randint(int(args["--schools.end-age"].split(",")[1]) if begin_age + 1 <= int(
             args["--schools.end-age"].split(",")[1]) else begin_age + 1,
                                  int(args["--schools.end-age"].split(",")[1]))
+        logging.debug(f"Using begin_age: {begin_age}, end_age: {end_age} for school(s)")
 
         ET.SubElement(xml_schools, "school", attrib={
             "edge": str(school.getID()),
@@ -187,8 +193,8 @@ def setup_schools(net: sumolib.net.Net, stats: ET.ElementTree, school_count: int
             "endAge": str(end_age),
             "capacity": str(random.randint(int(args["--schools.capacity"].split(",")[0]),
                                            int(args["--schools.capacity"].split(",")[1]))),
-            "opening": str(random.randrange(school_open_earliest, school_open_latest, stepsize)),
-            "closing": str(random.randrange(school_close_earliest, school_close_latest, stepsize))
+            "opening": str(random.randrange(school_open_earliest, school_open_latest, school_stepsize)),
+            "closing": str(random.randrange(school_close_earliest, school_close_latest, school_stepsize))
         })
 
 
