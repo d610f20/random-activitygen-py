@@ -1,5 +1,5 @@
-"""
-Usage: randomActivityGen.py --net-file=FILE --stat-file=FILE --output-file=FILE [--gates.count=N] [--display]
+"""Usage: randomActivityGen.py --net-file=FILE --stat-file=FILE --output-file=FILE [--gates.count=N] [--display]
+    [--verbose] [--log-level=LEVEL]
 
 Input Options:
     -n, --net-file FILE         Input road network file to create activity for
@@ -11,6 +11,8 @@ Output Options:
 Other Options:
     --gates.count N             Number of city gates in the city [default: 4]
     --display                   Displays an image of cities elements and the noise used to generate them.
+    --verbose                   Sets log-level to DEBUG
+    --log-level=<LEVEL>         Explicitly set log-level {DEBUG, INFO, WARN, ERROR, CRITICAL} [default: WARN]
     -h, --help                  Show this screen.
     --version                   Show version.
 """
@@ -19,6 +21,7 @@ import os
 import random
 import sys
 import xml.etree.ElementTree as ET
+import logging
 
 import numpy as np
 from docopt import docopt
@@ -134,10 +137,27 @@ def verify_stats(stats: ET.ElementTree):
 def main():
     args = docopt(__doc__, version="RandomActivityGen v0.1")
 
+    logger = logging.getLogger()
+    handler = logging.StreamHandler()
+    formatter = logging.Formatter('%(levelname)-8s %(message)s')
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+
+    # Set log-level to verbose if set, otherwise log-level which defaults to WARNING
+    logger.setLevel(logging.DEBUG if args["--verbose"] else getattr(logging, str(args["--log-level"]).upper()))
+
+    # Log test
+    logger.debug("debug message")
+    logger.info("info message")
+    logger.warning("warn message")
+    logger.error("error message")
+    logger.critical("critical message")
+
     # Read in SUMO network
     net = sumolib.net.readNet(args["--net-file"])
 
     # Parse statistics configuration
+    logging.info(f"Parsing stat file: {args['--stat-file']}")
     stats = ET.parse(args["--stat-file"])
     verify_stats(stats)
 
