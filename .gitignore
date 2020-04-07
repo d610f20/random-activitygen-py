@@ -1,3 +1,6 @@
+# Ignore logfile
+randomActivityGen-log.txt
+
 .idea
 out
 __pycache__
