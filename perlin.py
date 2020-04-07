@@ -18,12 +18,8 @@ else:
 
 import sumolib
 
-# The 'noise' lib has good resolution until above 10 mil, but a SIGSEGV is had on values above [-100000, 100000]
-# FIXME: these values result in a noisemap which contains CRT-like lines and patterns. Find better, sane values.
-# POPULATION_BASE = random.randrange(-1000, 1000)
-POPULATION_BASE = 4
-# INDUSTRY_BASE = random.randrange(-1000, 1000)
-INDUSTRY_BASE = 1
+POPULATION_BASE = -1  # Initialized in main
+INDUSTRY_BASE = -1  # Initialized in main
 
 
 def get_edge_pair_centroid(coords: List[Tuple[float, float]]) -> Tuple[float, float]:
@@ -40,46 +36,47 @@ def get_edge_pair_centroid(coords: List[Tuple[float, float]]) -> Tuple[float, fl
 def get_perlin_noise(x: float, y: float, base: int, scale: float = 0.005, octaves: int = 3) -> float:
     """
     The 'noise' lib returns a value in the range of [-1:1]. The noise value is scaled to the range of [0:1].
-    :param base: offset into noisemap
     :param x: the sample point for x
     :param y: the sample point for y
+    :param base: the offset for the 2d slice
     :param scale: the scale to multiply to each coordinate, default is 0.005
     :param octaves: the octaves to use when sampling, default is 3
     :return: a normalised float of the sample in noisemap
     """
-    return (noise.pnoise2(x=x * scale, y=y * scale, octaves=octaves, base=base) + 1) / 2
+    return (noise.pnoise3(x=x * scale, y=y * scale, z=base, octaves=octaves) + 1) / 2
 
 
 def get_population_number(edge: sumolib.net.edge.Edge, base: int, centre,
-                          radius, scale: float = 0.005, octaves: int = 3) -> float:
+                          radius, centre_weight: float = 1.0, scale: float = 0.005, octaves: int = 3) -> float:
     """
     Returns a Perlin simplex noise at centre of given street
     :param base: offset into noisemap
     :param edge: the edge
     :param centre: centre of the city
     :param radius: radius of the city
+    :param centre_weight: how much impact being near the centre has
     :param scale: the scale to multiply to each coordinate, default is 0.005
     :param octaves: the octaves to use when sampling, default is 3
     :return: the scaled noise value as float in [0:1]
     """
     x, y = get_edge_pair_centroid(edge.getShape())
     return get_perlin_noise(x, y, base=base, scale=scale, octaves=octaves) + (
-            1 - (distance((x, y), centre) / radius))
+            1 - (distance((x, y), centre) / radius)) * centre_weight
 
 
-def apply_network_noise(net: sumolib.net.Net, xml: ElementTree, scale: float = 0.005, octaves: int = 3):
+def apply_network_noise(net: sumolib.net.Net, xml: ElementTree):
     """
     Calculate and apply Perlin noise in [0:1] range for each street for population and industry
     :param net: the SUMO network
     :param xml: the statistics XML for the network
-    :param scale: the scale to multiply to each coordinate, default is 0.005
-    :param octaves: the octaves to use when sampling, default is 3
     :return:
     """
     centre = find_city_centre(net)
     logging.debug(f"City centre: {centre}")
     radius = radius_of_network(net, centre)
     logging.debug(f"City radius: {radius:.2f}")
+    noise_scale = 3.5 / radius
+    logging.debug(f"Using noise scale: {noise_scale:.2f}")
 
     streets = xml.find("streets")
     if streets is None:
@@ -92,10 +89,10 @@ def apply_network_noise(net: sumolib.net.Net, xml: ElementTree, scale: float = 0
         eid = edge.getID()
         if eid not in known_streets:
             # This edge is missing a street entry. Find population and industry for this edge
-            population = get_population_number(edge=edge, base=POPULATION_BASE, scale=scale, octaves=octaves,
-                                               centre=centre, radius=radius)
-            industry = get_population_number(edge=edge, base=INDUSTRY_BASE, scale=scale, octaves=octaves,
-                                             centre=centre, radius=radius)
+            population = get_population_number(edge=edge, base=POPULATION_BASE, scale=noise_scale, octaves=3,
+                                               centre=centre, radius=radius, centre_weight=0.8)
+            industry = get_population_number(edge=edge, base=INDUSTRY_BASE, scale=noise_scale, octaves=3,
+                                             centre=centre, radius=radius, centre_weight=0.1)
 
             logging.debug(f"Adding street with eid: {eid},\t population: {population:.4f}, industry: {industry:.4f}")
             ET.SubElement(streets, "street", {

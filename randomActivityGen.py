@@ -1,4 +1,6 @@
-"""Usage: randomActivityGen.py --net-file=FILE --stat-file=FILE --output-file=FILE [--gates.count=N] [--display]
+"""Usage: randomActivityGen.py --net-file=FILE --stat-file=FILE --output-file=FILE [--gates.count=N] [--schools.count=N]
+    [--schools.ratio=F] [--schools.stepsize=F] [--schools.open=args] [--schools.close=args]  [--schools.begin-age=args]
+    [--schools.end-age=args] [--schools.capacity=args] [--display] [--seed=S | --random]
     ([--quiet] | [--verbose] | [--log-level=LEVEL]) [--log-file=FILENAME]
 
 Input Options:
@@ -10,11 +12,21 @@ Output Options:
 
 Other Options:
     --gates.count N             Number of city gates in the city [default: 4]
+    --schools.count N           Number of schools in the city, if not used, number of schools is based on population [default: auto]
+    --schools.ratio F           Number of schools per 1000 inhabitants [default: 0.2]
+    --schools.stepsize F        Stepsize in openening/closing hours, in parts of an hour, e.g 0.25 is every 15 mins [default: 0.25]
+    --schools.open=args         The interval at which the schools opens (24h clock) [default: 7,10]
+    --schools.close=args        The interval at which the schools closes (24h clock) [default: 13,17]
+    --schools.begin-age=args    The range of ages at which students start going to school [default: 6,20]
+    --schools.end-age=args      The range of ages at which students stops going to school [default: 10,30]
+    --schools.capacity=args     The range for capacity in schools [default: 100,500]
     --display                   Displays an image of cities elements and the noise used to generate them.
     --verbose                   Sets log-level to DEBUG
     --quiet                     Sets log-level to ERROR
     --log-level=<LEVEL>         Explicitly set log-level {DEBUG, INFO, WARN, ERROR, CRITICAL} [default: INFO]
     --log-file=<FILENAME>       Set log filename [default: randomActivityGen-log.txt]
+    --seed S                    Initialises the random number generator with the given value S [default: 31415]
+    --random                    Initialises the random number generator with the current system time [default: false]
     -h, --help                  Show this screen.
     --version                   Show version.
 """
@@ -27,7 +39,8 @@ import logging
 import numpy as np
 from docopt import docopt
 
-from perlin import apply_network_noise
+from perlin import apply_network_noise, get_edge_pair_centroid, POPULATION_BASE, get_population_number
+from utility import find_city_centre, radius_of_network
 from render import display_network
 
 if 'SUMO_HOME' in os.environ:
@@ -97,6 +110,85 @@ def setup_city_gates(net: sumolib.net.Net, stats: ET.ElementTree, gate_count: in
             "incoming": str(incoming_traffic),
             "outgoing": str(outgoing_traffic),
             "pos": "0"
+        })
+
+
+def find_school_edges(net: sumolib.net.Net, num_schools):
+    edges = net.getEdges()
+
+    # Sort all edges based on their avg coord
+    edges.sort(key=lambda x: np.mean(get_edge_pair_centroid(x.getShape())))
+
+    # Split edges into n districts, with n being number of schools
+    district_size = int(np.ceil(len(edges) / num_schools))
+    districts = [edges[x:x + district_size] for x in range(0, len(edges), district_size)]
+
+    # Pick out the one edge with highest perlin noise from each district and return these to later place school on
+    school_edges = []
+    centre = find_city_centre(net)
+    radius = radius_of_network(net, centre)
+    for district in districts:
+        district.sort(key=lambda x: get_population_number(x, centre=centre, radius=radius, base=POPULATION_BASE))
+        school_edges.append(district[-1])
+
+    return school_edges
+
+
+def setup_schools(net: sumolib.net.Net, stats: ET.ElementTree, school_count: int or None):
+    args = docopt(__doc__, version="RandomActivityGen v0.1")
+
+    xml_schools = stats.find('schools')
+    if xml_schools is None:
+        xml_schools = ET.SubElement(stats.getroot(), "schools")
+    if school_count is None:
+        # Voodoo parameter, seems to be about the value for a couple of danish cities.
+        # In general one high school, per 5000-7000 inhabitant in a city, so 0.2 pr 1000 inhabitants
+        schools_per_1000_inhabitants = float(args["--schools.ratio"])
+
+        # Calculate default number of schools, based on population if none input parameter
+        xml_general = stats.find('general')
+        inhabitants = xml_general.get('inhabitants')
+        num_schools_default = math.ceil(int(inhabitants) * schools_per_1000_inhabitants / 1000)
+
+        # Number of new schools to be placed
+        number_new_schools = num_schools_default - len(xml_schools.findall("school"))
+    else:
+        # Else place new number of schools as according to input
+        number_new_schools = school_count - len(xml_schools.findall("school"))
+
+    if number_new_schools == 0:
+        return
+    if number_new_schools < 0:
+        print(f"Warning: {school_count} schools was requested, but there are already {len(xml_schools)} defined")
+        return
+
+    school_open_earliest = int(args["--schools.open"].split(",")[0]) * 3600
+    school_open_latest = int(args["--schools.open"].split(",")[1]) * 3600
+    school_close_earliest = int(args["--schools.close"].split(",")[0]) * 3600
+    school_close_latest = int(args["--schools.close"].split(",")[1]) * 3600
+    stepsize = int((float(args["--schools.stepsize"]) * 3600))
+
+    # Find edges to place schools on
+    new_school_edges = find_school_edges(net, number_new_schools)
+
+    # Insert schools, with semi-random parameters
+    logging.info("Inserting " + str(len(new_school_edges)) + " new school(s)")
+    for school in new_school_edges:
+        begin_age = random.randint(int(args["--schools.begin-age"].split(",")[0]),
+                                   int(args["--schools.begin-age"].split(",")[1]))
+        end_age = random.randint(int(args["--schools.end-age"].split(",")[1]) if begin_age + 1 <= int(
+            args["--schools.end-age"].split(",")[1]) else begin_age + 1,
+                                 int(args["--schools.end-age"].split(",")[1]))
+
+        ET.SubElement(xml_schools, "school", attrib={
+            "edge": str(school.getID()),
+            "pos": str(random.randint(0, 100)),
+            "beginAge": str(begin_age),
+            "endAge": str(end_age),
+            "capacity": str(random.randint(int(args["--schools.capacity"].split(",")[0]),
+                                           int(args["--schools.capacity"].split(",")[1]))),
+            "opening": str(random.randrange(school_open_earliest, school_open_latest, stepsize)),
+            "closing": str(random.randrange(school_close_earliest, school_close_latest, stepsize))
         })
 
 
@@ -174,6 +266,17 @@ def main():
     log_file_handler.setLevel(logging.DEBUG)
     logger.addHandler(log_file_handler)
 
+    # Parse random and seed arguments
+    if not args["--random"]:
+        random.seed(args["--seed"])
+    # The 'noise' lib has good resolution until above 10 mil, but a SIGSEGV is had on values above [-100000, 100000]
+    import perlin
+    perlin.POPULATION_BASE = random.randint(0, 65_536)
+    perlin.INDUSTRY_BASE = random.randint(0, 65_536)
+    while perlin.POPULATION_BASE == perlin.INDUSTRY_BASE:
+        perlin.INDUSTRY_BASE = random.randint(0, 65_536)
+    logging.debug(f"Using POPULATION_BASE: {perlin.POPULATION_BASE}, INDUSTRY_BASE: {perlin.INDUSTRY_BASE}")
+
     # Read in SUMO network
     logging.info(f"Reading network from: {args['--net-file']}")
     net = sumolib.net.readNet(args["--net-file"])
@@ -185,13 +288,17 @@ def main():
 
     # Scale and octave seems like sane values for the moment
     logging.info("Writing Perlin noise to population and industry")
-    noise_scale = 0.005
-    noise_octaves = 3
-    logging.debug(f"Perlin noise using scale: {noise_scale}, octaves: {noise_octaves}")
-    apply_network_noise(net, stats, noise_scale, noise_octaves)
+    apply_network_noise(net, stats)
 
     logging.info(f"Setting up {int(args['--gates.count'])} city gates ")
     setup_city_gates(net, stats, int(args["--gates.count"]))
+
+    if args["--schools.count"] == "auto":
+        logging.info("Setting up schools automatically")
+        setup_schools(net, stats, None)
+    else:
+        logging.info(f"Setting up {int(args['--schools.count'])} schools")
+        setup_schools(net, stats, int(args["--schools.count"]))
 
     # Write statistics back
     logging.info(f"Writing statistics file to {args['--output-file']}")
