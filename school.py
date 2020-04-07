@@ -12,7 +12,7 @@ from utility import find_city_centre, radius_of_network, k_means_clusters
 def find_school_edges(net: sumolib.net.Net, num_schools: int, centre: Tuple[float, float]):
     # Use k-means, to split the net into num_schools number of clusters, each containing approx same number of edges
     districts = k_means_clusters(net, num_schools)
-    
+
     school_edges = []
     centre = find_city_centre(net)
     radius = radius_of_network(net, centre)
@@ -70,8 +70,8 @@ def setup_schools(args, net: sumolib.net.Net, stats: ET.ElementTree, school_coun
     for school in new_school_edges:
         begin_age = random.randint(int(args["--schools.begin-age"].split(",")[0]),
                                    int(args["--schools.begin-age"].split(",")[1]))
-        end_age = random.randint(int(args["--schools.end-age"].split(",")[1]) if begin_age + 1 <= int(
-            args["--schools.end-age"].split(",")[1]) else begin_age + 1,
+        end_age = random.randint(int(args["--schools.end-age"].split(",")[0]) if begin_age + 1 <= int(
+            args["--schools.end-age"].split(",")[0]) else begin_age + 1,
                                  int(args["--schools.end-age"].split(",")[1]))
         logging.debug(f"Using begin_age: {begin_age}, end_age: {end_age} for school(s)")
 
