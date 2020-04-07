@@ -1,6 +1,7 @@
-"""Usage: randomActivityGen.py --net-file=FILE --stat-file=FILE --output-file=FILE [--gates.count=N] [--schools.count=N]
+"""
+Usage: randomActivityGen.py --net-file=FILE --stat-file=FILE --output-file=FILE [--gates.count=N] [--schools.count=N]
 [--schools.ratio=F] [--schools.stepsize=F] [--schools.open=args] [--schools.close=args]  [--schools.begin-age=args]
-[--schools.end-age=args] [--schools.capacity=args] [--display]
+[--schools.end-age=args] [--schools.capacity=args] [--display] [--seed=S | --random]
 
 Input Options:
     -n, --net-file FILE         Input road network file to create activity for
@@ -20,6 +21,8 @@ Other Options:
     --schools.end-age=args      The range of ages at which students stops going to school [default: 10,30]
     --schools.capacity=args     The range for capacity in schools [default: 100,500]
     --display                   Displays an image of cities elements and the noise used to generate them.
+    --seed S                    Initialises the random number generator with the given value S [default: 31415]
+    --random                    Initialises the random number generator with the current system time [default: false]
     -h, --help                  Show this screen.
     --version                   Show version.
 """
@@ -221,6 +224,14 @@ def verify_stats(stats: ET.ElementTree):
 
 def main():
     args = docopt(__doc__, version="RandomActivityGen v0.1")
+
+    if not args["--random"]:
+        random.seed(args["--seed"])
+    # The 'noise' lib has good resolution until above 10 mil, but a SIGSEGV is had on values above [-100000, 100000]
+    import perlin
+    perlin.POPULATION_BASE = random.randint(0, 65_536)
+    perlin.INDUSTRY_BASE = random.randint(0, 65_536)
+    while perlin.POPULATION_BASE == perlin.INDUSTRY_BASE: perlin.INDUSTRY_BASE = random.randint(0, 65_536)
 
     # Read in SUMO network
     net = sumolib.net.readNet(args["--net-file"])
