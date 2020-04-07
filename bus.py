@@ -1,5 +1,5 @@
 import random
-from utility import distance, firstn
+from utility import distance, firstn, position_on_edge
 
 
 def _road_point_generator(roads):
@@ -24,20 +24,11 @@ def _road_point_generator(roads):
 
                 # Distance along the road segment
                 remaining = length_sum - distance
-
-                # Vector for the road segment
-                vector = (
-                        to_node[0] - from_node[0],
-                        to_node[1] - from_node[1])
-
-                # Normalized vector used for direction
-                direction = (
-                        vector[0]/road.getLength(),
-                        vector[1]/road.getLength())
+                pos = position_on_edge(road, remaining)
 
                 yield [
-                        from_node[0] + remaining * direction[0],
-                        from_node[1] + remaining * direction[1],
+                        pos[0],
+                        pos[1],
                         road,
                         remaining]
                 found_road = True
@@ -55,7 +46,7 @@ def bus_stop_generator(roads, inner_r, outer_r, k=10, seeds=[]):
     """
     assert inner_r < outer_r
 
-    all_points = set(seeds)
+    all_points = list(seeds)
 
     road_points_gen = _road_point_generator(roads)
     if len(all_points) <= 0:
@@ -96,7 +87,7 @@ def bus_stop_generator(roads, inner_r, outer_r, k=10, seeds=[]):
 
             # A new point was found
             active_points.append(point)
-            all_points.add(tuple(point))
+            all_points.append(tuple(point))
 
             print(point)
 

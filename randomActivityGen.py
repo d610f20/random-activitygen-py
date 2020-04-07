@@ -47,7 +47,7 @@ import logging
 from docopt import docopt
 from school import setup_schools
 from perlin import apply_network_noise
-from utility import find_city_centre, verify_stats, setup_logging
+from utility import find_city_centre, verify_stats, setup_logging, position_on_edge
 from gates import setup_city_gates
 from render import display_network
 from bus import bus_stop_generator
@@ -70,7 +70,24 @@ def setup_bus_stops(net: sumolib.net.Net, stats: ET.ElementTree, min_distance, k
     if bus_stations is None:
         bus_stations = ET.SubElement(city, "busStations")
     else:
-        seed_bus_stops = bus_stations.findall("BusStation")
+        for station in bus_stations.findall("busStation"):
+            assert "edge" in station.attrib, "BusStation isn't placed on an edge"
+            edge_id = station.attrib["edge"]
+            assert "pos" in station.attrib, "BusStation doesn't have a position along the edge"
+            along = float(station.attrib["pos"])
+
+            for edge in edges:
+                if edge.getID() == edge_id:
+                    pos = position_on_edge(edge, along)
+
+                    seed_bus_stops.append([
+                        pos[0],
+                        pos[1],
+                        edge,
+                        along])
+                    break
+            else:
+                print("[warning] BusStation in stat file reference edge that doesn't exist in the road network")
         assert isinstance(seed_bus_stops, list)
 
     for i, busstop in enumerate(bus_stop_generator(edges, min_distance, min_distance*2, k, seeds=seed_bus_stops)):
