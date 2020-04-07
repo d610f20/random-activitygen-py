@@ -10,11 +10,13 @@ from utility import find_city_centre, radius_of_network, k_means_clusters
 
 
 def find_school_edges(net: sumolib.net.Net, num_schools: int, centre: Tuple[float, float]):
-    # Pick out the one edge with highest perlin noise from each district and return these to later place school on
+    # Use k-means, to split the net into num_schools number of clusters, each containing approx same number of edges
+    districts = k_means_clusters(net, num_schools)
+    
     school_edges = []
     centre = find_city_centre(net)
     radius = radius_of_network(net, centre)
-    districts = k_means_clusters(net, num_schools)
+    # Sort each edge in each district based on their noise, and return edge with highest noise from each district
     for district in districts:
         district.sort(key=lambda x: get_population_number(x, centre=centre, radius=radius, base=POPULATION_BASE))
         school_edges.append(district[-1])
