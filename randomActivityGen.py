@@ -1,5 +1,6 @@
-"""Usage: randomActivityGen.py --net-file=FILE --stat-file=FILE --output-file=FILE [--gates.count=N] [--schools.count=N]
-    [--schools.ratio=F] [--schools.stepsize=F] [--schools.open=args] [--schools.close=args]  [--schools.begin-age=args]
+"""Usage: randomActivityGen.py --net-file=FILE --stat-file=FILE --output-file=FILE [--centre.pos=args]
+    [--centre.pop-weight=F] [--centre.work-weight=F] [--gates.count=N] [--schools.count=N] [--schools.ratio=F]
+    [--schools.stepsize=F] [--schools.open=args] [--schools.close=args]  [--schools.begin-age=args]
     [--schools.end-age=args] [--schools.capacity=args] [--display] [--seed=S | --random]
     ([--quiet] | [--verbose] | [--log-level=LEVEL]) [--log-file=FILENAME]
 
@@ -11,10 +12,13 @@ Output Options:
     -o, --output-file FILE      Write modified statistics to FILE
 
 Other Options:
+    --centre.pos args           The coordinates for the city's centre, e.g. "300,500" or "auto" [default: auto]
+    --centre.pop-weight F       The increase in population near the city center [default: 0.8]
+    --centre.work-weight F      The increase in work places near the city center [default: 0.1]
     --gates.count N             Number of city gates in the city [default: 4]
     --schools.count N           Number of schools in the city, if not used, number of schools is based on population [default: auto]
     --schools.ratio F           Number of schools per 1000 inhabitants [default: 0.2]
-    --schools.stepsize F        Stepsize in openening/closing hours, in parts of an hour, e.g 0.25 is every 15 mins [default: 0.25]
+    --schools.stepsize F        Stepsize in opening/closing hours, in parts of an hour, e.g 0.25 is every 15 mins [default: 0.25]
     --schools.open=args         The interval at which the schools opens (24h clock) [default: 7,10]
     --schools.close=args        The interval at which the schools closes (24h clock) [default: 13,17]
     --schools.begin-age=args    The range of ages at which students start going to school [default: 6,20]
@@ -35,7 +39,10 @@ import os
 import random
 import sys
 import xml.etree.ElementTree as ET
+
 import logging
+from typing import Tuple
+
 import numpy as np
 from docopt import docopt
 
@@ -113,7 +120,7 @@ def setup_city_gates(net: sumolib.net.Net, stats: ET.ElementTree, gate_count: in
         })
 
 
-def find_school_edges(net: sumolib.net.Net, num_schools):
+def find_school_edges(net: sumolib.net.Net, num_schools: int, centre: Tuple[float, float]):
     edges = net.getEdges()
 
     # Sort all edges based on their avg coord
@@ -125,7 +132,6 @@ def find_school_edges(net: sumolib.net.Net, num_schools):
 
     # Pick out the one edge with highest perlin noise from each district and return these to later place school on
     school_edges = []
-    centre = find_city_centre(net)
     radius = radius_of_network(net, centre)
     for district in districts:
         district.sort(key=lambda x: get_population_number(x, centre=centre, radius=radius, base=POPULATION_BASE))
@@ -134,7 +140,7 @@ def find_school_edges(net: sumolib.net.Net, num_schools):
     return school_edges
 
 
-def setup_schools(net: sumolib.net.Net, stats: ET.ElementTree, school_count: int or None):
+def setup_schools(net: sumolib.net.Net, stats: ET.ElementTree, school_count: int or None, centre: Tuple[float, float]):
     args = docopt(__doc__, version="RandomActivityGen v0.1")
 
     xml_schools = stats.find('schools')
@@ -168,13 +174,13 @@ def setup_schools(net: sumolib.net.Net, stats: ET.ElementTree, school_count: int
     school_close_latest = int(args["--schools.close"].split(",")[1]) * 3600
     school_stepsize = int((float(args["--schools.stepsize"]) * 3600))
     logging.debug(f"For school generation using:\n\tschool_open_earliest:\t {school_open_earliest}\n\t"
-                 f"school_open_latest:\t\t {school_open_latest}\n\t"
-                 f"school_close_earliest:\t {school_close_earliest}\n\t"
-                 f"school_close_latest:\t {school_close_latest}\n\t"
-                 f"school_stepsize:\t\t {school_stepsize}")
+                  f"school_open_latest:\t\t {school_open_latest}\n\t"
+                  f"school_close_earliest:\t {school_close_earliest}\n\t"
+                  f"school_close_latest:\t {school_close_latest}\n\t"
+                  f"school_stepsize:\t\t {school_stepsize}")
 
     # Find edges to place schools on
-    new_school_edges = find_school_edges(net, number_new_schools)
+    new_school_edges = find_school_edges(net, number_new_schools, centre)
 
     # Insert schools, with semi-random parameters
     logging.info("Inserting " + str(len(new_school_edges)) + " new school(s)")
@@ -292,19 +298,25 @@ def main():
     stats = ET.parse(args["--stat-file"])
     verify_stats(stats)
 
-    # Scale and octave seems like sane values for the moment
     logging.info("Writing Perlin noise to population and industry")
-    apply_network_noise(net, stats)
+    centre = find_city_centre(net) if args["--centre.pos"] == "auto" else tuple(
+        map(int, args["--centre.pos"].split(",")))
+
+    # Populate network with street data
+    logging.debug(f"Using centre: {centre}, "
+                  f"centre.pop-weight: {float(args['--centre.pop-weight'])}, "
+                  f"centre.work-weight: {float(args['--centre.work-weight'])}")
+    apply_network_noise(net, stats, centre, float(args["--centre.pop-weight"]), float(args["--centre.work-weight"]))
 
     logging.info(f"Setting up {int(args['--gates.count'])} city gates ")
     setup_city_gates(net, stats, int(args["--gates.count"]))
 
     if args["--schools.count"] == "auto":
         logging.info("Setting up schools automatically")
-        setup_schools(net, stats, None)
+        setup_schools(net, stats, None, centre)
     else:
         logging.info(f"Setting up {int(args['--schools.count'])} schools")
-        setup_schools(net, stats, int(args["--schools.count"]))
+        setup_schools(net, stats, int(args["--schools.count"]), centre)
 
     # Write statistics back
     logging.info(f"Writing statistics file to {args['--output-file']}")
@@ -313,7 +325,7 @@ def main():
     if args["--display"]:
         x_size, y_size = 500, 500
         logging.info(f"Displaying network as image sized: {x_size} x {y_size}")
-        display_network(net, stats, x_size, y_size)
+        display_network(net, stats, x_size, y_size, centre)
 
 
 if __name__ == "__main__":
