@@ -1,11 +1,11 @@
 import os
 import sys
-from typing import Tuple
 
 import xml.etree.ElementTree as ET
 from PIL import Image, ImageDraw
 
-from perlin import get_perlin_noise, POPULATION_BASE, INDUSTRY_BASE, get_edge_pair_centroid
+from perlin import get_edge_pair_centroid
+from utility import position_on_edge
 
 if 'SUMO_HOME' in os.environ:
     tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
@@ -66,7 +66,7 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, max_width: int,
     for school_xml in stats.find("schools").findall("school"):
         edge = net.getEdge(school_xml.attrib["edge"])
         capacity = int(school_xml.get('capacity'))
-        x, y = get_edge_pair_centroid(edge.getShape())
+        x, y = position_on_edge(edge, int(school_xml.get('pos')))
         x *= width_scale
         y *= height_scale
         r = int(2 + capacity / 175)
