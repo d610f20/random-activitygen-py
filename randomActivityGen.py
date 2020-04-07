@@ -24,7 +24,7 @@ Other Options:
     --schools.begin-age=args    The range of ages at which students start going to school [default: 6,20]
     --schools.end-age=args      The range of ages at which students stops going to school [default: 10,30]
     --schools.capacity=args     The range for capacity in schools [default: 100,500]
-    --bus-stop.distance N       Minimum distance between bus stops [default: 10]
+    --bus-stop.distance N       Minimum distance between bus stops [default: 500]
     --bus-stop.k N              Placement attempts in the poisson-disc algorithm [default: 10]
     --display                   Displays an image of cities elements and the noise used to generate them.
     --verbose                   Sets log-level to DEBUG
