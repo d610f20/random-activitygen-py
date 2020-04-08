@@ -49,7 +49,7 @@ def get_perlin_noise(x: float, y: float, base: int, scale: float = 0.005, octave
 def get_population_number(edge: sumolib.net.edge.Edge, base: int, centre,
                           radius, centre_weight: float = 1.0, scale: float = 0.005, octaves: int = 3) -> float:
     """
-    Returns a Perlin simplex noise at centre of given street
+    Returns a Perlin noise sample at centre of given street
     :param base: offset into noisemap
     :param edge: the edge
     :param centre: centre of the city
@@ -57,11 +57,14 @@ def get_population_number(edge: sumolib.net.edge.Edge, base: int, centre,
     :param centre_weight: how much impact being near the centre has
     :param scale: the scale to multiply to each coordinate, default is 0.005
     :param octaves: the octaves to use when sampling, default is 3
-    :return: the scaled noise value as float in [0:1]
+    :return: the value between [0:1]
     """
     x, y = get_edge_pair_centroid(edge.getShape())
-    return get_perlin_noise(x, y, base=base, scale=scale, octaves=octaves) + (
-            1 - (distance((x, y), centre) / radius)) * centre_weight
+    noise_value = get_perlin_noise(x, y, base=base, scale=scale, octaves=octaves)
+    gradient = (1 - (distance((x, y), centre) / radius)) * centre_weight
+    # Normalise value to [0..1] range by dividing with its max potential value
+    normalised = (noise_value + gradient) / (1 + centre_weight)
+    return normalised
 
 
 def apply_network_noise(net: sumolib.net.Net, xml: ElementTree, centre: Tuple[float, float], centre_pop_weight: float, centre_work_weight: float):
