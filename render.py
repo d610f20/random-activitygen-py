@@ -37,7 +37,7 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, max_width: int,
     height_scale = height / city_size[1]
 
     # Make image and prepare for drawing
-    img = Image.new("RGB", (width, height))
+    img = Image.new("RGB", (width, height), (255, 255, 255))
     draw = ImageDraw.Draw(img)
 
     # Draw streets
@@ -47,8 +47,8 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, max_width: int,
         industry = float(street_xml.attrib["workPosition"])
         x1, y1 = edge.getFromNode().getCoord()
         x2, y2 = edge.getToNode().getCoord()
-        green = int(30 + 225 * population)
-        blue = int(30 + 225 * industry)
+        green = int(255 * (1 - industry))
+        blue = int(255 * (1 - population))
         coords = [x1 * width_scale, y1 * height_scale, x2 * width_scale, y2 * height_scale]
         draw.line(coords, (0, green, blue), int(0.5 + population * 5))
 
@@ -69,7 +69,7 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, max_width: int,
         x *= width_scale
         y *= height_scale
         r = 2
-        draw.ellipse((x - r, y - r, x + r, y + r), fill=(255, 216, 0))
+        draw.ellipse((x - r, y - r, x + r, y + r), fill=(250, 146, 0))
 
     # Draw schools
     for school_xml in stats.find("schools").findall("school"):
