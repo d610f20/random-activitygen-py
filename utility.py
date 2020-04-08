@@ -84,7 +84,7 @@ def verify_stats(stats: ET.ElementTree):
         ET.SubElement(work_hours, "closing", {"hour": "63000", "proportion": "60"})  # 60% at 17.30
 
 
-def position_on_edge(edge: sumolib.net.edge.Edge, pos: int):
+def position_on_edge(edge: sumolib.net.edge.Edge, pos: float):
     """
     :return: coordinate for pos meters from the start of the edge, following any shapes along edge
     """

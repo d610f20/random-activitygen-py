@@ -65,7 +65,8 @@ def setup_city_gates(net: sumolib.net.Net, stats: ET.ElementTree, gate_count: in
         outgoing_traffic = (1 + random.random()) * incoming_lanes
 
         # Add entrance to stats file
-        edge = gate.getOutgoing()[0] if len(gate.getOutgoing()) > 0 else gate.getIncoming()[0]
+        edge, pos = (gate.getOutgoing()[0], 0) if len(gate.getOutgoing()) > 0\
+            else (gate.getIncoming()[0], gate.getIncoming()[0].getLength())
         logging.debug(
             f"Adding entrance to statistics, edge: {edge.getID()}, incoming traffic: {incoming_traffic}, outgoing "
             f"traffic: {outgoing_traffic}")
@@ -73,5 +74,5 @@ def setup_city_gates(net: sumolib.net.Net, stats: ET.ElementTree, gate_count: in
             "edge": edge.getID(),
             "incoming": str(incoming_traffic),
             "outgoing": str(outgoing_traffic),
-            "pos": "0"
+            "pos": str(pos)
         })
