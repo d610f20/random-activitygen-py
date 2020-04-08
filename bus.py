@@ -40,11 +40,13 @@ def _road_point_generator(roads):
             raise AssertionError("Failed to pick a road. A distance beyound the last road must have been erroneously picked: {} (length sum: {}) (total length: {})".format(distance, length_sum, total_length))
 
 
-def bus_stop_generator(roads, inner_r, outer_r, k=10, seeds=[]):
+def bus_stop_generator(roads, inner_r, outer_r, k=10, seeds=None):
     """
     Bus stop placement using the poisson-disc algorithm
     """
     assert inner_r < outer_r
+    if seeds is None:
+        seeds = []
 
     all_points = list(seeds)
 
