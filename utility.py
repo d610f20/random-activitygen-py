@@ -49,7 +49,7 @@ def k_means_clusters(net: sumolib.net.Net, num_clusters: int):
     edges = net.getEdges()
 
     centroid_edges = [get_edge_pair_centroid(edge.getShape()) for edge in edges]
-    centroids = kmeans(centroid_edges, num_clusters, iter=25)
+    centroids = kmeans(np.array(centroid_edges), num_clusters, iter=25)
 
     clusters = [[] for _ in range(num_clusters)]
     # Iterate through each edge, to decide which cluster it belongs to
