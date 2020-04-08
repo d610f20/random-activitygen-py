@@ -1,3 +1,4 @@
 docopt==0.6.2
 numpy==1.18.1
 noise==1.2.2
+pillow
