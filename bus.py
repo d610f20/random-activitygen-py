@@ -55,7 +55,7 @@ def bus_stop_generator(roads, inner_r, outer_r, k=10, seeds=None):
         road = tuple(next(road_points_gen))
         print(road)
         yield road
-        all_points.add(road) # Seed point
+        all_points.append(road) # Seed point
 
     active_points = list(all_points) # Use a list because random.choice require a sequence
 
