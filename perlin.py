@@ -8,7 +8,7 @@ from xml.etree import ElementTree
 import noise
 import numpy as np
 
-from utility import distance, find_city_centre, radius_of_network
+from utility import distance, radius_of_network
 
 if 'SUMO_HOME' in os.environ:
     tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
