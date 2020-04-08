@@ -47,7 +47,8 @@ import numpy as np
 from docopt import docopt
 
 from perlin import apply_network_noise, get_edge_pair_centroid, POPULATION_BASE, get_population_number
-from utility import find_city_centre, radius_of_network, verify_stats, setup_city_gates, setup_logging
+from utility import find_city_centre, radius_of_network, verify_stats, setup_logging
+from gates import setup_city_gates
 from render import display_network
 
 if 'SUMO_HOME' in os.environ:
