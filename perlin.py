@@ -46,12 +46,12 @@ def get_perlin_noise(x: float, y: float, base: int, scale: float = 0.005, octave
     return (noise.pnoise3(x=x * scale, y=y * scale, z=base, octaves=octaves) + 1) / 2
 
 
-def get_population_number(edge: sumolib.net.edge.Edge, base: int, centre,
-                          radius, centre_weight: float = 1.0, scale: float = 0.005, octaves: int = 3) -> float:
+def get_noise_interval(edge: sumolib.net.edge.Edge, base: int, centre,
+                       radius, centre_weight: float = 1.0, scale: float = 0.005, octaves: int = 3) -> float:
     """
-    Returns a Perlin noise sample at centre of given street
-    :param base: offset into noisemap
+    Returns a normalised Perlin noise sample at centre of given edge
     :param edge: the edge
+    :param base: offset into noisemap
     :param centre: centre of the city
     :param radius: radius of the city
     :param centre_weight: how much impact being near the centre has
@@ -63,16 +63,18 @@ def get_population_number(edge: sumolib.net.edge.Edge, base: int, centre,
     noise_value = get_perlin_noise(x, y, base=base, scale=scale, octaves=octaves)
     gradient = (1 - (distance((x, y), centre) / radius)) * centre_weight
     # Normalise value to [0..1] range by dividing with its max potential value
-    normalised = (noise_value + gradient) / (1 + centre_weight)
-    return normalised
+    return (noise_value + gradient) / (1 + centre_weight)
 
 
-def apply_network_noise(net: sumolib.net.Net, xml: ElementTree, centre: Tuple[float, float], centre_pop_weight: float, centre_work_weight: float):
+def apply_network_noise(net: sumolib.net.Net, xml: ElementTree, centre: Tuple[float, float], centre_pop_weight: float,
+                        centre_work_weight: float):
     """
     Calculate and apply Perlin noise in [0:1] range for each street for population and industry
     :param net: the SUMO network
     :param xml: the statistics XML for the network
     :param centre: the city's centre/downtown
+    :param centre_pop_weight: how much impact being near the centre has for population
+    :param centre_work_weight: how much impact being near the centre has for industry
     :return:
     """
     # Calculate and apply Perlin noise for all edges in network to population in statistics
@@ -93,10 +95,10 @@ def apply_network_noise(net: sumolib.net.Net, xml: ElementTree, centre: Tuple[fl
         eid = edge.getID()
         if eid not in known_streets:
             # This edge is missing a street entry. Find population and industry for this edge
-            population = get_population_number(edge=edge, base=POPULATION_BASE, scale=noise_scale, octaves=3,
-                                               centre=centre, radius=radius, centre_weight=centre_pop_weight)
-            industry = get_population_number(edge=edge, base=INDUSTRY_BASE, scale=noise_scale, octaves=3,
-                                             centre=centre, radius=radius, centre_weight=centre_work_weight)
+            population = get_noise_interval(edge=edge, base=POPULATION_BASE, scale=noise_scale, octaves=3,
+                                            centre=centre, radius=radius, centre_weight=centre_pop_weight)
+            industry = get_noise_interval(edge=edge, base=INDUSTRY_BASE, scale=noise_scale, octaves=3,
+                                          centre=centre, radius=radius, centre_weight=centre_work_weight)
 
             logging.debug(f"Adding street with eid: {eid},\t population: {population:.4f}, industry: {industry:.4f}")
             ET.SubElement(streets, "street", {
