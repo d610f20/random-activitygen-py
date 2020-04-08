@@ -44,10 +44,10 @@ import logging
 
 import numpy as np
 from docopt import docopt
-
-from perlin import apply_network_noise
 from school import setup_schools
-from utility import find_city_centre
+from perlin import apply_network_noise, get_edge_pair_centroid, POPULATION_BASE, get_population_number
+from utility import find_city_centre, radius_of_network, verify_stats, setup_logging
+from gates import setup_city_gates
 from render import display_network
 
 if 'SUMO_HOME' in os.environ:
@@ -164,35 +164,7 @@ def verify_stats(stats: ET.ElementTree):
 def main():
     args = docopt(__doc__, version="RandomActivityGen v0.1")
 
-    # Setup logging
-    logger = logging.getLogger()
-    log_stream_handler = logging.StreamHandler(sys.stdout)
-    # Write log-level and indent slightly for message
-    stream_formatter = logging.Formatter('%(levelname)-8s %(message)s')
-
-    # Setup file logger, use given or default filename, and overwrite logs on each run
-    log_file_handler = logging.FileHandler(filename=args["--log-file"], mode="w")
-    # Use more verbose format for logfile
-    log_file_handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)-8s %(message)s"))
-    log_stream_handler.setFormatter(stream_formatter)
-
-    # Parse log-level
-    if args["--quiet"]:
-        log_level = logging.ERROR
-    elif args["--verbose"]:
-        log_level = logging.DEBUG
-    else:
-        log_level = getattr(logging, str(args["--log-level"]).upper())
-
-    # Set log-levels and add handlers
-    log_file_handler.setLevel(log_level)
-    logger.addHandler(log_stream_handler)
-    logger.setLevel(log_level)
-
-    # FIXME: logfile should always print in DEBUG, this seems like a larger hurdle:
-    # https://stackoverflow.com/questions/25187083/python-logging-to-multiple-handlers-at-different-log-levels
-    log_file_handler.setLevel(logging.DEBUG)
-    logger.addHandler(log_file_handler)
+    setup_logging(args)
 
     # Parse random and seed arguments
     if not args["--random"]:
@@ -241,7 +213,7 @@ def main():
     if args["--display"]:
         x_max_size, y_max_size = 500, 500
         logging.info(f"Displaying network as image of max: {x_max_size} x {y_max_size} dimensions")
-        display_network(net, stats, x_max_size, y_max_size, centre)
+        display_network(net, stats, x_max_size, y_max_size)
 
 
 if __name__ == "__main__":
