@@ -53,7 +53,6 @@ def bus_stop_generator(roads, inner_r, outer_r, k=10, seeds=None):
     road_points_gen = _road_point_generator(roads)
     if not all_points:  # Check if all_points is empty
         road = tuple(next(road_points_gen))
-        print(road)
         yield road
         all_points.append(road) # Seed point
 
@@ -90,8 +89,6 @@ def bus_stop_generator(roads, inner_r, outer_r, k=10, seeds=None):
             # A new point was found
             active_points.append(point)
             all_points.append(tuple(point))
-
-            print(point)
 
             yield point
         except StopIteration:
