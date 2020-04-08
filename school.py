@@ -1,8 +1,8 @@
 import math
-import os
-import sys
 import random
 import xml.etree.ElementTree as ET
+import os
+import sys
 import logging
 
 from typing import Tuple

@@ -56,7 +56,7 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, max_width: int,
     for gate_xml in stats.find("cityGates").findall("entrance"):
         edge = net.getEdge(gate_xml.attrib["edge"])
         traffic = max(float(gate_xml.attrib["incoming"]), float(gate_xml.attrib["outgoing"]))
-        x, y = get_edge_pair_centroid(edge.getShape())
+        x, y = position_on_edge(edge, float(gate_xml.attrib["pos"]))
         x *= width_scale
         y *= height_scale
         r = int(2 + traffic / 1.3)
@@ -75,7 +75,7 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, max_width: int,
     for school_xml in stats.find("schools").findall("school"):
         edge = net.getEdge(school_xml.attrib["edge"])
         capacity = int(school_xml.get('capacity'))
-        x, y = position_on_edge(edge, int(school_xml.get('pos')))
+        x, y = position_on_edge(edge, float(school_xml.get('pos')))
         x *= width_scale
         y *= height_scale
         r = int(2 + capacity / 175)
