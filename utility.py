@@ -119,12 +119,15 @@ def position_on_edge(edge: sumolib.net.edge.Edge, pos: float):
     """
     # Go through pair of coords, until meeting an edge, where if we travel through it, we have moved more than pos
     # meters in total
+    coord1, coord2 = None, None
     remaining_distance = pos
     for coord1, coord2 in (edge.getShape()[i:i + 2] for i in range(0, int(len(edge.getShape())), 2)):
         if 0 < remaining_distance - distance(coord1, coord2):
             remaining_distance -= distance(coord1, coord2)
         else:
             break
+
+    assert coord1 is not None and coord2 is not None, "Coordinates was none, cannot get position on edge"
 
     # Subtract the vector coord1 from vector coord2
     vec = np.subtract([coord2[0], coord2[1]], [coord1[0], coord1[1]])
