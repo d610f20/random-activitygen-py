@@ -16,14 +16,11 @@ def _road_point_generator(roads):
         length_sum = 0.0
         found_road = False
         for road in roads:
-            from_node = road.getFromNode().getCoord()
-            to_node = road.getToNode().getCoord()
-
             if (length_sum + road.getLength()) >= distance:
                 # Compute the exact point on the selected road
 
                 # Distance along the road segment
-                remaining = length_sum - distance
+                remaining = distance - length_sum
                 pos = position_on_edge(road, remaining)
 
                 yield [

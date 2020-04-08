@@ -68,7 +68,7 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, max_width: int,
         x, y = position_on_edge(edge, float(stop_xml.attrib["pos"]))
         x *= width_scale
         y *= height_scale
-        r = 3
+        r = 2
         draw.ellipse((x - r, y - r, x + r, y + r), fill=(255, 216, 0))
 
     # Draw schools
