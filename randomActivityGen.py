@@ -1,7 +1,7 @@
 """Usage: randomActivityGen.py --net-file=FILE --stat-file=FILE --output-file=FILE [--centre.pos=args]
     [--centre.pop-weight=F] [--centre.work-weight=F] [--gates.count=N] [--schools.count=N] [--schools.ratio=F]
     [--schools.stepsize=F] [--schools.open=args] [--schools.close=args]  [--schools.begin-age=args]
-    [--schools.end-age=args] [--schools.capacity=args] [--display] [--seed=S | --random]
+    [--schools.end-age=args] [--schools.capacity=args] [--bus-stop.distance=N] [--bus-stop.k=N] [--display] [--seed=S | --random]
     ([--quiet] | [--verbose] | [--log-level=LEVEL]) [--log-file=FILENAME]
 
 Input Options:
@@ -24,6 +24,8 @@ Other Options:
     --schools.begin-age=args    The range of ages at which students start going to school [default: 6,20]
     --schools.end-age=args      The range of ages at which students stops going to school [default: 10,30]
     --schools.capacity=args     The range for capacity in schools [default: 100,500]
+    --bus-stop.distance N       Minimum distance between bus stops [default: 500]
+    --bus-stop.k N              Placement attempts in the poisson-disc algorithm [default: 10]
     --display                   Displays an image of cities elements and the noise used to generate them.
     --verbose                   Sets log-level to DEBUG
     --quiet                     Sets log-level to ERROR
@@ -45,9 +47,10 @@ import logging
 from docopt import docopt
 from school import setup_schools
 from perlin import apply_network_noise
-from utility import find_city_centre, verify_stats, setup_logging
+from utility import find_city_centre, verify_stats, setup_logging, position_on_edge
 from gates import setup_city_gates
 from render import display_network
+from bus import bus_stop_generator
 
 if 'SUMO_HOME' in os.environ:
     tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
@@ -56,6 +59,44 @@ else:
     sys.exit("Please declare environment variable 'SUMO_HOME' to use sumolib")
 
 import sumolib
+
+
+def setup_bus_stops(net: sumolib.net.Net, stats: ET.ElementTree, min_distance, k):
+    edges = net.getEdges()
+
+    city = stats.getroot()
+    bus_stations = city.find("busStations")
+    seed_bus_stops = []
+    if bus_stations is None:
+        bus_stations = ET.SubElement(city, "busStations")
+    else:
+        for station in bus_stations.findall("busStation"):
+            assert "edge" in station.attrib, "BusStation isn't placed on an edge"
+            edge_id = station.attrib["edge"]
+            assert "pos" in station.attrib, "BusStation doesn't have a position along the edge"
+            along = float(station.attrib["pos"])
+
+            edge = net.getEdge(edge_id)
+            if edge is None:
+                logging.warning("BusStation in stat file reference edge (id=\"{}\") that doesn't exist in the road network".format(edge_id))
+                continue
+
+            pos = position_on_edge(edge, along)
+
+            seed_bus_stops.append([
+                pos[0],
+                pos[1],
+                edge,
+                along])
+
+    for i, busstop in enumerate(bus_stop_generator(edges, min_distance, min_distance*2, k, seeds=seed_bus_stops)):
+        edge = busstop[2]
+        dist_along = busstop[3]
+        ET.SubElement(bus_stations, "busStation", attrib={
+            "id": str(i),
+            "edge": edge.getID(),
+            "pos": str(dist_along),  # TODO check if this is the distance from the correct end
+        })
 
 
 def main():
@@ -102,6 +143,8 @@ def main():
     else:
         logging.info(f"Setting up {int(args['--schools.count'])} schools")
         setup_schools(args, net, stats, int(args["--schools.count"]), centre)
+
+    setup_bus_stops(net, stats, int(args["--bus-stop.distance"]), int(args["--bus-stop.k"]))
 
     # Write statistics back
     logging.info(f"Writing statistics file to {args['--output-file']}")
