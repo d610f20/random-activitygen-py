@@ -34,7 +34,9 @@ def _road_point_generator(roads):
                 length_sum += road.getLength()
 
         if not found_road:
-            raise AssertionError("Failed to pick a road. A distance beyound the last road must have been erroneously picked: {} (length sum: {}) (total length: {})".format(distance, length_sum, total_length))
+            raise AssertionError("Failed to pick a road. A distance beyond the last road must have been erroneously "
+                                 "picked: {} (length sum: {}) (total length: {})".format(distance, length_sum,
+                                                                                         total_length))
 
 
 def bus_stop_generator(roads, inner_r, outer_r, k=10, seeds=None):
