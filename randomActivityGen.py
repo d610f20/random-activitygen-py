@@ -89,8 +89,6 @@ def setup_bus_stops(net: sumolib.net.Net, stats: ET.ElementTree, min_distance, k
                 edge,
                 along])
 
-        assert isinstance(seed_bus_stops, list)
-
     for i, busstop in enumerate(bus_stop_generator(edges, min_distance, min_distance*2, k, seeds=seed_bus_stops)):
         edge = busstop[2]
         dist_along = busstop[3]
