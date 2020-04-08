@@ -81,4 +81,26 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, max_width: int,
         r = int(2 + capacity / 175)
         draw.ellipse((x - r, y - r, x + r, y + r), fill=(255, 0, 216))
 
+    # Draw distance legend
+    meters = find_dist_legend_size(max(city_size))
+    pixels = int(meters * width_scale)
+    draw.line([2, height - 3, 2 + pixels, height - 3], (0, 0, 0), 1)
+    draw.line([2, height, 2, height - 5], (0, 0, 0), 1)
+    draw.line([2 + pixels, height, 2 + pixels, height - 5], (0, 0, 0), 1)
+    draw.text([6, height - 18], f"{meters} m", (0, 0, 0))
+
     img.show()
+
+
+def find_dist_legend_size(real_size, frac: float = 0.2):
+    """
+    Returns a nice number that closely matches the fraction of the real size
+    """
+    scales = [1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 7.5]
+    meters = 10
+    while meters < real_size * frac:
+        for s in scales:
+            if meters * s > real_size * frac:
+                return int(meters * s)
+        meters *= 10
+    return meters
