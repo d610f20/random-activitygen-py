@@ -62,6 +62,15 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, max_width: int,
         r = int(2 + traffic / 1.3)
         draw.ellipse((x - r, y - r, x + r, y + r), fill=(255, 0, 0))
 
+    # Draw bus stops
+    for stop_xml in stats.find("busStations").findall("busStation"):
+        edge = net.getEdge(stop_xml.attrib["edge"])
+        x, y = position_on_edge(edge, float(stop_xml.attrib["pos"]))
+        x *= width_scale
+        y *= height_scale
+        r = 2
+        draw.ellipse((x - r, y - r, x + r, y + r), fill=(255, 216, 0))
+
     # Draw schools
     for school_xml in stats.find("schools").findall("school"):
         edge = net.getEdge(school_xml.attrib["edge"])
@@ -70,6 +79,6 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, max_width: int,
         x *= width_scale
         y *= height_scale
         r = int(2 + capacity / 175)
-        draw.ellipse((x - r, y - r, x + r, y + r), fill=(255, 216, 0))
+        draw.ellipse((x - r, y - r, x + r, y + r), fill=(255, 0, 216))
 
     img.show()

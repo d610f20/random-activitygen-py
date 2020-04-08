@@ -3,6 +3,11 @@ import random
 import xml.etree.ElementTree as ET
 import os
 import sys
+import logging
+
+from typing import Tuple
+from perlin import POPULATION_BASE, get_population_number
+from utility import find_city_centre, radius_of_network, k_means_clusters
 
 if 'SUMO_HOME' in os.environ:
     tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
@@ -11,11 +16,6 @@ else:
     sys.exit("Please declare environment variable 'SUMO_HOME' to use sumolib")
 
 import sumolib
-import logging
-
-from typing import Tuple
-from perlin import POPULATION_BASE, get_population_number
-from utility import find_city_centre, radius_of_network, k_means_clusters
 
 
 def find_school_edges(net: sumolib.net.Net, num_schools: int, centre: Tuple[float, float]):
