@@ -53,10 +53,10 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, max_width: int,
         industry = float(street_xml.attrib["workPosition"])
         x1, y1 = edge.getFromNode().getCoord()
         x2, y2 = edge.getToNode().getCoord()
-        green = int(min(max(0, population * 190 - 30), 255))
-        blue = int(min(max(0, industry * 255 - 20), 255))
-        draw.line([x1 * width_scale, y1 * height_scale, x2 * width_scale, y2 * height_scale], (0, green, blue),
-                  int(0.5 + population * 4))
+        green = int(30 + 225 * population)
+        blue = int(30 + 225 * industry)
+        coords = [x1 * width_scale, y1 * height_scale, x2 * width_scale, y2 * height_scale]
+        draw.line(coords, (0, green, blue), int(0.5 + population * 5))
 
     # Draw city gates
     for gate_xml in stats.find("cityGates").findall("entrance"):
