@@ -49,7 +49,7 @@ def bus_stop_generator(roads, inner_r, outer_r, k=10, seeds=[]):
     all_points = list(seeds)
 
     road_points_gen = _road_point_generator(roads)
-    if len(all_points) <= 0:
+    if not all_points:  # Check if all_points is empty
         road = tuple(next(road_points_gen))
         print(road)
         yield road
