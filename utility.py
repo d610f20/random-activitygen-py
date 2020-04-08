@@ -4,13 +4,10 @@ import sys
 
 import numpy as np
 from typing import Tuple
-import collections
 
 from scipy.cluster.vq import kmeans
 
 import xml.etree.ElementTree as ET
-
-from docopt import Dict
 
 if 'SUMO_HOME' in os.environ:
     tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
@@ -143,7 +140,7 @@ def position_on_edge(edge: sumolib.net.edge.Edge, pos: float):
     return coord1[0] + unit_vec_scaled[0], coord1[1] + unit_vec_scaled[1]
 
 
-def setup_logging(args: Dict):
+def setup_logging(args: dict):
     """
     Create a stdout- and file-handler for logging framework.
     FIXME: logfile should always print in DEBUG, this seems like a larger hurdle, see:
