@@ -19,11 +19,14 @@ def _road_point_generator(roads):
             from_node = road.getFromNode().getCoord()
             to_node = road.getToNode().getCoord()
 
-            if (length_sum + road.getLength()) >= distance:
+            length_sum += road.getLength()
+
+            if length_sum >= distance:
                 # Compute the exact point on the selected road
 
                 # Distance along the road segment
                 remaining = length_sum - distance
+                assert remaining >= 0.0
                 pos = position_on_edge(road, remaining)
 
                 yield [
@@ -33,8 +36,6 @@ def _road_point_generator(roads):
                         remaining]
                 found_road = True
                 break
-            else:
-                length_sum += road.getLength()
 
         if not found_road:
             raise AssertionError("Failed to pick a road. A distance beyound the last road must have been erroneously picked: {} (length sum: {}) (total length: {})".format(distance, length_sum, total_length))
