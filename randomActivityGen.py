@@ -76,18 +76,19 @@ def setup_bus_stops(net: sumolib.net.Net, stats: ET.ElementTree, min_distance, k
             assert "pos" in station.attrib, "BusStation doesn't have a position along the edge"
             along = float(station.attrib["pos"])
 
-            for edge in edges:
-                if edge.getID() == edge_id:
-                    pos = position_on_edge(edge, along)
-
-                    seed_bus_stops.append([
-                        pos[0],
-                        pos[1],
-                        edge,
-                        along])
-                    break
-            else:
+            edge = net.getEdge(edge_id)
+            if edge is None:
                 print("[warning] BusStation in stat file reference edge that doesn't exist in the road network")
+                continue
+
+            pos = position_on_edge(edge, along)
+
+            seed_bus_stops.append([
+                pos[0],
+                pos[1],
+                edge,
+                along])
+
         assert isinstance(seed_bus_stops, list)
 
     for i, busstop in enumerate(bus_stop_generator(edges, min_distance, min_distance*2, k, seeds=seed_bus_stops)):
