@@ -9,7 +9,7 @@ import xml.etree.ElementTree as ET
 from PIL import Image, ImageOps, ImageChops, ImageDraw
 
 from perlin import get_perlin_noise, POPULATION_BASE, INDUSTRY_BASE, get_edge_pair_centroid
-from utility import find_city_centre, radius_of_network, distance
+from utility import find_city_centre, radius_of_network, distance, position_on_edge
 
 if 'SUMO_HOME' in os.environ:
     tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
@@ -20,7 +20,8 @@ else:
 import sumolib
 
 
-def display_network(net: sumolib.net.Net, stats: ET.ElementTree, max_width: int, max_height: int, centre: Tuple[float, float], perlin_scale: float = 0.005, octave: int = 3):
+def display_network(net: sumolib.net.Net, stats: ET.ElementTree, max_width: int, max_height: int,
+                    centre: Tuple[float, float], perlin_scale: float = 0.005, octave: int = 3):
     """
     :param net: the network to display noisemap for
     :param stats: the stats file describing the network
@@ -36,7 +37,8 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, max_width: int,
     # Determine the size of the picture and scalars for scaling the city to the correct size
     # We might have a very wide city. In this case we want to produce a wide image
     width_height_relation = city_size[1] / city_size[0]
-    width, height = (max_width, int(max_height * width_height_relation)) if city_size[0] > city_size[1] else (int(max_width / width_height_relation), max_height)
+    width, height = (max_width, int(max_height * width_height_relation)) if city_size[0] > city_size[1] else (
+    int(max_width / width_height_relation), max_height)
     width_scale = width / city_size[0]
     height_scale = height / city_size[1]
 
@@ -53,7 +55,8 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, max_width: int,
         x2, y2 = edge.getToNode().getCoord()
         green = int(30 + 225 * population)
         blue = int(30 + 225 * industry)
-        draw.line([x1 * width_scale, y1 * height_scale, x2 * width_scale, y2 * height_scale], (0, green, blue), int(0.5 + population * 5))
+        coords = [x1 * width_scale, y1 * height_scale, x2 * width_scale, y2 * height_scale]
+        draw.line(coords, (0, green, blue), int(0.5 + population * 5))
 
     # Draw city gates
     for gate_xml in stats.find("cityGates").findall("entrance"):
@@ -63,13 +66,13 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, max_width: int,
         x *= width_scale
         y *= height_scale
         r = int(2 + traffic / 1.3)
-        draw.ellipse((x-r, y-r, x+r, y+r), fill=(255, 0, 0))
+        draw.ellipse((x - r, y - r, x + r, y + r), fill=(255, 0, 0))
 
     # Draw schools
     for school_xml in stats.find("schools").findall("school"):
         edge = net.getEdge(school_xml.attrib["edge"])
         capacity = int(school_xml.get('capacity'))
-        x, y = get_edge_pair_centroid(edge.getShape())
+        x, y = position_on_edge(edge, int(school_xml.get('pos')))
         x *= width_scale
         y *= height_scale
         r = int(2 + capacity / 175)

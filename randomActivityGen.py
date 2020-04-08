@@ -2,6 +2,7 @@
     [--centre.pop-weight=F] [--centre.work-weight=F] [--gates.count=N] [--schools.count=N] [--schools.ratio=F]
     [--schools.stepsize=F] [--schools.open=args] [--schools.close=args]  [--schools.begin-age=args]
     [--schools.end-age=args] [--schools.capacity=args] [--display] [--seed=S | --random]
+    ([--quiet] | [--verbose] | [--log-level=LEVEL]) [--log-file=FILENAME]
 
 Input Options:
     -n, --net-file FILE         Input road network file to create activity for
@@ -17,13 +18,17 @@ Other Options:
     --gates.count N             Number of city gates in the city [default: 4]
     --schools.count N           Number of schools in the city, if not used, number of schools is based on population [default: auto]
     --schools.ratio F           Number of schools per 1000 inhabitants [default: 0.2]
-    --schools.stepsize F        Stepsize in openening/closing hours, in parts of an hour, e.g 0.25 is every 15 mins [default: 0.25]
+    --schools.stepsize F        Stepsize in opening/closing hours, in parts of an hour, e.g 0.25 is every 15 mins [default: 0.25]
     --schools.open=args         The interval at which the schools opens (24h clock) [default: 7,10]
     --schools.close=args        The interval at which the schools closes (24h clock) [default: 13,17]
     --schools.begin-age=args    The range of ages at which students start going to school [default: 6,20]
     --schools.end-age=args      The range of ages at which students stops going to school [default: 10,30]
     --schools.capacity=args     The range for capacity in schools [default: 100,500]
     --display                   Displays an image of cities elements and the noise used to generate them.
+    --verbose                   Sets log-level to DEBUG
+    --quiet                     Sets log-level to ERROR
+    --log-level=<LEVEL>         Explicitly set log-level {DEBUG, INFO, WARN, ERROR, CRITICAL} [default: INFO]
+    --log-file=<FILENAME>       Set log filename [default: randomActivityGen-log.txt]
     --seed S                    Initialises the random number generator with the given value S [default: 31415]
     --random                    Initialises the random number generator with the current system time [default: false]
     -h, --help                  Show this screen.
@@ -34,6 +39,8 @@ import os
 import random
 import sys
 import xml.etree.ElementTree as ET
+
+import logging
 from typing import Tuple
 
 import numpy as np
@@ -61,10 +68,10 @@ def setup_city_gates(net: sumolib.net.Net, stats: ET.ElementTree, gate_count: in
     xml_entrances = xml_gates.findall("entrance")
     n = gate_count - len(xml_entrances)
     if n < 0:
-        print(f"Warning: {gate_count} city gate was requested, but there are already {len(xml_entrances)} defined")
+        logging.warning(f"{gate_count} city gate were requested, but there are already {len(xml_entrances)} defined")
     if n <= 0:
         return
-    print(f"Inserting {n} new city gates")
+    logging.info(f"Inserting {n} new city gates")
 
     # Finds all nodes that are dead ends, i.e. nodes that only have one neighbouring node
     # and at least one of the connecting edges is a road (as opposed to path) and allows private vehicles
@@ -102,6 +109,9 @@ def setup_city_gates(net: sumolib.net.Net, stats: ET.ElementTree, gate_count: in
 
         # Add entrance to stats file
         edge = gate.getOutgoing()[0] if len(gate.getOutgoing()) > 0 else gate.getIncoming()[0]
+        logging.debug(
+            f"Adding entrance to statistics, edge: {edge.getID()}, incoming traffic: {incoming_traffic}, outgoing "
+            f"traffic: {outgoing_traffic}")
         ET.SubElement(xml_gates, "entrance", attrib={
             "edge": edge.getID(),
             "incoming": str(incoming_traffic),
@@ -110,7 +120,7 @@ def setup_city_gates(net: sumolib.net.Net, stats: ET.ElementTree, gate_count: in
         })
 
 
-def find_school_edges(net: sumolib.net.Net, num_schools: int , centre: Tuple[float, float]):
+def find_school_edges(net: sumolib.net.Net, num_schools: int, centre: Tuple[float, float]):
     edges = net.getEdges()
 
     # Sort all edges based on their avg coord
@@ -162,28 +172,36 @@ def setup_schools(net: sumolib.net.Net, stats: ET.ElementTree, school_count: int
     school_open_latest = int(args["--schools.open"].split(",")[1]) * 3600
     school_close_earliest = int(args["--schools.close"].split(",")[0]) * 3600
     school_close_latest = int(args["--schools.close"].split(",")[1]) * 3600
-    stepsize = int((float(args["--schools.stepsize"]) * 3600))
+    school_stepsize = int((float(args["--schools.stepsize"]) * 3600))
+    logging.debug(f"For school generation using:\n\tschool_open_earliest:\t {school_open_earliest}\n\t"
+                  f"school_open_latest:\t\t {school_open_latest}\n\t"
+                  f"school_close_earliest:\t {school_close_earliest}\n\t"
+                  f"school_close_latest:\t {school_close_latest}\n\t"
+                  f"school_stepsize:\t\t {school_stepsize}")
 
     # Find edges to place schools on
     new_school_edges = find_school_edges(net, number_new_schools, centre)
 
     # Insert schools, with semi-random parameters
-    print("Inserting " + str(len(new_school_edges)) + " new schools")
+    logging.info("Inserting " + str(len(new_school_edges)) + " new school(s)")
     for school in new_school_edges:
         begin_age = random.randint(int(args["--schools.begin-age"].split(",")[0]),
                                    int(args["--schools.begin-age"].split(",")[1]))
         end_age = random.randint(int(args["--schools.end-age"].split(",")[1]) if begin_age + 1 <= int(
             args["--schools.end-age"].split(",")[1]) else begin_age + 1,
                                  int(args["--schools.end-age"].split(",")[1]))
+        logging.debug(f"Using begin_age: {begin_age}, end_age: {end_age} for school(s)")
 
         ET.SubElement(xml_schools, "school", attrib={
             "edge": str(school.getID()),
-            "pos": str(random.randint(0, 100)),
+            "pos": str(random.randint(0, int(school.getLength()))),
             "beginAge": str(begin_age),
             "endAge": str(end_age),
-            "capacity": str(random.randint(int(args["--schools.capacity"].split(",")[0]), int(args["--schools.capacity"].split(",")[1]))),
-            "opening": str(random.randrange(school_open_earliest, school_open_latest, stepsize)),
-            "closing": str(random.randrange(school_close_earliest, school_close_latest, stepsize))
+            "capacity": str(random.randint(int(args["--schools.capacity"].split(",")[0]),
+                                           int(args["--schools.capacity"].split(",")[1]))),
+
+            "opening": str(random.randrange(school_open_earliest, school_open_latest, school_stepsize)),
+            "closing": str(random.randrange(school_close_earliest, school_close_latest, school_stepsize))
         })
 
 
@@ -196,7 +214,8 @@ def verify_stats(stats: ET.ElementTree):
     """
     city = stats.getroot()
     assert city.tag == "city", "Stat file does not seem to be a valid stat file. The root element is not city"
-    # According to ActivityGen (https://github.com/eclipse/sumo/blob/master/src/activitygen/AGActivityGenHandler.cpp#L124-L161)
+    # According to ActivityGen
+    # (https://github.com/eclipse/sumo/blob/master/src/activitygen/AGActivityGenHandler.cpp#L124-L161)
     # only general::inhabitants and general::households are required. Everything else has default values.
     general = stats.find("general")
     # TODO Maybe guestimate the number of inhabitants and households based on the network's size
@@ -208,6 +227,7 @@ def verify_stats(stats: ET.ElementTree):
     population = city.find("population")
     if population is None:
         # Population is missing, so we add a default population
+        logging.info("Population is missing from statistics, adding a default configuration")
         population = ET.SubElement(city, "population")
         ET.SubElement(population, "bracket", {"beginAge": "0", "endAge": "30", "peopleNbr": "30"})
         ET.SubElement(population, "bracket", {"beginAge": "30", "endAge": "60", "peopleNbr": "40"})
@@ -217,6 +237,7 @@ def verify_stats(stats: ET.ElementTree):
     work_hours = city.find("workHours")
     if work_hours is None:
         # Work hours are missing, so we add some default work hours
+        logging.info("Work hours are missing from statistics, adding a default configuration")
         work_hours = ET.SubElement(city, "workHours")
         ET.SubElement(work_hours, "opening", {"hour": "28800", "proportion": "70"})  # 70% at 8.00
         ET.SubElement(work_hours, "opening", {"hour": "30600", "proportion": "30"})  # 30% at 8.30
@@ -228,38 +249,84 @@ def verify_stats(stats: ET.ElementTree):
 def main():
     args = docopt(__doc__, version="RandomActivityGen v0.1")
 
+    # Setup logging
+    logger = logging.getLogger()
+    log_stream_handler = logging.StreamHandler(sys.stdout)
+    # Write log-level and indent slightly for message
+    stream_formatter = logging.Formatter('%(levelname)-8s %(message)s')
+
+    # Setup file logger, use given or default filename, and overwrite logs on each run
+    log_file_handler = logging.FileHandler(filename=args["--log-file"], mode="w")
+    # Use more verbose format for logfile
+    log_file_handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)-8s %(message)s"))
+    log_stream_handler.setFormatter(stream_formatter)
+
+    # Parse log-level
+    if args["--quiet"]:
+        log_level = logging.ERROR
+    elif args["--verbose"]:
+        log_level = logging.DEBUG
+    else:
+        log_level = getattr(logging, str(args["--log-level"]).upper())
+
+    # Set log-levels and add handlers
+    log_file_handler.setLevel(log_level)
+    logger.addHandler(log_stream_handler)
+    logger.setLevel(log_level)
+
+    # FIXME: logfile should always print in DEBUG, this seems like a larger hurdle:
+    # https://stackoverflow.com/questions/25187083/python-logging-to-multiple-handlers-at-different-log-levels
+    log_file_handler.setLevel(logging.DEBUG)
+    logger.addHandler(log_file_handler)
+
+    # Parse random and seed arguments
     if not args["--random"]:
         random.seed(args["--seed"])
     # The 'noise' lib has good resolution until above 10 mil, but a SIGSEGV is had on values above [-100000, 100000]
     import perlin
     perlin.POPULATION_BASE = random.randint(0, 65_536)
     perlin.INDUSTRY_BASE = random.randint(0, 65_536)
-    while perlin.POPULATION_BASE == perlin.INDUSTRY_BASE: perlin.INDUSTRY_BASE = random.randint(0, 65_536)
+    while perlin.POPULATION_BASE == perlin.INDUSTRY_BASE:
+        perlin.INDUSTRY_BASE = random.randint(0, 65_536)
+    logging.debug(f"Using POPULATION_BASE: {perlin.POPULATION_BASE}, INDUSTRY_BASE: {perlin.INDUSTRY_BASE}")
 
     # Read in SUMO network
+    logging.info(f"Reading network from: {args['--net-file']}")
     net = sumolib.net.readNet(args["--net-file"])
 
     # Parse statistics configuration
+    logging.info(f"Parsing stat file: {args['--stat-file']}")
     stats = ET.parse(args["--stat-file"])
     verify_stats(stats)
 
-    centre = find_city_centre(net) if args["--centre.pos"] == "auto" else tuple(map(int, args["--centre.pos"].split(",")))
+    logging.info("Writing Perlin noise to population and industry")
+    centre = find_city_centre(net) if args["--centre.pos"] == "auto" else tuple(
+        map(int, args["--centre.pos"].split(",")))
 
     # Populate network with street data
+    logging.debug(f"Using centre: {centre}, "
+                  f"centre.pop-weight: {float(args['--centre.pop-weight'])}, "
+                  f"centre.work-weight: {float(args['--centre.work-weight'])}")
     apply_network_noise(net, stats, centre, float(args["--centre.pop-weight"]), float(args["--centre.work-weight"]))
 
+    logging.info(f"Setting up {int(args['--gates.count'])} city gates ")
     setup_city_gates(net, stats, int(args["--gates.count"]))
 
     if args["--schools.count"] == "auto":
+        logging.info("Setting up schools automatically")
         setup_schools(net, stats, None, centre)
     else:
+        logging.info(f"Setting up {int(args['--schools.count'])} schools")
         setup_schools(net, stats, int(args["--schools.count"]), centre)
 
     # Write statistics back
+    logging.info(f"Writing statistics file to {args['--output-file']}")
     stats.write(args["--output-file"])
 
     if args["--display"]:
-        display_network(net, stats, 500, 500, centre)
+        x_max_size, y_max_size = 500, 500
+        logging.info(f"Displaying network as image of max: {x_max_size} x {y_max_size} dimensions")
+        display_network(net, stats, x_max_size, y_max_size, centre)
 
 
 if __name__ == "__main__":
