@@ -45,10 +45,8 @@ def setup_schools(args, net: sumolib.net.Net, stats: ET.ElementTree, school_coun
         # Else place new number of schools as according to input
         number_new_schools = school_count - len(xml_schools.findall("school"))
 
-    if number_new_schools == 0:
-        return
-    if number_new_schools < 0:
-        print(f"Warning: {school_count} schools was requested, but there are already {len(xml_schools)} defined")
+    if number_new_schools <= 0:
+        logging.warning(f"{school_count} schools was requested, but there are already {len(xml_schools)} defined")
         return
 
     school_open_earliest = int(args["--schools.open"].split(",")[0]) * 3600
