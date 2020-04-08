@@ -56,15 +56,15 @@ def k_means_clusters(net: sumolib.net.Net, num_clusters: int):
     for edge in edges:
         # Find the center point of the edge, and set distance to first centroid returned from kmeans
         edge_centroid = get_edge_pair_centroid(edge.getShape())
-        min = distance(edge_centroid, centroids[0][0])
+        minimum = distance(edge_centroid, centroids[0][0])
 
         correct_index = 0
 
         # Iterate though each centroid from k-means, and find the centroid to which the current edge has lowest
         # distance to
         for i, centroid in enumerate(centroids[0]):
-            if distance(edge_centroid, centroid) < min:
-                min = distance(edge_centroid, centroid)
+            if distance(edge_centroid, centroid) < minimum:
+                minimum = distance(edge_centroid, centroid)
                 correct_index = i
 
         clusters[correct_index].append(edge)

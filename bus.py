@@ -24,10 +24,10 @@ def _road_point_generator(roads):
                 pos = position_on_edge(road, remaining)
 
                 yield [
-                        pos[0],
-                        pos[1],
-                        road,
-                        remaining]
+                    pos[0],
+                    pos[1],
+                    road,
+                    remaining]
                 found_road = True
                 break
             else:
@@ -53,9 +53,9 @@ def bus_stop_generator(roads, inner_r, outer_r, k=10, seeds=None):
     if not all_points:  # Check if all_points is empty
         road = tuple(next(road_points_gen))
         yield road
-        all_points.append(road) # Seed point
+        all_points.append(road)  # Seed point
 
-    active_points = list(all_points) # Use a list because random.choice require a sequence
+    active_points = list(all_points)  # Use a list because random.choice require a sequence
 
     def check_dist(p, test_points, limit=inner_r):
         """
@@ -73,15 +73,15 @@ def bus_stop_generator(roads, inner_r, outer_r, k=10, seeds=None):
         center = random.choice(active_points)
         # Limit the search to K points
         gen = firstn(k, filter(
-                lambda point: inner_r <= distance((center[0], center[1]), (point[0], point[1])) <= outer_r,
-                road_points_gen))
+            lambda point: inner_r <= distance((center[0], center[1]), (point[0], point[1])) <= outer_r,
+            road_points_gen))
 
         # Search for candidate point
         try:
             # Search for a point, or raise StopIteration is none can be found
             point = next(filter(
-                    lambda p: not check_dist(p, iter(all_points)),
-                    gen))
+                lambda p: not check_dist(p, iter(all_points)),
+                gen))
 
             assert not check_dist(point, all_points)
 

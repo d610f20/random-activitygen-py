@@ -78,7 +78,8 @@ def setup_bus_stops(net: sumolib.net.Net, stats: ET.ElementTree, min_distance, k
 
             edge = net.getEdge(edge_id)
             if edge is None:
-                logging.warning("BusStation in stat file reference edge (id=\"{}\") that doesn't exist in the road network".format(edge_id))
+                logging.warning("BusStation in stat file reference edge (id=\"{}\") that doesn't exist in the road "
+                                "network".format(edge_id))
                 continue
 
             pos = position_on_edge(edge, along)
@@ -89,7 +90,7 @@ def setup_bus_stops(net: sumolib.net.Net, stats: ET.ElementTree, min_distance, k
                 edge,
                 along])
 
-    for i, busstop in enumerate(bus_stop_generator(edges, min_distance, min_distance*2, k, seeds=seed_bus_stops)):
+    for i, busstop in enumerate(bus_stop_generator(edges, min_distance, min_distance * 2, k, seeds=seed_bus_stops)):
         edge = busstop[2]
         dist_along = busstop[3]
         ET.SubElement(bus_stations, "busStation", attrib={
