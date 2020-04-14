@@ -73,8 +73,7 @@ def bus_stop_generator(roads, inner_r, outer_r, k=10, seeds=None):
         center = random.choice(active_points)
         # Limit the search to K points
         gen = firstn(k, filter(
-            lambda point: inner_r <= distance((center[0], center[1]), (point[0], point[1])) <= outer_r,
-            road_points_gen))
+            lambda point: inner_r <= distance((center[0], center[1]), (point[0], point[1])) <= outer_r, road_points_gen))
 
         # Search for candidate point
         try:

@@ -46,8 +46,8 @@ def get_perlin_noise(x: float, y: float, base: int, scale: float = 0.005, octave
     return (noise.pnoise3(x=x * scale, y=y * scale, z=base, octaves=octaves) + 1) / 2
 
 
-def get_noise_interval(edge: sumolib.net.edge.Edge, base: int, centre,
-                       radius, centre_weight: float = 1.0, scale: float = 0.005, octaves: int = 3) -> float:
+def sample_edge_noise(edge: sumolib.net.edge.Edge, base: int, centre,
+                      radius, centre_weight: float = 1.0, scale: float = 0.005, octaves: int = 3) -> float:
     """
     Returns a normalised Perlin noise sample at centre of given edge
     :param edge: the edge
@@ -95,10 +95,10 @@ def apply_network_noise(net: sumolib.net.Net, xml: ElementTree, centre: Tuple[fl
         eid = edge.getID()
         if eid not in known_streets:
             # This edge is missing a street entry. Find population and industry for this edge
-            population = get_noise_interval(edge=edge, base=POPULATION_BASE, scale=noise_scale, octaves=3,
-                                            centre=centre, radius=radius, centre_weight=centre_pop_weight)
-            industry = get_noise_interval(edge=edge, base=INDUSTRY_BASE, scale=noise_scale, octaves=3,
-                                          centre=centre, radius=radius, centre_weight=centre_work_weight)
+            population = sample_edge_noise(edge=edge, base=POPULATION_BASE, scale=noise_scale, octaves=3,
+                                           centre=centre, radius=radius, centre_weight=centre_pop_weight)
+            industry = sample_edge_noise(edge=edge, base=INDUSTRY_BASE, scale=noise_scale, octaves=3,
+                                         centre=centre, radius=radius, centre_weight=centre_work_weight)
 
             logging.debug(f"Adding street with eid: {eid},\t population: {population:.4f}, industry: {industry:.4f}")
             ET.SubElement(streets, "street", {
