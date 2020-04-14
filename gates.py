@@ -46,12 +46,12 @@ def setup_city_gates(net: sumolib.net.Net, stats: ET.ElementTree, gate_count: in
     tau = math.pi * 2
     base_rad = random.random() * tau
     rads = [(base_rad + i * tau / n) % tau for i in range(0, n)]
-    dirs = [(math.cos(rad), math.sin(rad)) for rad in rads]
+    directions = [(math.cos(rad), math.sin(rad)) for rad in rads]
 
-    for dir in dirs:
+    for direction in directions:
         # Find the dead ends furthest in each direction using the dot product and argmax. Those nodes will be our gates.
         # Duplicates are possible and no problem. That just means there will be more traffic through that gate.
-        gate_index = int(np.argmax([np.dot(node.getCoord(), dir) for node in dead_ends]))
+        gate_index = int(np.argmax([np.dot(node.getCoord(), direction) for node in dead_ends]))
         gate = dead_ends[gate_index]
 
         # Decide proportion of the incoming and outgoing vehicles coming through this gate

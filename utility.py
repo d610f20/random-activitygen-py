@@ -4,13 +4,10 @@ import sys
 
 import numpy as np
 from typing import Tuple
-import collections
 
 from scipy.cluster.vq import kmeans
 
 import xml.etree.ElementTree as ET
-
-from docopt import Dict
 
 if 'SUMO_HOME' in os.environ:
     tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
@@ -52,22 +49,22 @@ def k_means_clusters(net: sumolib.net.Net, num_clusters: int):
     edges = net.getEdges()
 
     centroid_edges = [get_edge_pair_centroid(edge.getShape()) for edge in edges]
-    centroids = kmeans(centroid_edges, num_clusters, iter=25)
+    centroids = kmeans(np.array(centroid_edges), num_clusters, iter=25)
 
     clusters = [[] for _ in range(num_clusters)]
     # Iterate through each edge, to decide which cluster it belongs to
     for edge in edges:
         # Find the center point of the edge, and set distance to first centroid returned from kmeans
         edge_centroid = get_edge_pair_centroid(edge.getShape())
-        min = distance(edge_centroid, centroids[0][0])
+        minimum = distance(edge_centroid, centroids[0][0])
 
         correct_index = 0
 
         # Iterate though each centroid from k-means, and find the centroid to which the current edge has lowest
         # distance to
         for i, centroid in enumerate(centroids[0]):
-            if distance(edge_centroid, centroid) < min:
-                min = distance(edge_centroid, centroid)
+            if distance(edge_centroid, centroid) < minimum:
+                minimum = distance(edge_centroid, centroid)
                 correct_index = i
 
         clusters[correct_index].append(edge)
@@ -122,12 +119,15 @@ def position_on_edge(edge: sumolib.net.edge.Edge, pos: float):
     """
     # Go through pair of coords, until meeting an edge, where if we travel through it, we have moved more than pos
     # meters in total
+    coord1, coord2 = None, None
     remaining_distance = pos
     for coord1, coord2 in (edge.getShape()[i:i + 2] for i in range(0, int(len(edge.getShape())), 2)):
         if 0 < remaining_distance - distance(coord1, coord2):
             remaining_distance -= distance(coord1, coord2)
         else:
             break
+
+    assert coord1 is not None and coord2 is not None, "Coordinates was none, cannot get position on edge"
 
     # Subtract the vector coord1 from vector coord2
     vec = np.subtract([coord2[0], coord2[1]], [coord1[0], coord1[1]])
@@ -143,7 +143,7 @@ def position_on_edge(edge: sumolib.net.edge.Edge, pos: float):
     return coord1[0] + unit_vec_scaled[0], coord1[1] + unit_vec_scaled[1]
 
 
-def setup_logging(args: Dict):
+def setup_logging(args: dict):
     """
     Create a stdout- and file-handler for logging framework.
     FIXME: logfile should always print in DEBUG, this seems like a larger hurdle, see:

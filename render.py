@@ -4,7 +4,6 @@ import sys
 import xml.etree.ElementTree as ET
 from PIL import Image, ImageDraw
 
-from perlin import get_edge_pair_centroid
 from utility import position_on_edge
 
 if 'SUMO_HOME' in os.environ:

@@ -6,7 +6,7 @@ import sys
 import logging
 
 from typing import Tuple
-from perlin import POPULATION_BASE, get_population_number
+from perlin import POPULATION_BASE, sample_edge_noise
 from utility import find_city_centre, radius_of_network, k_means_clusters
 
 if 'SUMO_HOME' in os.environ:
@@ -27,7 +27,7 @@ def find_school_edges(net: sumolib.net.Net, num_schools: int, centre: Tuple[floa
     radius = radius_of_network(net, centre)
     # Sort each edge in each district based on their noise, and return edge with highest noise from each district
     for district in districts:
-        district.sort(key=lambda x: get_population_number(x, centre=centre, radius=radius, base=POPULATION_BASE))
+        district.sort(key=lambda x: sample_edge_noise(x, centre=centre, radius=radius, base=POPULATION_BASE))
         school_edges.append(district[-1])
 
     return school_edges
