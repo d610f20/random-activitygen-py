@@ -121,7 +121,7 @@ def position_on_edge(edge: sumolib.net.edge.Edge, pos: float):
     # meters in total
     coord1, coord2 = None, None
     remaining_distance = pos
-    for coord1, coord2 in (edge.getShape()[i:i + 2] for i in range(0, int(len(edge.getShape())), 2)):
+    for coord1, coord2 in [edge.getShape()[i:i + 2] for i in range(0, int(len(edge.getShape())-1))]:
         if 0 < remaining_distance - distance(coord1, coord2):
             remaining_distance -= distance(coord1, coord2)
         else:
