@@ -94,6 +94,10 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, max_width: int,
     else:
         logging.warning(f"[render] Could not find any schools in statistics")
 
+    if not any([stats.find(x) for x in {"streets", "cityGates", "busStations", "schools"}]):
+        logging.error("[render] No elements found in statistics, cannot display network and features")
+        exit(1)
+
     # Flip image on the horizontal axis and update draw-pointer
     img = img.transpose(FLIP_TOP_BOTTOM)
     draw = ImageDraw.Draw(img)
