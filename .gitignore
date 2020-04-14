@@ -2,7 +2,7 @@
 randomActivityGen-log.txt
 
 # Ignore large network
-!/in/aalborg_metro.net.xml
+/in/aalborg_metro.net.xml
 
 .idea
 out
