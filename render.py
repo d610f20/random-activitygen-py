@@ -81,7 +81,7 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, max_width: int,
     else:
         logging.warning(f"[render] Could not find any bus-stations in statistics")
 
-    # Draw schoolsf
+    # Draw schools
     if stats.find("schools") is not None:
         for school_xml in stats.find("schools").findall("school"):
             edge = net.getEdge(school_xml.attrib["edge"])

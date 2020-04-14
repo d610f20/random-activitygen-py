@@ -152,7 +152,7 @@ def main():
     # Write statistics back
     logging.info(f"Writing statistics file to {args['--output-file']}")
     stats.write(args["--output-file"])
-
+    stats = ET.parse(args["--stat-file"])
     if args["--display"]:
         x_max_size, y_max_size = 1000, 1000
         logging.info(f"Displaying network as image of max: {x_max_size} x {y_max_size} dimensions")
