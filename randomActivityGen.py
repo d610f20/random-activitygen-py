@@ -62,6 +62,7 @@ import sumolib
 
 
 def setup_bus_stops(net: sumolib.net.Net, stats: ET.ElementTree, min_distance, k):
+    logging.debug(f"[bus-stops] Using min_distance: {min_distance}, and k (attempts): {k}")
     edges = net.getEdges()
 
     city = stats.getroot()
@@ -145,6 +146,7 @@ def main():
         logging.info(f"Setting up {int(args['--schools.count'])} schools")
         setup_schools(args, net, stats, int(args["--schools.count"]), centre)
 
+    logging.info(f"Setting up bus-stops")
     setup_bus_stops(net, stats, int(args["--bus-stop.distance"]), int(args["--bus-stop.k"]))
 
     # Write statistics back
