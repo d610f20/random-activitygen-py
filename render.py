@@ -2,7 +2,7 @@ import os
 import sys
 
 import xml.etree.ElementTree as ET
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFont
 from PIL.Image import FLIP_TOP_BOTTOM
 
 from utility import position_on_edge
@@ -16,7 +16,7 @@ else:
 import sumolib
 
 
-def display_network(net: sumolib.net.Net, stats: ET.ElementTree, max_width: int, max_height: int):
+def display_network(net: sumolib.net.Net, stats: ET.ElementTree, centre, args, max_width: int, max_height: int):
     """
     :param net: the network to display noisemap for
     :param stats: the stats file describing the network
@@ -36,9 +36,15 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, max_width: int,
     width_scale = width / city_size[0]
     height_scale = height / city_size[1]
 
+    # Load pretty font FIXME: find more ubiquitous default pretty font and maybe try for both Linux and Win
+    try:
+        font = ImageFont.truetype("/usr/share/fonts/liberation/LiberationMono-Regular.ttf", size=12)
+    except IOError:
+        font = ImageFont.load_default()
+
     # Make image and prepare for drawing
     img = Image.new("RGB", (width, height), (255, 255, 255))
-    draw = ImageDraw.Draw(img)
+    draw = ImageDraw.Draw(img, "RGBA")
 
     # Draw streets
     for street_xml in stats.find("streets").findall("street"):
@@ -81,9 +87,17 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, max_width: int,
         r = int(2 + capacity / 175)
         draw.ellipse((x - r, y - r, x + r, y + r), fill=(255, 0, 216))
 
+    # Draw centre
+    x, y = int(centre[0]) * width_scale, int(centre[1]) * height_scale
+    r = 15
+    draw.ellipse((x - r, y - r, x + r, y + r), fill=(255, 0, 0, 128))
+
     # Flip image on the horizontal axis and update draw-pointer
     img = img.transpose(FLIP_TOP_BOTTOM)
-    draw = ImageDraw.Draw(img)
+    draw = ImageDraw.Draw(img, "RGBA")
+
+    # Draw network name
+    draw.text((2, 2), args['--net-file'], fill="#000000", font=font)
 
     # Draw distance legend
     meters = find_dist_legend_size(max(city_size))
@@ -91,7 +105,42 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, max_width: int,
     draw.line([2, height - 3, 2 + pixels, height - 3], (0, 0, 0), 1)
     draw.line([2, height, 2, height - 5], (0, 0, 0), 1)
     draw.line([2 + pixels, height, 2 + pixels, height - 5], (0, 0, 0), 1)
-    draw.text([6, height - 18], f"{meters} m", (0, 0, 0))
+    draw.text([6, height - 18], f"{meters} m", (0, 0, 0), font=font)
+
+    # Draw colour legend
+    legend_offset = pixels + 15
+
+    class Legend:
+        offset = legend_offset
+        text_height = height - 15
+        icon_height = height - 9
+
+        def __init__(self, offset):
+            text = "Legend:"
+            draw.text((offset, self.text_height), text=text, fill=(0, 0, 0), font=font)
+            self.offset += font.getsize(text)[0] + 10
+
+        def draw_icon(self, colour, text):
+            # Draw box and icon from beginning of offset
+            x_icon, y_icon = self.offset, self.icon_height
+            r_box = 5
+            draw.rectangle((x_icon - r_box, y_icon - r_box, x_icon + r_box, y_icon + r_box), "#ffffff", "#000000")
+
+            r_icon = 2
+            draw.ellipse((x_icon - r_icon, y_icon - r_icon, x_icon + r_icon, y_icon + r_icon), colour)
+
+            # offset by text-width
+            draw.text((self.offset + 10, self.text_height), text, (0, 0, 0), font=font)
+            # Update offset
+            self.offset += font.getsize(text=text)[0] + 20
+
+            # Return self to allow chaining
+            return self
+
+    Legend(legend_offset) \
+        .draw_icon("green", "test") \
+        .draw_icon("blue", "testtesttest") \
+        .draw_icon("red", "testtest")
 
     img.show()
 
