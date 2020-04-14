@@ -133,7 +133,7 @@ def main():
         map(int, args["--centre.pos"].split(",")))
 
     if args["--display-only"]:
-        stats = ET.parse(args["--input-file"])
+        stats = ET.parse(args["--stat-file"])
         x_max_size, y_max_size = 1000, 1000
         logging.info(f"Displaying network as image of max: {x_max_size} x {y_max_size} dimensions")
         display_network(net, stats, centre, args, x_max_size, y_max_size)
