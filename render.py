@@ -96,7 +96,9 @@ def find_dist_legend_size(real_size, frac: float = 0.2):
     """
     Returns a nice number that closely matches the fraction of the real size
     """
+    # A "nice number" is a number equal to s * 10^n where n is an integer and s is one of the scales from this list:
     scales = [1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 7.5]
+    # Iterate n until the nice number is greater than real_size * frac
     meters = 10
     while meters < real_size * frac:
         for s in scales:
