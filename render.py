@@ -36,7 +36,7 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, max_width: int,
     height_scale = height / city_size[1]
 
     # Make image and prepare for drawing
-    img = Image.new("RGB", (width, height))
+    img = Image.new("RGB", (width, height), (255, 255, 255))
     draw = ImageDraw.Draw(img)
 
     # Draw streets
@@ -46,8 +46,8 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, max_width: int,
         industry = float(street_xml.attrib["workPosition"])
         x1, y1 = edge.getFromNode().getCoord()
         x2, y2 = edge.getToNode().getCoord()
-        green = int(30 + 225 * population)
-        blue = int(30 + 225 * industry)
+        green = int(255 * (1 - industry))
+        blue = int(255 * (1 - population))
         coords = [x1 * width_scale, y1 * height_scale, x2 * width_scale, y2 * height_scale]
         draw.line(coords, (0, green, blue), int(0.5 + population * 5))
 
@@ -68,7 +68,7 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, max_width: int,
         x *= width_scale
         y *= height_scale
         r = 2
-        draw.ellipse((x - r, y - r, x + r, y + r), fill=(255, 216, 0))
+        draw.ellipse((x - r, y - r, x + r, y + r), fill=(250, 146, 0))
 
     # Draw schools
     for school_xml in stats.find("schools").findall("school"):
@@ -80,4 +80,28 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, max_width: int,
         r = int(2 + capacity / 175)
         draw.ellipse((x - r, y - r, x + r, y + r), fill=(255, 0, 216))
 
+    # Draw distance legend
+    meters = find_dist_legend_size(max(city_size))
+    pixels = int(meters * width_scale)
+    draw.line([2, height - 3, 2 + pixels, height - 3], (0, 0, 0), 1)
+    draw.line([2, height, 2, height - 5], (0, 0, 0), 1)
+    draw.line([2 + pixels, height, 2 + pixels, height - 5], (0, 0, 0), 1)
+    draw.text([6, height - 18], f"{meters} m", (0, 0, 0))
+
     img.show()
+
+
+def find_dist_legend_size(real_size, frac: float = 0.2):
+    """
+    Returns a nice number that closely matches the fraction of the real size
+    """
+    # A "nice number" is a number equal to s * 10^n where n is an integer and s is one of the scales from this list:
+    scales = [1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 7.5]
+    # Iterate n until the nice number is greater than real_size * frac
+    meters = 10
+    while meters < real_size * frac:
+        for s in scales:
+            if meters * s > real_size * frac:
+                return int(meters * s)
+        meters *= 10
+    return meters
