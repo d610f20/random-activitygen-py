@@ -136,7 +136,7 @@ def main():
                   f"centre.work-weight: {float(args['--centre.work-weight'])}")
     apply_network_noise(net, stats, centre, float(args["--centre.pop-weight"]), float(args["--centre.work-weight"]))
 
-    logging.info(f"Setting up {int(args['--gates.count'])} city gates ")
+    logging.info(f"Setting up {int(args['--gates.count'])} city gates")
     setup_city_gates(net, stats, int(args["--gates.count"]))
 
     if args["--schools.count"] == "auto":
@@ -154,7 +154,7 @@ def main():
     stats.write(args["--output-file"])
 
     if args["--display"]:
-        x_max_size, y_max_size = 500, 500
+        x_max_size, y_max_size = 1000, 1000
         logging.info(f"Displaying network as image of max: {x_max_size} x {y_max_size} dimensions")
         display_network(net, stats, x_max_size, y_max_size)
 
