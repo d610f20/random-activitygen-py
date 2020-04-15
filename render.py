@@ -3,6 +3,7 @@ import sys
 
 import xml.etree.ElementTree as ET
 from PIL import Image, ImageDraw
+from PIL.Image import FLIP_TOP_BOTTOM
 
 from utility import position_on_edge
 
@@ -82,6 +83,10 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, max_size: int):
         y *= height_scale
         r = int(2 + capacity / 175)
         draw.ellipse((x - r, y - r, x + r, y + r), fill=(255, 0, 216))
+
+    # Flip image on the horizontal axis and update draw-pointer
+    img = img.transpose(FLIP_TOP_BOTTOM)
+    draw = ImageDraw.Draw(img)
 
     # Draw distance legend
     meters = find_dist_legend_size(max(city_size))
