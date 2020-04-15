@@ -1,7 +1,7 @@
 import os
 import sys
-
 import xml.etree.ElementTree as ET
+
 from PIL import Image, ImageDraw, ImageFont
 from PIL.Image import FLIP_TOP_BOTTOM
 
@@ -107,43 +107,43 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, centre, args, m
     draw.line([2 + pixels, height, 2 + pixels, height - 5], (0, 0, 0), 1)
     draw.text([6, height - 18], f"{meters} m", (0, 0, 0), font=font)
 
-    # Draw colour legend
-    legend_offset = pixels + 15
-
-    class Legend:
-        def __init__(self, offset, height, draw):
-            self.offset = offset
-            self.icon_height = height - 9
-            self.text_height = height - 15
-            self.draw = draw
-
-            text = "Legend:"
-            draw.text((offset, self.text_height), text=text, fill=(0, 0, 0), font=font)
-            self.offset += font.getsize(text)[0] + 10
-
-        def draw_icon(self, colour, text):
-            # Draw box and icon from beginning of offset
-            x_icon, y_icon = self.offset, self.icon_height
-            r_box = 5
-            self.draw.rectangle((x_icon - r_box, y_icon - r_box, x_icon + r_box, y_icon + r_box), "#ffffff", "#000000")
-
-            r_icon = 2
-            self.draw.ellipse((x_icon - r_icon, y_icon - r_icon, x_icon + r_icon, y_icon + r_icon), colour)
-
-            # offset by text-width
-            self.draw.text((self.offset + 10, self.text_height), text, (0, 0, 0), font=font)
-            # Update offset
-            self.offset += font.getsize(text=text)[0] + 20
-
-            # Return self to allow chaining
-            return self
-
-    Legend(legend_offset) \
-        .draw_icon("green", "test") \
-        .draw_icon("blue", "testtesttest") \
-        .draw_icon("red", "testtest")
+    # Draw colour legend, begin 15px after scale-legend
+    Legend(pixels + 15, height, draw, font) \
+        .draw_legend("green", "test") \
+        .draw_legend("blue", "testtesttest") \
+        .draw_legend("red", "testtest")
 
     img.show()
+
+
+class Legend:
+    def __init__(self, offset, height, draw, font):
+        self.offset = offset
+        self.icon_height = height - 9
+        self.text_height = height - 15
+        self.draw = draw
+        self.font = font
+
+        text = "Legend:"
+        draw.text((offset, self.text_height), text=text, fill=(0, 0, 0), font=self.font)
+        self.offset += font.getsize(text)[0] + 10
+
+    def draw_legend(self, colour, text):
+        # Draw box and icon from beginning of offset
+        x_icon, y_icon = self.offset, self.icon_height
+        r_box = 5
+        self.draw.rectangle((x_icon - r_box, y_icon - r_box, x_icon + r_box, y_icon + r_box), "#ffffff", "#000000")
+
+        r_icon = 2
+        self.draw.ellipse((x_icon - r_icon, y_icon - r_icon, x_icon + r_icon, y_icon + r_icon), colour)
+
+        # offset by text-width
+        self.draw.text((self.offset + 10, self.text_height), text, "#000000", font=self.font)
+        # Update offset
+        self.offset += self.font.getsize(text=text)[0] + 20
+
+        # Return self to allow chaining
+        return self
 
 
 def find_dist_legend_size(real_size, frac: float = 0.2):
