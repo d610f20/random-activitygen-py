@@ -111,11 +111,12 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, centre, args, m
     legend_offset = pixels + 15
 
     class Legend:
-        offset = legend_offset
-        text_height = height - 15
-        icon_height = height - 9
+        def __init__(self, offset, height, draw):
+            self.offset = offset
+            self.icon_height = height - 9
+            self.text_height = height - 15
+            self.draw = draw
 
-        def __init__(self, offset):
             text = "Legend:"
             draw.text((offset, self.text_height), text=text, fill=(0, 0, 0), font=font)
             self.offset += font.getsize(text)[0] + 10
@@ -124,13 +125,13 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, centre, args, m
             # Draw box and icon from beginning of offset
             x_icon, y_icon = self.offset, self.icon_height
             r_box = 5
-            draw.rectangle((x_icon - r_box, y_icon - r_box, x_icon + r_box, y_icon + r_box), "#ffffff", "#000000")
+            self.draw.rectangle((x_icon - r_box, y_icon - r_box, x_icon + r_box, y_icon + r_box), "#ffffff", "#000000")
 
             r_icon = 2
-            draw.ellipse((x_icon - r_icon, y_icon - r_icon, x_icon + r_icon, y_icon + r_icon), colour)
+            self.draw.ellipse((x_icon - r_icon, y_icon - r_icon, x_icon + r_icon, y_icon + r_icon), colour)
 
             # offset by text-width
-            draw.text((self.offset + 10, self.text_height), text, (0, 0, 0), font=font)
+            self.draw.text((self.offset + 10, self.text_height), text, (0, 0, 0), font=font)
             # Update offset
             self.offset += font.getsize(text=text)[0] + 20
 
