@@ -130,10 +130,6 @@ class Legend:
         self.draw = draw
         self.font = font
 
-        text = "Legend:"
-        draw.text((offset, self.text_height), text=text, fill=(0, 0, 0), font=self.font)
-        self.offset += font.getsize(text)[0] + 10
-
     def draw_legend(self, colour, text):
         # Draw box and icon from beginning of offset
         x_icon, y_icon = self.offset, self.icon_height
