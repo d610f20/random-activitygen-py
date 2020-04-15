@@ -15,12 +15,11 @@ else:
 import sumolib
 
 
-def display_network(net: sumolib.net.Net, stats: ET.ElementTree, max_width: int, max_height: int):
+def display_network(net: sumolib.net.Net, stats: ET.ElementTree, max_size: int):
     """
     :param net: the network to display noisemap for
     :param stats: the stats file describing the network
-    :param max_width: maximum width of the resulting image
-    :param max_height: maximum width of the resulting image
+    :param max_size: maximum width/height of the resulting image
     :return:
     """
     # Basics about the city and its size
@@ -30,8 +29,12 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, max_width: int,
     # Determine the size of the picture and scalars for scaling the city to the correct size
     # We might have a very wide city. In this case we want to produce a wide image
     width_height_relation = city_size[1] / city_size[0]
-    width, height = (max_width, int(max_height * width_height_relation)) if city_size[0] > city_size[1] else (
-        int(max_width / width_height_relation), max_height)
+    if city_size[0] > city_size[1]:
+        width = max_size
+        height = int(max_size * width_height_relation)
+    else:
+        width = int(max_size * width_height_relation)
+        height = max_size
     width_scale = width / city_size[0]
     height_scale = height / city_size[1]
 

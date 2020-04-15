@@ -2,7 +2,7 @@
     [--centre.pop-weight=F] [--centre.work-weight=F] [--gates.count=N] [--schools.count=N] [--schools.ratio=F]
     [--schools.stepsize=F] [--schools.open=args] [--schools.close=args]  [--schools.begin-age=args]
     [--schools.end-age=args] [--schools.capacity=args] [--bus-stop.distance=N] [--bus-stop.k=N] [--display]
-    [-x=W] [-y=H] [--seed=S | --random] ([--quiet] | [--verbose] | [--log-level=LEVEL]) [--log-file=FILENAME]
+    [--display.size=N] [--seed=S | --random] ([--quiet] | [--verbose] | [--log-level=LEVEL]) [--log-file=FILENAME]
 
 Input Options:
     -n, --net-file FILE         Input road network file to create activity for
@@ -27,8 +27,7 @@ Other Options:
     --bus-stop.distance N       Minimum distance between bus stops [default: 500]
     --bus-stop.k N              Placement attempts in the poisson-disc algorithm [default: 10]
     --display                   Displays an image of cities elements and the noise used to generate them.
-    -x W                        Max width of image to display [default: 1000]
-    -y H                        Max height of image to display [default: 1000]
+    --display.size N            Set max width and height of image to display to N [default: 800]
     --verbose                   Sets log-level to DEBUG
     --quiet                     Sets log-level to ERROR
     --log-level=<LEVEL>         Explicitly set log-level {DEBUG, INFO, WARN, ERROR, CRITICAL} [default: INFO]
@@ -156,9 +155,9 @@ def main():
     stats.write(args["--output-file"])
 
     if args["--display"]:
-        x_max_size, y_max_size = int(args["-x"]), int(args["-y"])
-        logging.info(f"Displaying network as image of max: {x_max_size} x {y_max_size} dimensions")
-        display_network(net, stats, x_max_size, y_max_size)
+        max_size = int(args["--display.size"])
+        logging.info(f"Displaying network as image of max size {max_size}x{max_size}")
+        display_network(net, stats, max_size)
 
 
 if __name__ == "__main__":
