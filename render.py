@@ -1,6 +1,7 @@
 import os
 import sys
 import xml.etree.ElementTree as ET
+from typing import Tuple
 
 from PIL import Image, ImageDraw, ImageFont
 from PIL.Image import FLIP_TOP_BOTTOM
@@ -114,6 +115,7 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, centre, args, m
 
     # Draw colour legend, begin 15px after scale-legend
     Legend(pixels + 15, height, draw, font) \
+        .draw_gradient(((0, 255, 0), (0, 0, 255)), "Pop. vs work, by intensity") \
         .draw_legend(COLOUR_CENTRE, "Centre") \
         .draw_legend(COLOUR_SCHOOL, "School") \
         .draw_legend(COLOUR_BUS_STOP, "Bus stop") \
@@ -127,7 +129,7 @@ class Legend:
         self.offset = offset
         self.icon_height = height - 9
         self.text_height = height - 15
-        self.draw = draw
+        self.draw: ImageDraw.ImageDraw = draw
         self.font = font
 
     def draw_legend(self, colour, text):
@@ -146,6 +148,40 @@ class Legend:
 
         # Return self to allow chaining
         return self
+
+    def draw_gradient(self, colour: Tuple[Tuple[int, int, int], Tuple[int, int, int]], text):
+        # Define box dimensions
+        h_box = 5
+        w_box = 30
+
+        # draw box
+        self.draw.rectangle((self.offset, self.icon_height - h_box, self.offset + w_box, self.icon_height + h_box),
+                            "#ffffff", "#000000")
+
+        # for element-wise operation on tuples
+        import operator
+
+        for i in range(1, w_box):
+            # calculate left and right colour proportions
+            ratio = i / w_box
+            left = tuple(map(operator.mul, colour[1], (ratio, ratio, ratio)))
+            inv_ratio = 1 - ratio
+            right = tuple(map(operator.mul, colour[0], (inv_ratio, inv_ratio, inv_ratio)))
+            # add colour proportions and write line in gradient
+            line_colour = tuple(map(int, map(operator.add, left, right)))
+            self.write_gradient_line(self.offset + i, self.icon_height, 10, line_colour)
+
+        # draw text
+        self.draw.text((self.offset + w_box + 5, self.text_height), text, "#000000", font=self.font)
+
+        self.offset += self.font.getsize(text=text)[0] + w_box + 15
+        return self
+
+    def write_gradient_line(self, x, y, h, colour):
+        for i in range(1, h):
+            # put alpha level depending on height of line being drawn
+            colour = colour[:3] + (int((1 - (i / h)) * 255),)
+            self.draw.point((x, y + i - h // 2), colour)
 
 
 def find_dist_legend_size(real_size, frac: float = 0.2):
