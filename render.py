@@ -46,6 +46,11 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, centre, args, m
     img = Image.new("RGB", (width, height), (255, 255, 255))
     draw = ImageDraw.Draw(img, "RGBA")
 
+    COLOUR_CITY_GATE = (255, 0, 0)
+    COLOUR_BUS_STOP = (250, 146, 0)
+    COLOUR_SCHOOL = (255, 0, 216)
+    COLOUR_CENTRE = (255, 0, 0, 128)
+
     # Draw streets
     for street_xml in stats.find("streets").findall("street"):
         edge = net.getEdge(street_xml.attrib["edge"])
@@ -66,7 +71,7 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, centre, args, m
         x *= width_scale
         y *= height_scale
         r = int(2 + traffic / 1.3)
-        draw.ellipse((x - r, y - r, x + r, y + r), fill=(255, 0, 0))
+        draw.ellipse((x - r, y - r, x + r, y + r), fill=COLOUR_CITY_GATE)
 
     # Draw bus stops
     for stop_xml in stats.find("busStations").findall("busStation"):
@@ -75,7 +80,7 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, centre, args, m
         x *= width_scale
         y *= height_scale
         r = 2
-        draw.ellipse((x - r, y - r, x + r, y + r), fill=(250, 146, 0))
+        draw.ellipse((x - r, y - r, x + r, y + r), fill=COLOUR_BUS_STOP)
 
     # Draw schools
     for school_xml in stats.find("schools").findall("school"):
@@ -85,12 +90,12 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, centre, args, m
         x *= width_scale
         y *= height_scale
         r = int(2 + capacity / 175)
-        draw.ellipse((x - r, y - r, x + r, y + r), fill=(255, 0, 216))
+        draw.ellipse((x - r, y - r, x + r, y + r), fill=COLOUR_SCHOOL)
 
     # Draw centre
     x, y = int(centre[0]) * width_scale, int(centre[1]) * height_scale
     r = 15
-    draw.ellipse((x - r, y - r, x + r, y + r), fill=(255, 0, 0, 128))
+    draw.ellipse((x - r, y - r, x + r, y + r), fill=COLOUR_CENTRE)
 
     # Flip image on the horizontal axis and update draw-pointer
     img = img.transpose(FLIP_TOP_BOTTOM)
@@ -109,9 +114,10 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, centre, args, m
 
     # Draw colour legend, begin 15px after scale-legend
     Legend(pixels + 15, height, draw, font) \
-        .draw_legend("green", "test") \
-        .draw_legend("blue", "testtesttest") \
-        .draw_legend("red", "testtest")
+        .draw_legend(COLOUR_CENTRE, "Centre") \
+        .draw_legend(COLOUR_SCHOOL, "School") \
+        .draw_legend(COLOUR_BUS_STOP, "Bus stop") \
+        .draw_legend(COLOUR_CITY_GATE, "City gate")
 
     img.show()
 
@@ -134,7 +140,7 @@ class Legend:
         r_box = 5
         self.draw.rectangle((x_icon - r_box, y_icon - r_box, x_icon + r_box, y_icon + r_box), "#ffffff", "#000000")
 
-        r_icon = 2
+        r_icon = 3
         self.draw.ellipse((x_icon - r_icon, y_icon - r_icon, x_icon + r_icon, y_icon + r_icon), colour)
 
         # offset by text-width
