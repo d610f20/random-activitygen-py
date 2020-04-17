@@ -117,10 +117,8 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, centre, args, m
     img = img.transpose(FLIP_TOP_BOTTOM)
     draw = ImageDraw.Draw(img, "RGBA")
 
-    # Draw network name
-    draw.text((2, 2), args['--net-file'], fill="#000000", font=font)
-
     Legend(max_size, height, draw, font) \
+        .draw_network_name(args['--net-file']) \
         .draw_distance_legend(city_size, width_scale) \
         .draw_gradient(((0, 255, 0), (0, 0, 255)), "Pop, work gradient") \
         .draw_legend(COLOUR_CENTRE, "Centre") \
@@ -194,7 +192,6 @@ class Legend:
             self.draw.point((x, y + i), colour)
 
     def draw_distance_legend(self, city_size, width_scale):
-        # Draw distance legend
         meters = find_dist_legend_size(max(city_size))
         self.offset += int(meters * width_scale)
         line_height = self.icon_height + self.r_box // 2
@@ -208,6 +205,10 @@ class Legend:
         self.draw.text([6, self.icon_height - 18], f"{meters} m", (0, 0, 0), font=self.font)
         # add padding
         self.offset += 10
+        return self
+
+    def draw_network_name(self, name):
+        self.draw.text((2, 2), name, fill="#000000", font=self.font)
         return self
 
 
