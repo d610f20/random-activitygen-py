@@ -1,7 +1,7 @@
 """Usage: randomActivityGen.py --net-file=FILE --stat-file=FILE --output-file=FILE [--centre.pos=args]
     [--centre.pop-weight=F] [--centre.work-weight=F] [--gates.count=N] [--schools.count=N] [--schools.ratio=F]
     [--schools.stepsize=F] [--schools.open=args] [--schools.close=args]  [--schools.begin-age=args]
-    [--schools.end-age=args] [--schools.capacity=args] [--bus-stop.distance=N] [--bus-stop.k=N] [--display]
+    [--schools.end-age=args] [--schools.capacity=args] [--bus-stops.count-pr-km2=F] [--display]
     [--display.size=N] [--seed=S | --random] ([--quiet] | [--verbose] | [--log-level=LEVEL]) [--log-file=FILENAME]
 
 Input Options:
@@ -24,8 +24,7 @@ Other Options:
     --schools.begin-age=args    The range of ages at which students start going to school [default: 6,20]
     --schools.end-age=args      The range of ages at which students stops going to school [default: 10,30]
     --schools.capacity=args     The range for capacity in schools [default: 100,500]
-    --bus-stop.distance N       Minimum distance between bus stops [default: 500]
-    --bus-stop.k N              Placement attempts in the poisson-disc algorithm [default: 10]
+    --bus-stops.count-pr-km2 F  The number of bus stops per km^2 [default: 5.0]
     --display                   Displays an image of cities elements and the noise used to generate them.
     --display.size N            Set max width and height of image to display to N [default: 800]
     --verbose                   Sets log-level to DEBUG
@@ -109,7 +108,7 @@ def main():
         setup_schools(args, net, stats, int(args["--schools.count"]), centre)
 
     logging.info(f"Setting up bus-stops")
-    setup_bus_stops(net, stats, 5, centre)
+    setup_bus_stops(net, stats, float(args["--bus-stops.count-pr-km2"]), centre)
 
     # Write statistics back
     logging.info(f"Writing statistics file to {args['--output-file']}")
