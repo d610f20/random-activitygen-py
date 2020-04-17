@@ -1,3 +1,4 @@
+import logging
 import os
 import sys
 import xml.etree.ElementTree as ET
@@ -17,12 +18,11 @@ else:
 import sumolib
 
 
-def display_network(net: sumolib.net.Net, stats: ET.ElementTree, centre, args, max_width: int, max_height: int):
+def display_network(net: sumolib.net.Net, stats: ET.ElementTree, centre, args, max_size: int):
     """
     :param net: the network to display noisemap for
     :param stats: the stats file describing the network
-    :param max_width: maximum width of the resulting image
-    :param max_height: maximum width of the resulting image
+    :param max_size: maximum width/height of the resulting image
     :return:
     """
     # Basics about the city and its size
@@ -32,8 +32,12 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, centre, args, m
     # Determine the size of the picture and scalars for scaling the city to the correct size
     # We might have a very wide city. In this case we want to produce a wide image
     width_height_relation = city_size[1] / city_size[0]
-    width, height = (max_width, int(max_height * width_height_relation)) if city_size[0] > city_size[1] else (
-        int(max_width / width_height_relation), max_height)
+    if city_size[0] > city_size[1]:
+        width = max_size
+        height = int(max_size * width_height_relation)
+    else:
+        width = int(max_size * width_height_relation)
+        height = max_size
     width_scale = width / city_size[0]
     height_scale = height / city_size[1]
 
@@ -53,50 +57,61 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, centre, args, m
     COLOUR_CENTRE = (255, 0, 0, 128)
 
     # Draw streets
-    for street_xml in stats.find("streets").findall("street"):
-        edge = net.getEdge(street_xml.attrib["edge"])
-        population = float(street_xml.attrib["population"])
-        industry = float(street_xml.attrib["workPosition"])
-        x1, y1 = edge.getFromNode().getCoord()
-        x2, y2 = edge.getToNode().getCoord()
-        green = int(255 * (1 - industry))
-        blue = int(255 * (1 - population))
-        coords = [x1 * width_scale, y1 * height_scale, x2 * width_scale, y2 * height_scale]
-        draw.line(coords, (0, green, blue), int(0.5 + population * 5))
+    if stats.find("streets") is not None:
+        for street_xml in stats.find("streets").findall("street"):
+            edge = net.getEdge(street_xml.attrib["edge"])
+            population = float(street_xml.attrib["population"])
+            industry = float(street_xml.attrib["workPosition"])
+            x1, y1 = edge.getFromNode().getCoord()
+            x2, y2 = edge.getToNode().getCoord()
+            green = int(255 * (1 - industry))
+            blue = int(255 * (1 - population))
+            coords = [x1 * width_scale, y1 * height_scale, x2 * width_scale, y2 * height_scale]
+            draw.line(coords, (0, green, blue), int(0.5 + population * 5))
+    else:
+        logging.warning(f"[render] Could not find any streets in statistics")
 
     # Draw city gates
-    for gate_xml in stats.find("cityGates").findall("entrance"):
-        edge = net.getEdge(gate_xml.attrib["edge"])
-        traffic = max(float(gate_xml.attrib["incoming"]), float(gate_xml.attrib["outgoing"]))
-        x, y = position_on_edge(edge, float(gate_xml.attrib["pos"]))
-        x *= width_scale
-        y *= height_scale
-        r = int(2 + traffic / 1.3)
-        draw.ellipse((x - r, y - r, x + r, y + r), fill=COLOUR_CITY_GATE)
+    if stats.find("cityGates") is not None:
+        for gate_xml in stats.find("cityGates").findall("entrance"):
+            edge = net.getEdge(gate_xml.attrib["edge"])
+            traffic = max(float(gate_xml.attrib["incoming"]), float(gate_xml.attrib["outgoing"]))
+            x, y = position_on_edge(edge, float(gate_xml.attrib["pos"]))
+            x *= width_scale
+            y *= height_scale
+            r = int(2 + traffic / 1.3)
+            draw.ellipse((x - r, y - r, x + r, y + r), fill=(255, 0, 0))
+    else:
+        logging.warning(f"[render] Could not find any city-gates in statistics")
 
     # Draw bus stops
-    for stop_xml in stats.find("busStations").findall("busStation"):
-        edge = net.getEdge(stop_xml.attrib["edge"])
-        x, y = position_on_edge(edge, float(stop_xml.attrib["pos"]))
-        x *= width_scale
-        y *= height_scale
-        r = 2
-        draw.ellipse((x - r, y - r, x + r, y + r), fill=COLOUR_BUS_STOP)
+    if stats.find("busStations") is not None:
+        for stop_xml in stats.find("busStations").findall("busStation"):
+            edge = net.getEdge(stop_xml.attrib["edge"])
+            x, y = position_on_edge(edge, float(stop_xml.attrib["pos"]))
+            x *= width_scale
+            y *= height_scale
+            r = 2
+            draw.ellipse((x - r, y - r, x + r, y + r), fill=(250, 146, 0))
+    else:
+        logging.warning(f"[render] Could not find any bus-stations in statistics")
 
     # Draw schools
-    for school_xml in stats.find("schools").findall("school"):
-        edge = net.getEdge(school_xml.attrib["edge"])
-        capacity = int(school_xml.get('capacity'))
-        x, y = position_on_edge(edge, float(school_xml.get('pos')))
-        x *= width_scale
-        y *= height_scale
-        r = int(2 + capacity / 175)
-        draw.ellipse((x - r, y - r, x + r, y + r), fill=COLOUR_SCHOOL)
+    if stats.find("schools") is not None:
+        for school_xml in stats.find("schools").findall("school"):
+            edge = net.getEdge(school_xml.attrib["edge"])
+            capacity = int(school_xml.get('capacity'))
+            x, y = position_on_edge(edge, float(school_xml.get('pos')))
+            x *= width_scale
+            y *= height_scale
+            r = int(2 + capacity / 175)
+            draw.ellipse((x - r, y - r, x + r, y + r), fill=(255, 0, 216))
+    else:
+        logging.warning(f"[render] Could not find any schools in statistics")
 
-    # Draw centre
-    x, y = int(centre[0]) * width_scale, int(centre[1]) * height_scale
-    r = 15
-    draw.ellipse((x - r, y - r, x + r, y + r), fill=COLOUR_CENTRE)
+    if not any([stats.find(x) for x in {"streets", "cityGates", "busStations", "schools"}]):
+        logging.error("[render] No elements found in statistics, cannot display network and features")
+        exit(1)
 
     # Flip image on the horizontal axis and update draw-pointer
     img = img.transpose(FLIP_TOP_BOTTOM)
@@ -114,7 +129,7 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, centre, args, m
     draw.text([6, height - 18], f"{meters} m", (0, 0, 0), font=font)
 
     # Draw colour legend, begin 15px after scale-legend
-    Legend(pixels + 15, max_height, draw, font) \
+    Legend(pixels + 15, max_size, draw, font) \
         .draw_gradient(((0, 255, 0), (0, 0, 255)), "Pop. vs work, by intensity") \
         .draw_legend(COLOUR_CENTRE, "Centre") \
         .draw_legend(COLOUR_SCHOOL, "School") \
