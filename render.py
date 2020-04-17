@@ -120,17 +120,9 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, centre, args, m
     # Draw network name
     draw.text((2, 2), args['--net-file'], fill="#000000", font=font)
 
-    # Draw distance legend
-    meters = find_dist_legend_size(max(city_size))
-    pixels = int(meters * width_scale)
-    draw.line([2, height - 3, 2 + pixels, height - 3], (0, 0, 0), 1)
-    draw.line([2, height, 2, height - 5], (0, 0, 0), 1)
-    draw.line([2 + pixels, height, 2 + pixels, height - 5], (0, 0, 0), 1)
-    draw.text([6, height - 18], f"{meters} m", (0, 0, 0), font=font)
-
-    # Draw colour legend, begin 15px after scale-legend
-    Legend(pixels + 15, max_size, height, draw, font) \
-        .draw_gradient(((0, 255, 0), (0, 0, 255)), "Pop. vs work, by intensity") \
+    Legend(max_size, height, draw, font) \
+        .draw_distance_legend(city_size, width_scale) \
+        .draw_gradient(((0, 255, 0), (0, 0, 255)), "Pop, work gradient") \
         .draw_legend(COLOUR_CENTRE, "Centre") \
         .draw_legend(COLOUR_SCHOOL, "School") \
         .draw_legend(COLOUR_BUS_STOP, "Bus stop") \
@@ -140,8 +132,8 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, centre, args, m
 
 
 class Legend:
-    def __init__(self, offset, scale, height, draw, font):
-        self.offset = offset
+    def __init__(self, scale, height, draw, font):
+        self.offset = 0
         self.scale = scale / 800
         self.r_box = 10 * self.scale
         self.icon_height = height - self.r_box - 10
@@ -200,6 +192,23 @@ class Legend:
             # put alpha level depending on height of line being drawn
             colour = colour[:3] + (int((1 - (i / h)) * 255),)
             self.draw.point((x, y + i), colour)
+
+    def draw_distance_legend(self, city_size, width_scale):
+        # Draw distance legend
+        meters = find_dist_legend_size(max(city_size))
+        self.offset += int(meters * width_scale)
+        line_height = self.icon_height + self.r_box // 2
+
+        # line
+        self.draw.line([2, line_height, 2 + self.offset, line_height], (0, 0, 0), 1)
+        # ticks
+        self.draw.line([2, line_height + 5, 2, line_height - 5], (0, 0, 0), 1)
+        self.draw.line([2 + self.offset, line_height + 5, 2 + self.offset, line_height - 5], (0, 0, 0), 1)
+
+        self.draw.text([6, self.icon_height - 18], f"{meters} m", (0, 0, 0), font=self.font)
+        # add padding
+        self.offset += 10
+        return self
 
 
 def find_dist_legend_size(real_size, frac: float = 0.2):
