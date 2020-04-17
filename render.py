@@ -129,7 +129,7 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, centre, args, m
     draw.text([6, height - 18], f"{meters} m", (0, 0, 0), font=font)
 
     # Draw colour legend, begin 15px after scale-legend
-    Legend(pixels + 15, max_size, draw, font) \
+    Legend(pixels + 15, max_size, height, draw, font) \
         .draw_gradient(((0, 255, 0), (0, 0, 255)), "Pop. vs work, by intensity") \
         .draw_legend(COLOUR_CENTRE, "Centre") \
         .draw_legend(COLOUR_SCHOOL, "School") \
@@ -142,34 +142,35 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, centre, args, m
 class Legend:
     def __init__(self, offset, scale, height, draw, font):
         self.offset = offset
-        self.image_scale = scale
-        self.icon_height = height - 20
+        self.scale = scale / 800
+        self.r_box = 10 * self.scale
+        self.icon_height = height - self.r_box - 10
         self.draw: ImageDraw.ImageDraw = draw
         self.font = font
 
     def draw_legend(self, colour, text):
         # Draw box and icon from beginning of offset
         x_icon, y_icon = self.offset, self.icon_height
-        r_box = 5 * 2
-        # self.draw.rectangle((x_icon - r_box, y_icon - r_box, x_icon + r_box, y_icon + r_box), "#ffffff", "#000000")
-        self.draw.rectangle((x_icon, y_icon, x_icon + r_box, y_icon + r_box), "#ffffff", "#000000")
+        self.draw.rectangle((x_icon, y_icon, x_icon + self.r_box, y_icon + self.r_box), "#ffffff", "#000000")
 
-        r_icon = 8
-        # self.draw.ellipse((x_icon - r_icon, y_icon - r_icon, x_icon + r_icon, y_icon + r_icon), colour)
-        self.draw.ellipse((x_icon + 1, y_icon + 1, x_icon + r_box - 1, y_icon + r_box - 1), colour)
+        x_box_centre, y_box_centre = x_icon + self.r_box // 2, y_icon + self.r_box // 2
+
+        r_icon = 4 * self.scale
+        self.draw.ellipse((x_box_centre - r_icon, y_box_centre - r_icon, x_box_centre + r_icon, y_box_centre + r_icon),
+                          colour)
 
         # offset by text-width
-        self.draw.text((self.offset + r_box, self.icon_height), text, "#000000", font=self.font)
+        self.draw.text((self.offset + self.r_box + 5, self.icon_height), text, "#000000", font=self.font)
         # Update offset
-        self.offset += self.font.getsize(text=text)[0] + 20
+        self.offset += self.font.getsize(text=text)[0] + self.r_box * 2
 
         # Return self to allow chaining
         return self
 
     def draw_gradient(self, colour: Tuple[Tuple[int, int, int], Tuple[int, int, int]], text):
         # Define box dimensions
-        h_box = 30
-        w_box = 30
+        h_box = int(1.2 * self.r_box)
+        w_box = h_box * 2
 
         # draw box
         self.draw.rectangle((self.offset, self.icon_height, self.offset + w_box, self.icon_height + h_box),
