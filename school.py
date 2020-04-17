@@ -84,7 +84,7 @@ def setup_schools(args, net: sumolib.net.Net, stats: ET.ElementTree, school_coun
 
         ET.SubElement(xml_schools, "school", attrib={
             "edge": str(school.getID()),
-            "pos": str(random.randint(0, 100)),
+            "pos": str(random.randint(0, int(school.getLength()))),
             "beginAge": str(begin_age),
             "endAge": str(end_age),
             "capacity": str(random.randint(int(args["--primary-schools.capacity"].split(",")[0]),
