@@ -1,94 +1,59 @@
+import math
 import random
-from utility import distance, firstn, position_on_edge
+import xml.etree.ElementTree as ET
+import os
+import sys
+import logging
+
+from typing import Tuple
+from perlin import POPULATION_BASE, sample_edge_noise
+from utility import find_city_centre, radius_of_network, k_means_clusters
+
+if 'SUMO_HOME' in os.environ:
+    tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
+    sys.path.append(tools)
+else:
+    sys.exit("Please declare environment variable 'SUMO_HOME' to use sumolib")
+
+import sumolib
 
 
-def _road_point_generator(roads):
-    assert len(roads) > 0
+def find_bus_stop_edges(net: sumolib.net.Net, num_bus_stops: int, centre: Tuple[float, float]):
+    # Use k-means, to split the net into num_num_bus_stops number of clusters,
+    # each containing approximately same number of edges
+    districts = k_means_clusters(net, num_bus_stops)
 
-    # Length of all roads combined
-    total_length = sum(map(lambda road: road.getLength(), roads))
+    bus_stop_edges = []
+    centre = find_city_centre(net)
+    radius = radius_of_network(net, centre)
+    # Sort each edge in each district based on their noise, and select edge with highest noise from each district
+    for district in districts:
+        district.sort(key=lambda x: sample_edge_noise(x, centre=centre, radius=radius, base=POPULATION_BASE))
+        bus_stop_edges.append(district[-1])
 
-    while True:
-        # Select a point on the combined stretch of road
-        distance = random.uniform(0, total_length)
-
-        # Find the selected road
-        length_sum = 0.0
-        found_road = False
-        for road in roads:
-            if (length_sum + road.getLength()) >= distance:
-                # Compute the exact point on the selected road
-
-                # Distance along the road segment
-                remaining = distance - length_sum
-                pos = position_on_edge(road, remaining)
-
-                yield [
-                    pos[0],
-                    pos[1],
-                    road,
-                    remaining]
-                found_road = True
-                break
-            else:
-                length_sum += road.getLength()
-
-        if not found_road:
-            raise AssertionError("Failed to pick a road. A distance beyond the last road must have been erroneously "
-                                 "picked: {} (length sum: {}) (total length: {})".format(distance, length_sum,
-                                                                                         total_length))
+    return bus_stop_edges
 
 
-def bus_stop_generator(roads, inner_r, outer_r, k=10, seeds=None):
-    """
-    Bus stop placement using the poisson-disc algorithm
-    """
-    assert inner_r < outer_r
-    if seeds is None:
-        seeds = []
+def setup_bus_stops(net: sumolib.net.Net, stats: ET.ElementTree, bus_stops_per_km2: float,
+                    centre: Tuple[float, float]):
 
-    all_points = list(seeds)
+    xml_bus_stops = stats.find('busStations')
+    if xml_bus_stops is None:
+        xml_bus_stops = ET.SubElement(stats.getroot(), "busStations")
 
-    road_points_gen = _road_point_generator(roads)
-    if not all_points:  # Check if all_points is empty
-        road = tuple(next(road_points_gen))
-        yield road
-        all_points.append(road)  # Seed point
+    boundary = net.getBoundary()
+    width = boundary[2] - boundary[0]
+    height = boundary[3] - boundary[1]
 
-    active_points = list(all_points)  # Use a list because random.choice require a sequence
+    area = math.pi * ((width + height) / 4) ** 2
+    num_bus_stops = int(bus_stops_per_km2 * area / 1_000_000)
+    logging.info(f"Inserting {num_bus_stops} bus stops")
 
-    def check_dist(p, test_points, limit=inner_r):
-        """
-        Return true if any of the test_points is within the limit distance of P
-        """
-        for test_point in test_points:
-            if distance((p[0], p[1]), (test_point[0], test_point[1])) < limit:
-                # p is within limit distance
-                return True
-        # p is not within the limit distance of of the test points
-        return False
-
-    while len(active_points) > 0:
-        # Pick a random point from the set of active points to be the center of the poisson disc
-        center = random.choice(active_points)
-        # Limit the search to K points
-        gen = firstn(k, filter(
-            lambda point: inner_r <= distance((center[0], center[1]), (point[0], point[1])) <= outer_r, road_points_gen))
-
-        # Search for candidate point
-        try:
-            # Search for a point, or raise StopIteration is none can be found
-            point = next(filter(
-                lambda p: not check_dist(p, iter(all_points)),
-                gen))
-
-            assert not check_dist(point, all_points)
-
-            # A new point was found
-            active_points.append(point)
-            all_points.append(tuple(point))
-
-            yield point
-        except StopIteration:
-            # No point was found, mark center as an inactive point
-            active_points.remove(center)
+    # Find edges to place bus stops on
+    bus_stop_edges = find_bus_stop_edges(net, num_bus_stops, centre)
+    for i, edge in enumerate(bus_stop_edges):
+        ET.SubElement(xml_bus_stops, "busStation", attrib={
+            "id": str(i),
+            "edge": str(edge.getID()),
+            "pos": str(random.random() * edge.getLength()),
+        })
