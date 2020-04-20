@@ -23,7 +23,6 @@ def find_school_edges(net: sumolib.net.Net, num_schools: int, centre: Tuple[floa
     districts = k_means_clusters(net, num_schools)
 
     school_edges = []
-    centre = find_city_centre(net)
     radius = radius_of_network(net, centre)
     # Sort each edge in each district based on their noise, and return edge with highest noise from each district
     for district in districts:
