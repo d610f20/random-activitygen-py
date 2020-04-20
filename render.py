@@ -186,8 +186,8 @@ class Legend:
                 x_intensity = 1 - x / w_box
                 y_intensity = y / h_box
 
-                work = map(operator.mul, work_colour, (y_intensity, y_intensity, y_intensity))
-                pop = map(operator.mul, pop_colour, (x_intensity, x_intensity, x_intensity))
+                work = tuple(map(int, map(operator.mul, work_colour, (y_intensity, y_intensity, y_intensity))))
+                pop = tuple(map(int, map(operator.mul, pop_colour, (x_intensity, x_intensity, x_intensity))))
                 point_colour = tuple(map(int, map(operator.add, pop, work)))
                 self.draw.point((self.offset + x, self.icon_height + y), point_colour)
 
