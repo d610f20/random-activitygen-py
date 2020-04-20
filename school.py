@@ -33,7 +33,7 @@ def find_school_edges(net: sumolib.net.Net, num_schools: int, centre: Tuple[floa
     return school_edges
 
 
-def setup_schools(args, net: sumolib.net.Net, stats: ET.ElementTree, school_count: int or None,
+def setup_primary_schools(args, net: sumolib.net.Net, stats: ET.ElementTree, school_count: int or None,
                   centre: Tuple[float, float]):
     xml_schools = stats.find('schools')
     if xml_schools is None:
@@ -92,3 +92,16 @@ def setup_schools(args, net: sumolib.net.Net, stats: ET.ElementTree, school_coun
             "opening": str(random.randrange(school_open_earliest, school_open_latest, school_stepsize)),
             "closing": str(random.randrange(school_close_earliest, school_close_latest, school_stepsize))
         })
+
+
+def setup_high_schools():
+    pass
+
+
+def setup_colleges():
+    pass
+
+
+def setup_schools(args, net: sumolib.net.Net, stats: ET.ElementTree, school_count: int or None,
+                  centre: Tuple[float, float]):
+    setup_primary_schools(args, net, stats, school_count, centre)
