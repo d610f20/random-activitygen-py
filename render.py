@@ -18,11 +18,14 @@ else:
 import sumolib
 
 
-def display_network(net: sumolib.net.Net, stats: ET.ElementTree, centre, args, max_size: int):
+def display_network(net: sumolib.net.Net, stats: ET.ElementTree, max_size: int, centre: Tuple[float, float],
+                    network_name: str):
     """
     :param net: the network to display noisemap for
     :param stats: the stats file describing the network
     :param max_size: maximum width/height of the resulting image
+    :param centre: the centre of the network for drawing dot
+    :param network_name: the name of the network for drawing in upper-left corner
     :return:
     """
     # Basics about the city and its size
@@ -126,7 +129,7 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, centre, args, m
     draw = ImageDraw.Draw(img, "RGBA")
 
     Legend(max_size, height, draw, font) \
-        .draw_network_name(args['--net-file']) \
+        .draw_network_name(network_name) \
         .draw_distance_legend(city_size, width_scale) \
         .draw_gradient(((0, 255, 0), (0, 0, 255)), "Pop, work gradient") \
         .draw_legend(COLOUR_CENTRE, "Centre") \
