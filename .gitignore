@@ -3,6 +3,9 @@ randomActivityGen-log.txt
 
 # Ignore large network
 /in/aalborg.net.xml
+/in/aarhus.net.xml
+/in/copenhagen.net.xml
+/in/odense.net.xml
 
 .idea
 out
