@@ -1,0 +1,46 @@
+<city>
+    <general inhabitants="70000" households="33333"/>
+    <parameters uniformRandomTraffic="0.2" />
+    <schools>
+        <!-- Hjerting Skole Aura, 0.-4. klasse, Hjertingparken 202 -->
+        <school edge="-87327887#3" pos="0" capacity="600" />
+        <!-- Hjerting Skole Aura, 5.-9. klasse, Gl. Guldagervej 53 -->
+        <school edge="448205721#2" pos="0" capacity="600" />
+        <!-- Sønderrisskolen Aura, 0.-6. klasse, Krebsens Kvarter 58 -->
+        <school edge="-42482822" pos="0" capacity="600" />
+        <!-- Sønderrisskolen Aura, 7.-9. klasse, Saturnvænget 12 -->
+        <school edge="19729283" pos="0" capacity="600" />
+        <!-- Bryndum Skole Aura, 0.-9. klasse, Bryndumvej 14-16 -->
+        <school edge="500769241#3" pos="0" capacity="600" />
+        <!-- Kvaglundskolen Signatur, Askekrattet 8 -->
+        <school edge="-2609530#0" pos="0" capacity="600" />
+        <!-- Fourfeldtskolen Bohr, Ndr. Fovrfeldvej 1 -->
+        <school edge="4837437#0" pos="0" capacity="600" />
+        <!-- Vitaskolen Bohr, Vester Gjesingvej 28 -->
+        <school edge="427647#5" pos="0" capacity="600" />
+        <!-- Ådalskolen Bohr, Åmoseparken 252 -->
+        <school edge="-87449071#13" pos="0" capacity="600" />
+        <!-- Danmarksgades Skole Urban, Danmarksgade 53 -->
+        <school edge="-689676123#1" pos="0" capacity="600" />
+        <!-- Rørkjær Skole Urban, Ringen 61-63 -->
+        <school edge="-498634416#2" pos="0" capacity="600" />
+        <!-- Præstegårdsskolen Urban, Søndervangen 18 -->
+        <school edge="-424412#3" pos="0" capacity="600" />
+        <!-- Specialcenteret Urban, Søndervangen 16 -->
+        <school edge="424412#3" pos="0" capacity="600" />
+        <!-- Bakkeskolen Cosmos, Skolebakken 166 -->
+        <school edge="-2956718#7" pos="0" capacity="600" />
+        <!-- Boldesager Skole Cosmos, Nørrebrogade 100 -->
+        <school edge="-448205613#8" pos="0" capacity="600" />
+        <!-- Spangsbjergskolen Cosmos, Skrænten 120 -->
+        <school edge="3127824#6" pos="0" capacity="600" />
+        <!-- Esbjerg International School, Guldager Skolevej 4 -->
+        <school edge="-89129111#3" pos="0" capacity="600" />
+        <!-- Markusskolen, Stenhuggervej 26 -->
+        <school edge="-448205693#4" pos="0" capacity="600" />
+        <!-- Esbjerg Realskole, Stenhuggervej 26 -->
+        <school edge="-1212549#10" pos="0" capacity="600" />
+        <!-- Skt. Nikolaj Skole, Kirkegade 54 -->
+        <school edge="-185159672#0" pos="0" capacity="600" />
+    </schools>
+</city>
