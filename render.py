@@ -116,6 +116,11 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, centre, args, m
         logging.error("[render] No elements found in statistics, cannot display network and features")
         exit(1)
 
+    # Draw city centre
+    x, y = int(centre[0]) * width_scale, int(centre[1]) * height_scale
+    r = 15
+    draw.ellipse((x - r, y - r, x + r, y + r), fill=COLOUR_CENTRE)
+
     # Flip image on the horizontal axis and update draw-pointer
     img = img.transpose(FLIP_TOP_BOTTOM)
     draw = ImageDraw.Draw(img, "RGBA")
@@ -123,7 +128,6 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, centre, args, m
     Legend(max_size, height, draw, font) \
         .draw_network_name(args['--net-file']) \
         .draw_distance_legend(city_size, width_scale) \
-        .draw_centre(centre, (255, 0, 0, 128), width_scale, height_scale) \
         .draw_gradient(((0, 255, 0), (0, 0, 255)), "Pop, work gradient") \
         .draw_legend(COLOUR_CENTRE, "Centre") \
         .draw_legend(COLOUR_SCHOOL, "School") \
@@ -221,12 +225,6 @@ class Legend:
 
     def draw_network_name(self, name):
         self.draw.text((2, 2), name, fill="#000000", font=self.font)
-        return self
-
-    def draw_centre(self, centre, colour, width_scale, height_scale):
-        x, y = int(centre[0]) * width_scale, int(centre[1]) * height_scale
-        r = 15
-        self.draw.ellipse((x - r, y - r, x + r, y + r), fill=colour)
         return self
 
 
