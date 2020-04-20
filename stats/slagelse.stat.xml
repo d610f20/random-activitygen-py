@@ -1,0 +1,29 @@
+<city>
+    <general inhabitants="33800" households="16095"/>
+    <parameters uniformRandomTraffic="0.2" />
+
+    <schools>
+        <!-- Antvorskov Skole, Sejerøvej 1 -->
+        <school edge="23958984#4" pos="0" />
+        <!-- Dyhrs Skole, Sct Mikkelsgade 1 -->
+        <school edge="-165842558#0" pos="0" />
+        <!-- Slagelse Heldagsskole, Rosenkildevej 88D -->
+        <school edge="107039230#8" pos="0" />
+        <!-- Klostermarken Skole, Rosenkildevej 88E -->
+        <school edge="107039230#8" pos="0" />
+        <!-- Landsgrav Friskole, Bagervej 5 -->
+        <school edge="94667271#9" pos="0" />
+        <!-- Marievangsskolen, Holmstrupvej 7 -->
+        <school edge="-94667035#1" pos="0" />
+        <!-- Nymarkskolen, Østre Alle 67 -->
+        <school edge="-106288833#4" pos="0" />
+        <!-- Slagelse Musikskole, Sct. Pedersgade 18 -->
+        <school edge="-84040858#0" pos="0" />
+        <!-- Slagelse Privatskole, Norgesvej 14 -->
+        <school edge="-106611318#0" pos="0" />
+        <!-- Søndermarksskolen, Byskov Alle 41 -->
+        <school edge="-94607726#9" pos="0" />
+        <!-- Autisme Center Vestsjælland, Rosenkildevej 85 -->
+        <school edge="94579890#19" pos="0" />
+    </schools>
+</city>
