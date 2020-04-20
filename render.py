@@ -45,7 +45,10 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, centre, args, m
     try:
         font = ImageFont.truetype("/usr/share/fonts/liberation/LiberationMono-Regular.ttf", size=12)
     except IOError:
+        logging.warning("[display] Could not load font, falling back to default")
         font = ImageFont.load_default()
+
+    assert font is not None, "[display] No font loaded, cannot continue"
 
     # Make image and prepare for drawing
     img = Image.new("RGB", (width, height), (255, 255, 255))
@@ -159,8 +162,14 @@ class Legend:
         return self
 
     def draw_gradient(self, colour: Tuple[Tuple[int, int, int], Tuple[int, int, int]], text):
+        """
+        Writes a gradient icon-box. Diagonal gradient
+        :param colour: RGB two-tuple where first tuple is the upper left, and second is lower right
+        :param text:
+        :return:
+        """
         # Define box dimensions
-        h_box = int(1.2 * self.r_box)
+        h_box = int(1.5 * self.r_box)
         w_box = h_box * 2
 
         # draw box
@@ -170,15 +179,17 @@ class Legend:
         # for element-wise operation on tuples
         import operator
 
-        for i in range(1, w_box):
-            # calculate left and right colour proportions
-            ratio = i / w_box
-            left = tuple(map(operator.mul, colour[1], (ratio, ratio, ratio)))
-            inv_ratio = 1 - ratio
-            right = tuple(map(operator.mul, colour[0], (inv_ratio, inv_ratio, inv_ratio)))
-            # add colour proportions and write line in gradient
-            line_colour = tuple(map(int, map(operator.add, left, right)))
-            self.write_gradient_line(self.offset + i, self.icon_height, h_box, line_colour)
+        pop_colour = colour[0]
+        work_colour = colour[1]
+        for x in range(1, w_box):
+            for y in range(1, h_box):
+                x_intensity = 1 - x / w_box
+                y_intensity = y / h_box
+
+                work = tuple(map(int, map(operator.mul, work_colour, (y_intensity, y_intensity, y_intensity))))
+                pop = tuple(map(int, map(operator.mul, pop_colour, (x_intensity, x_intensity, x_intensity))))
+                point_colour = tuple(map(int, map(operator.add, pop, work)))
+                self.draw.point((self.offset + x, self.icon_height + y), point_colour)
 
         # draw text
         self.draw.text((self.offset + w_box + 5, self.icon_height), text, "#000000", font=self.font)
