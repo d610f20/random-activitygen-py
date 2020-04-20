@@ -1,0 +1,4 @@
+<city>
+    <general inhabitants="50000" households="25000"/>
+    <parameters uniformRandomTraffic="0.2" />
+</city>

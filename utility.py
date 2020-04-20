@@ -106,11 +106,15 @@ def verify_stats(stats: ET.ElementTree):
         # Work hours are missing, so we add some default work hours
         logging.info("Work hours are missing from statistics, adding a default configuration")
         work_hours = ET.SubElement(city, "workHours")
-        ET.SubElement(work_hours, "opening", {"hour": "28800", "proportion": "70"})  # 70% at 8.00
-        ET.SubElement(work_hours, "opening", {"hour": "30600", "proportion": "30"})  # 30% at 8.30
-        ET.SubElement(work_hours, "closing", {"hour": "43200", "proportion": "10"})  # 10% at 12.00
-        ET.SubElement(work_hours, "closing", {"hour": "61200", "proportion": "30"})  # 30% at 17.00
-        ET.SubElement(work_hours, "closing", {"hour": "63000", "proportion": "60"})  # 60% at 17.30
+        ET.SubElement(work_hours, "opening", {"hour": "25200", "proportion": "15"})  # 15% at 7.00
+        ET.SubElement(work_hours, "opening", {"hour": "27000", "proportion": "25"})  # 25% at 7.30
+        ET.SubElement(work_hours, "opening", {"hour": "28800", "proportion": "45"})  # 45% at 8.00
+        ET.SubElement(work_hours, "opening", {"hour": "30600", "proportion": "15"})  # 15% at 8.30
+        ET.SubElement(work_hours, "closing", {"hour": "43200", "proportion": "5"})  # 5% at 12.00
+        ET.SubElement(work_hours, "closing", {"hour": "54000", "proportion": "20"})  # 20% at 15.00
+        ET.SubElement(work_hours, "closing", {"hour": "55800", "proportion": "30"})  # 30% at 15.30
+        ET.SubElement(work_hours, "closing", {"hour": "57600", "proportion": "30"})  # 30% at 16.00
+        ET.SubElement(work_hours, "closing", {"hour": "59400", "proportion": "15"})  # 15% at 16.30
 
 
 def position_on_edge(edge: sumolib.net.edge.Edge, pos: float):
