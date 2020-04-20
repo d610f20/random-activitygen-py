@@ -52,10 +52,10 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, max_size: int):
             industry = float(street_xml.attrib["workPosition"])
             x1, y1 = edge.getFromNode().getCoord()
             x2, y2 = edge.getToNode().getCoord()
-            green = int(255 * (1 - industry))
-            blue = int(255 * (1 - population))
+            green = int(35 + 220 * (1 - industry))
+            blue = int(35 + 220 * (1 - population))
             coords = [x1 * width_scale, y1 * height_scale, x2 * width_scale, y2 * height_scale]
-            draw.line(coords, (0, green, blue), int(0.5 + population * 5))
+            draw.line(coords, (0, green, blue), int(1.5 + 3.5 * population ** 1.5))
     else:
         logging.warning(f"[render] Could not find any streets in statistics")
 
