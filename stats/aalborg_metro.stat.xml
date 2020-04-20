@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <city>
     <general 
-        inhabitants="10"
-        households="500"    
+        inhabitants="139016"
+        households="66198"    
         />
     <schools>
         <!-- Aalborg -->
