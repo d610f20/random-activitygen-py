@@ -3,6 +3,8 @@ import os
 import sys
 
 import xml.etree.ElementTree as ET
+from typing import Tuple
+
 from PIL import Image, ImageDraw
 from PIL.Image import FLIP_TOP_BOTTOM
 
@@ -26,7 +28,7 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, max_size: int):
     """
     # Basics about the city and its size
     boundary = net.getBoundary()
-    city_size = (boundary[2], boundary[3])
+    city_size = (boundary[2] - boundary[0], boundary[3] - boundary[1])
 
     # Determine the size of the picture and scalars for scaling the city to the correct size
     # We might have a very wide city. In this case we want to produce a wide image
@@ -40,6 +42,10 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, max_size: int):
     width_scale = width / city_size[0]
     height_scale = height / city_size[1]
 
+    def to_png_space(xy: Tuple[float, float]) -> Tuple[float, float]:
+        """ Translate the given city position to a png position """
+        return (xy[0] - boundary[0]) * width_scale, (xy[1] - boundary[1]) * height_scale
+
     # Make image and prepare for drawing
     img = Image.new("RGB", (width, height), (255, 255, 255))
     draw = ImageDraw.Draw(img)
@@ -50,12 +56,11 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, max_size: int):
             edge = net.getEdge(street_xml.attrib["edge"])
             population = float(street_xml.attrib["population"])
             industry = float(street_xml.attrib["workPosition"])
-            x1, y1 = edge.getFromNode().getCoord()
-            x2, y2 = edge.getToNode().getCoord()
+            from_pos = to_png_space(edge.getFromNode().getCoord())
+            to_pos = to_png_space(edge.getToNode().getCoord())
             green = int(35 + 220 * (1 - industry))
             blue = int(35 + 220 * (1 - population))
-            coords = [x1 * width_scale, y1 * height_scale, x2 * width_scale, y2 * height_scale]
-            draw.line(coords, (0, green, blue), int(1.5 + 3.5 * population ** 1.5))
+            draw.line((from_pos, to_pos), (0, green, blue), int(1.5 + 3.5 * population ** 1.5))
     else:
         logging.warning(f"[render] Could not find any streets in statistics")
 
@@ -64,9 +69,7 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, max_size: int):
         for gate_xml in stats.find("cityGates").findall("entrance"):
             edge = net.getEdge(gate_xml.attrib["edge"])
             traffic = max(float(gate_xml.attrib["incoming"]), float(gate_xml.attrib["outgoing"]))
-            x, y = position_on_edge(edge, float(gate_xml.attrib["pos"]))
-            x *= width_scale
-            y *= height_scale
+            x, y = to_png_space(position_on_edge(edge, float(gate_xml.attrib["pos"])))
             r = int(2 + traffic / 1.3)
             draw.ellipse((x - r, y - r, x + r, y + r), fill=(255, 0, 0))
     else:
@@ -76,9 +79,7 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, max_size: int):
     if stats.find("busStations") is not None:
         for stop_xml in stats.find("busStations").findall("busStation"):
             edge = net.getEdge(stop_xml.attrib["edge"])
-            x, y = position_on_edge(edge, float(stop_xml.attrib["pos"]))
-            x *= width_scale
-            y *= height_scale
+            x, y = to_png_space(position_on_edge(edge, float(stop_xml.attrib["pos"])))
             r = 2
             draw.ellipse((x - r, y - r, x + r, y + r), fill=(250, 146, 0))
     else:
@@ -89,9 +90,7 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, max_size: int):
         for school_xml in stats.find("schools").findall("school"):
             edge = net.getEdge(school_xml.attrib["edge"])
             capacity = int(school_xml.get('capacity'))
-            x, y = position_on_edge(edge, float(school_xml.get('pos')))
-            x *= width_scale
-            y *= height_scale
+            x, y = to_png_space(position_on_edge(edge, float(school_xml.get('pos'))))
             r = int(2 + capacity / 175)
             draw.ellipse((x - r, y - r, x + r, y + r), fill=(255, 0, 216))
     else:
