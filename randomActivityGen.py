@@ -157,7 +157,7 @@ def main():
     if args["--display"]:
         max_size = int(args["--display.size"])
         logging.info(f"Displaying network as image of max size {max_size}x{max_size}")
-        display_network(net, stats, max_size)
+        display_network(net, stats, max_size, centre, args["--net-file"])
 
 
 if __name__ == "__main__":
