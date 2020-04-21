@@ -100,6 +100,6 @@ def setup_type_of_school(args, net: sumolib.net.Net, stats: ET.ElementTree, cent
 
 
 def setup_schools(args, net: sumolib.net.Net, stats: ET.ElementTree, centre: Tuple[float, float]):
-    setup_type_of_school(args, net, stats, centre, "primary-schools")
-    setup_type_of_school(args, net, stats, centre, "high-schools")
-    setup_type_of_school(args, net, stats, centre, "colleges")
+    setup_type_of_school(args, net, stats, centre, "primary-school")
+    setup_type_of_school(args, net, stats, centre, "high-school")
+    setup_type_of_school(args, net, stats, centre, "college")
