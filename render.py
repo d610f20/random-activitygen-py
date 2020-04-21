@@ -17,6 +17,11 @@ else:
 
 import sumolib
 
+COLOUR_CITY_GATE = (255, 0, 0)
+COLOUR_BUS_STOP = (250, 146, 0)
+COLOUR_SCHOOL = (255, 0, 216)
+COLOUR_CENTRE = (255, 0, 0, 128)
+
 
 def display_network(net: sumolib.net.Net, stats: ET.ElementTree, max_size: int, centre: Tuple[float, float],
                     network_name: str):
@@ -46,7 +51,7 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, max_size: int, 
 
     # Load pretty font FIXME: find more ubiquitous default pretty font and maybe try for both Linux and Win
     try:
-        font = ImageFont.truetype("/usr/share/fonts/liberation/LiberationMono-Regular.ttf", size=12)
+        font = ImageFont.truetype("LiberationMono-Regular.ttf", size=12)
     except IOError:
         logging.warning("[display] Could not load font, falling back to default")
         font = ImageFont.load_default()
@@ -56,11 +61,6 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, max_size: int, 
     # Make image and prepare for drawing
     img = Image.new("RGB", (width, height), (255, 255, 255))
     draw = ImageDraw.Draw(img, "RGBA")
-
-    COLOUR_CITY_GATE = (255, 0, 0)
-    COLOUR_BUS_STOP = (250, 146, 0)
-    COLOUR_SCHOOL = (255, 0, 216)
-    COLOUR_CENTRE = (255, 0, 0, 128)
 
     # Draw streets
     if stats.find("streets") is not None:
@@ -130,12 +130,12 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, max_size: int, 
 
     Legend(max_size, height, draw, font) \
         .draw_network_name(network_name) \
-        .draw_distance_legend(city_size, width_scale) \
+        .draw_scale_legend(city_size, width_scale) \
         .draw_gradient("Pop, work gradient") \
-        .draw_legend(COLOUR_CENTRE, "Centre") \
-        .draw_legend(COLOUR_SCHOOL, "School") \
-        .draw_legend(COLOUR_BUS_STOP, "Bus stop") \
-        .draw_legend(COLOUR_CITY_GATE, "City gate")
+        .draw_icon_legend(COLOUR_CENTRE, "Centre") \
+        .draw_icon_legend(COLOUR_SCHOOL, "School") \
+        .draw_icon_legend(COLOUR_BUS_STOP, "Bus stop") \
+        .draw_icon_legend(COLOUR_CITY_GATE, "City gate")
 
     img.show()
 
@@ -149,7 +149,13 @@ class Legend:
         self.draw: ImageDraw.ImageDraw = draw
         self.font = font
 
-    def draw_legend(self, colour, text):
+    def draw_icon_legend(self, colour, text):
+        """
+        Draws a box with circular, colored dot with text on legend
+        :param colour: the colour of the dot
+        :param text: the text explaining the colour's significance
+        :return: self
+        """
         # Draw box and icon from beginning of offset
         x_icon, y_icon = self.offset, self.icon_height
         self.draw.rectangle((x_icon, y_icon, x_icon + self.r_box, y_icon + self.r_box), "#ffffff", "#000000")
@@ -170,10 +176,10 @@ class Legend:
 
     def draw_gradient(self, text):
         """
-        Writes a gradient icon-box. Diagonal gradient
-        :param colour: RGB two-tuple where first tuple is the upper left, and second is lower right
-        :param text:
-        :return:
+        Draws a gradient icon-box. Colours are hard-coded to green vs blue.
+        Either colour is limited to min 35/255 intensity, as that's how streets are drawn.
+        :param text: the text explaining the gradient
+        :return: self
         """
         # Define box dimensions
         h_box = int(1.5 * self.r_box)
@@ -196,13 +202,13 @@ class Legend:
         self.offset += self.font.getsize(text=text)[0] + w_box + 15
         return self
 
-    def write_gradient_line(self, x, y, h, colour):
-        for i in range(1, h):
-            # put alpha level depending on height of line being drawn
-            colour = colour[:3] + (int((1 - (i / h)) * 255),)
-            self.draw.point((x, y + i), colour)
-
-    def draw_distance_legend(self, city_size, width_scale):
+    def draw_scale_legend(self, city_size, width_scale):
+        """
+        Draws a scale with a 'nice' resolution and units
+        :param city_size:
+        :param width_scale:
+        :return: self
+        """
         meters = find_dist_legend_size(max(city_size))
         self.offset += int(meters * width_scale)
         line_height = self.icon_height + self.r_box // 2
