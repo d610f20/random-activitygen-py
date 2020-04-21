@@ -32,7 +32,7 @@ def find_school_edges(net: sumolib.net.Net, num_schools: int, centre: Tuple[floa
     return school_edges
 
 
-def insert_schools(args, new_school_edges, stats, school_type):
+def insert_schools(args, new_school_edges: list, stats: ET.ElementTree, school_type: str):
     school_open_earliest = int(args["--schools.open"].split(",")[0]) * 3600
     school_open_latest = int(args["--schools.open"].split(",")[1]) * 3600
     school_close_earliest = int(args["--schools.close"].split(",")[0]) * 3600
@@ -70,7 +70,7 @@ def insert_schools(args, new_school_edges, stats, school_type):
         })
 
 
-def get_school_count(args, stats, school_type):
+def get_school_count(args, stats: ET.ElementTree, school_type: str):
     if args[f"--{school_type}.count"] == "auto":
         # Voodoo parameter, seems to be about the value for a couple of danish cities.
         # In general one high school, per 5000-7000 inhabitant in a city, so 0.2 pr 1000 inhabitants
@@ -79,7 +79,7 @@ def get_school_count(args, stats, school_type):
         # Calculate default number of schools, based on population if none input parameter
         xml_general = stats.find('general')
         inhabitants = xml_general.get('inhabitants')
-        school_count = math.ceil(int(inhabitants) * schools_per_1000_inhabitants / 1000)
+        school_count = int(inhabitants) * schools_per_1000_inhabitants // 1000
 
     else:
         # Else place new number of schools as according to input
@@ -90,13 +90,16 @@ def get_school_count(args, stats, school_type):
 
 def setup_type_of_school(args, net: sumolib.net.Net, stats: ET.ElementTree, centre: Tuple[float, float], school_type):
     # Get number of primary schools to be placed
-    school_count = get_school_count(args, stats, school_type)
+    school_count = int(get_school_count(args, stats, school_type))
 
     # Find edges to place schools on
-    new_school_edges = find_school_edges(net, school_count, centre)
+    if 0 < school_count:
+        new_school_edges = find_school_edges(net, school_count, centre)
 
-    # Insert schools on edges found
-    insert_schools(args, new_school_edges, stats, school_type)
+        # Insert schools on edges found
+        insert_schools(args, new_school_edges, stats, school_type)
+    else:
+        logging.info(f"Inserting {school_count} new {school_type}(s)")
 
 
 def setup_schools(args, net: sumolib.net.Net, stats: ET.ElementTree, centre: Tuple[float, float]):
