@@ -1,9 +1,10 @@
-"""Usage: randomActivityGen.py --net-file=FILE --stat-file=FILE --output-file=FILE [--centre.pos=args]
+"""Usage:
+    randomActivityGen.py --net-file=FILE --stat-file=FILE --output-file=FILE [--centre.pos=args]
     [--centre.pop-weight=F] [--centre.work-weight=F] [--gates.count=N] [--schools.count=N] [--schools.ratio=F]
     [--schools.stepsize=F] [--schools.open=args] [--schools.close=args]  [--schools.begin-age=args]
     [--schools.end-age=args] [--schools.capacity=args] [--bus-stop.distance=N] [--bus-stop.k=N] [--display]
     [--display.size=N] [--seed=S | --random] ([--quiet] | [--verbose] | [--log-level=LEVEL]) [--log-file=FILENAME]
-    [--display-only]
+    randomActivityGen.py --net-file=FILE --stat-file=FILE [--output-file=FILE] --display-only
 
 Input Options:
     -n, --net-file FILE         Input road network file to create activity for
@@ -131,14 +132,17 @@ def main():
     stats = ET.parse(args["--stat-file"])
     verify_stats(stats)
 
+    max_display_size = int(args["--display.size"])
+
     centre = find_city_centre(net) if args["--centre.pos"] == "auto" else tuple(
         map(int, args["--centre.pos"].split(",")))
 
+    # If display-only, load stat-file as input and exit after rendering
     if args["--display-only"]:
-        stats = ET.parse(args["--stat-file"])
-        x_max_size, y_max_size = 1000, 1000
-        logging.info(f"Displaying network as image of max: {x_max_size} x {y_max_size} dimensions")
-        display_network(net, stats, centre, args, x_max_size, y_max_size)
+        # Try the output-file first, as, if given, it contains a computed statistics file, otherwise try the input
+        stats = ET.parse(args["--output-file"] if not None else args["--stat-file"])
+        logging.info(f"Displaying network as image of max size {max_display_size}x{max_display_size}")
+        display_network(net, stats, max_display_size, centre, args["--net-file"])
         exit(0)
 
     logging.info("Writing Perlin noise to population and industry")
@@ -167,9 +171,8 @@ def main():
     stats.write(args["--output-file"])
 
     if args["--display"]:
-        max_size = int(args["--display.size"])
-        logging.info(f"Displaying network as image of max size {max_size}x{max_size}")
-        display_network(net, stats, max_size, centre, args["--net-file"])
+        logging.info(f"Displaying network as image of max size {max_display_size}x{max_display_size}")
+        display_network(net, stats, max_display_size, centre, args["--net-file"])
 
 
 if __name__ == "__main__":
