@@ -185,7 +185,7 @@ class Legend:
         :return: self
         """
         # Define box dimensions
-        h_box = int(1.5 * self.r_box)
+        h_box = int(self.r_box)
         w_box = h_box * 2
 
         # draw box
