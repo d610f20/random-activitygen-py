@@ -41,8 +41,6 @@ Other Options:
     --version                   Show version.
 """
 
-# FIXME: make --display-only option mutex with ordinary run
-
 import os
 import random
 import sys
