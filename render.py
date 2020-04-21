@@ -49,12 +49,15 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, max_size: int, 
     width_scale = width / city_size[0]
     height_scale = height / city_size[1]
 
-    # Load pretty font FIXME: find more ubiquitous default pretty font and maybe try for both Linux and Win
+    # Load pretty fonts for Linux and Windows, falling back to defaults
     try:
         font = ImageFont.truetype("LiberationMono-Regular.ttf", size=12)
     except IOError:
-        logging.warning("[display] Could not load font, falling back to default")
-        font = ImageFont.load_default()
+        try:
+            font = ImageFont.truetype("arial.ttf", size=12)
+        except IOError:
+            logging.warning("[display] Could not load font, falling back to default")
+            font = ImageFont.load_default()
 
     assert font is not None, "[display] No font loaded, cannot continue"
 
