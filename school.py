@@ -44,6 +44,8 @@ def insert_schools(args, new_school_edges: list, stats: ET.ElementTree, school_t
                   f"school_stepsize:\t\t {school_stepsize}")
 
     xml_schools = stats.find('schools')
+    if xml_schools is None:
+        xml_schools = ET.SubElement(stats.getroot(), "schools")
 
     # Insert schools, with semi-random parameters
     logging.info("Inserting " + str(len(new_school_edges)) + f" new {school_type}(s)")
@@ -100,11 +102,8 @@ def setup_type_of_school(args, net: sumolib.net.Net, stats: ET.ElementTree, cent
 def setup_schools(args, net: sumolib.net.Net, stats: ET.ElementTree, centre: Tuple[float, float]):
 
     xml_schools = stats.find('schools')
-    # If no schools exist, create schools subelement to place schools under
-    if xml_schools is None:
-        ET.SubElement(stats.getroot(), "schools")
     # Remove all previous schools if any exists, effectively overwriting these
-    else:
+    if xml_schools is not None:
         schools = xml_schools.findall('school')
         for school in schools:
             xml_schools.remove(school)
