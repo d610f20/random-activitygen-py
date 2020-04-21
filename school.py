@@ -1,11 +1,10 @@
-import math
-import random
-import xml.etree.ElementTree as ET
-import os
-import sys
 import logging
-
+import os
+import random
+import sys
+import xml.etree.ElementTree as ET
 from typing import Tuple
+
 from perlin import POPULATION_BASE, sample_edge_noise
 from utility import radius_of_network, k_means_clusters
 
@@ -45,8 +44,6 @@ def insert_schools(args, new_school_edges: list, stats: ET.ElementTree, school_t
                   f"school_stepsize:\t\t {school_stepsize}")
 
     xml_schools = stats.find('schools')
-    if xml_schools is None:
-        xml_schools = ET.SubElement(stats.getroot(), "schools")
 
     # Insert schools, with semi-random parameters
     logging.info("Inserting " + str(len(new_school_edges)) + f" new {school_type}(s)")
@@ -72,8 +69,6 @@ def insert_schools(args, new_school_edges: list, stats: ET.ElementTree, school_t
 
 def get_school_count(args, stats: ET.ElementTree, school_type: str):
     if args[f"--{school_type}.count"] == "auto":
-        # Voodoo parameter, seems to be about the value for a couple of danish cities.
-        # In general one high school, per 5000-7000 inhabitant in a city, so 0.2 pr 1000 inhabitants
         schools_per_1000_inhabitants = float(args[f"--{school_type}.ratio"])
 
         # Calculate default number of schools, based on population if none input parameter
@@ -103,6 +98,17 @@ def setup_type_of_school(args, net: sumolib.net.Net, stats: ET.ElementTree, cent
 
 
 def setup_schools(args, net: sumolib.net.Net, stats: ET.ElementTree, centre: Tuple[float, float]):
+
+    xml_schools = stats.find('schools')
+    # If no schools exist, create schools subelement to place schools under
+    if xml_schools is None:
+        ET.SubElement(stats.getroot(), "schools")
+    # Remove all previous schools if any exists, effectively overwriting these
+    else:
+        schools = xml_schools.findall('school')
+        for school in schools:
+            xml_schools.remove(school)
+
     setup_type_of_school(args, net, stats, centre, "primary-school")
     setup_type_of_school(args, net, stats, centre, "high-school")
     setup_type_of_school(args, net, stats, centre, "college")
