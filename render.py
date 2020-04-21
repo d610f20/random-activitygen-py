@@ -131,7 +131,7 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, max_size: int, 
     Legend(max_size, height, draw, font) \
         .draw_network_name(network_name) \
         .draw_distance_legend(city_size, width_scale) \
-        .draw_gradient(((0, 255, 0), (0, 0, 255)), "Pop, work gradient") \
+        .draw_gradient("Pop, work gradient") \
         .draw_legend(COLOUR_CENTRE, "Centre") \
         .draw_legend(COLOUR_SCHOOL, "School") \
         .draw_legend(COLOUR_BUS_STOP, "Bus stop") \
@@ -168,7 +168,7 @@ class Legend:
         # Return self to allow chaining
         return self
 
-    def draw_gradient(self, colour: Tuple[Tuple[int, int, int], Tuple[int, int, int]], text):
+    def draw_gradient(self, text):
         """
         Writes a gradient icon-box. Diagonal gradient
         :param colour: RGB two-tuple where first tuple is the upper left, and second is lower right
@@ -183,19 +183,11 @@ class Legend:
         self.draw.rectangle((self.offset, self.icon_height, self.offset + w_box, self.icon_height + h_box),
                             "#ffffff", "#000000")
 
-        # for element-wise operation on tuples
-        import operator
-
-        pop_colour = colour[0]
-        work_colour = colour[1]
         for x in range(1, w_box):
             for y in range(1, h_box):
                 x_intensity = 1 - x / w_box
                 y_intensity = y / h_box
-
-                work = tuple(map(int, map(operator.mul, work_colour, (y_intensity, y_intensity, y_intensity))))
-                pop = tuple(map(int, map(operator.mul, pop_colour, (x_intensity, x_intensity, x_intensity))))
-                point_colour = tuple(map(int, map(operator.add, pop, work)))
+                point_colour = (0, int(35 + 220 * x_intensity), int(35 + 220 * y_intensity))
                 self.draw.point((self.offset + x, self.icon_height + y), point_colour)
 
         # draw text
