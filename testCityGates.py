@@ -1,4 +1,8 @@
+import math
 import xml.etree.ElementTree as ET
+import numpy as np
+from scipy.stats import t
+from matplotlib import pyplot as plt
 
 
 class TestInstance:
@@ -40,7 +44,7 @@ for test in test_instances:
     # Add results to sum
     correct_gates_sum += correct_gates
     incorrect_gates_sum += incorrect_gates
-    results.append((len(real_gate_edges), len(gen_gate_edges), correct_gates, incorrect_gates))
+    results.append((len(real_gate_edges), len(gen_gate_edges), correct_gates, incorrect_gates, correct_gates / len(gen_gate_edges)))
 
     # Print results
     print("  Real gate count:", len(real_gate_edges))
@@ -52,3 +56,19 @@ for test in test_instances:
 print("Summed results")
 print("  Correct gates:", correct_gates_sum)
 print("  Incorrect gates:", incorrect_gates_sum)
+
+# ========================= T-TEST ======================
+
+N = len(results)
+mu = 0.5  # Null-hypothesis: less than 50% of gates are placed correctly
+
+data = np.array(results).transpose()[4]  # Correct Percentage
+average = sum(data) / N
+variance = sum((average - data) ** 2) / N
+tstat = math.sqrt(N / variance) * (average - mu)
+pvalue = 1 - t.cdf(tstat, N - 1)
+
+print("  Average % correct:", average)
+print("  Variance % correct:", variance)
+print(f"  t-statistic (mu = {mu}): {tstat}")
+print("  p-value:", pvalue)
