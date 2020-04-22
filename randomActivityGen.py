@@ -138,7 +138,7 @@ def main():
     # If display-only, load stat-file as input and exit after rendering
     if args["--display-only"]:
         # Try the output-file first, as, if given, it contains a computed statistics file, otherwise try the input
-        stats = ET.parse(args["--output-file"] if not None else args["--stat-file"])
+        stats = ET.parse(args["--output-file"] or args["--stat-file"])
         logging.info(f"Displaying network as image of max size {max_display_size}x{max_display_size}")
         display_network(net, stats, max_display_size, centre, args["--net-file"])
         exit(0)
