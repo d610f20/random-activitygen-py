@@ -1,0 +1,41 @@
+<city>
+    <general inhabitants="70000" households="33333"/>
+    <parameters uniformRandomTraffic="0.2" />
+
+    <cityGates>
+        <entrance edge="-526254116" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="99529300#1" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="166899885#0" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="-60213420" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="60214148#2" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="301810423#1" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="69777761#0" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="760469904#3" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="-494604658#0" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="87454130#9" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="117237719#2" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="172023406#8" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="-68992443#0" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="-231196028#0" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="301952199#0" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="-115650808#3" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="39142837#6" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="-115650808#0" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="-697401252#0" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="87610311#1" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="516451048" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="158886287#3" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="99529489" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="305777809" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="405541777#1" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="31857812" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="505483787#8" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="-277218296#0" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="89193473" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="-126389380#0" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="99529421#5" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="503508391#5" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="-12370155#0" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="-65373048" pos="0" incoming="1" outgoing="1" />
+    </cityGates>
+</city>
