@@ -221,7 +221,7 @@ class Legend:
 
         self.draw.text([6, self.icon_height - 18], f"{meters} m", (0, 0, 0), font=self.font)
         # add padding
-        self.offset += 10
+        self.offset += 10 + int(self.scale)
         return self
 
     def draw_network_name(self, name):
