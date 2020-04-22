@@ -2,6 +2,37 @@
     <general inhabitants="33800" households="16095"/>
     <parameters uniformRandomTraffic="0.2" />
 
+    <cityGates>
+        <entrance edge="223004210#2" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="-733526117#0" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="-104239014#0" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="94669628#2" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="-579822728#3" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="-60112388#6" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="579822745#1" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="94669621" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="551163951" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="551163952" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="551163945" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="551163946" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="10666703#10" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="97696835" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="-204767517#0" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="-304744573#1" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="161959430#1" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="161959431#2" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="120860462#6" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="-223120956#0" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="307948624" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="415010254" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="456073118" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="210247619#0-AddedOffRampEdge" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="170129854#1" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="-94668947#0" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="-24455285#0" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="-239545894" pos="0" incoming="1" outgoing="1" />
+    </cityGates>
+
     <schools>
         <!-- Antvorskov Skole, Sejerøvej 1 -->
         <school edge="23958984#4" pos="0" />
