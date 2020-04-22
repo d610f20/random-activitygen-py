@@ -48,7 +48,7 @@ def insert_schools(args, new_school_edges: list, stats: ET.ElementTree, school_t
         xml_schools = ET.SubElement(stats.getroot(), "schools")
 
     # Insert schools, with semi-random parameters
-    logging.info("Inserting " + str(len(new_school_edges)) + f" new {school_type}(s)")
+    logging.info(f"Inserting {str(len(new_school_edges))} {school_type}(s)")
     for school_edge in new_school_edges:
         begin_age = random.randint(int(args[f"--{school_type}.begin-age"].split(",")[0]),
                                    int(args[f"--{school_type}.begin-age"].split(",")[1]))
@@ -85,20 +85,6 @@ def get_school_count(args, stats: ET.ElementTree, school_type: str):
     return school_count
 
 
-def setup_type_of_school(args, net: sumolib.net.Net, stats: ET.ElementTree, centre: Tuple[float, float], school_type):
-    # Get number of primary schools to be placed
-    school_count = int(get_school_count(args, stats, school_type))
-
-    # Find edges to place schools on
-    if 0 < school_count:
-        new_school_edges = find_school_edges(net, school_count, centre)
-
-        # Insert schools on edges found
-        insert_schools(args, new_school_edges, stats, school_type)
-    else:
-        logging.info(f"Inserting {school_count} new {school_type}(s)")
-
-
 def setup_schools(args, net: sumolib.net.Net, stats: ET.ElementTree, centre: Tuple[float, float]):
     xml_schools = stats.find('schools')
     # Remove all previous schools if any exists, effectively overwriting these
@@ -107,6 +93,28 @@ def setup_schools(args, net: sumolib.net.Net, stats: ET.ElementTree, centre: Tup
         for school in schools:
             xml_schools.remove(school)
 
-    setup_type_of_school(args, net, stats, centre, "primary-school")
-    setup_type_of_school(args, net, stats, centre, "high-school")
-    setup_type_of_school(args, net, stats, centre, "college")
+    # Get number of schools to be placed
+    primary_school_count = int(get_school_count(args, stats, "primary-school"))
+    high_school_count = int(get_school_count(args, stats, "high-school"))
+    college_count = int(get_school_count(args, stats, "college"))
+
+    school_count = primary_school_count + high_school_count + college_count
+
+    # Find edges to place schools on
+    if 0 < school_count:
+        new_school_edges = find_school_edges(net, school_count, centre)
+
+    # Place primary schools (if any) on the first edges in new_school_edges
+    if 0 < primary_school_count:
+        insert_schools(args, new_school_edges[:primary_school_count], stats, "primary-school")
+
+    # Then place high schools (if any) on the next edges in new_school_edges
+    if 0 < high_school_count:
+        insert_schools(args, new_school_edges[primary_school_count:primary_school_count + high_school_count], stats,
+                       "high-school")
+
+    # Place colleges (if any) on the remaining edges in new_school_edges, as the remaining number of edges should
+    # reflect number of colleges
+    if 0 < college_count:
+        insert_schools(args, new_school_edges[primary_school_count + high_school_count:school_count],
+                       stats, "college")
