@@ -100,7 +100,6 @@ def setup_type_of_school(args, net: sumolib.net.Net, stats: ET.ElementTree, cent
 
 
 def setup_schools(args, net: sumolib.net.Net, stats: ET.ElementTree, centre: Tuple[float, float]):
-
     xml_schools = stats.find('schools')
     # Remove all previous schools if any exists, effectively overwriting these
     if xml_schools is not None:

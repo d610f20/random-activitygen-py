@@ -31,7 +31,7 @@ Other Options:
     --high-school.ratio F           Number of schools per 1000 inhabitants [default: 0.04]
     --high-school.begin-age=args    The range of ages at which students start going to school [default: 15,18]
     --high-school.end-age=args      The range of ages at which students stops going to school [default: 18,23]
-    --high-school.capacity=args     The range for capacity in schools [default: 600,1000]
+    --high-school.capacity=args     The range for capacity in schools [default: 500,1000]
     --college.count N           Number of schools in the city, if not used, number of schools is based on population [default: auto]
     --college.ratio F           Number of schools per 1000 inhabitants [default: 0.015]
     --college.begin-age=args    The range of ages at which students start going to school [default: 19,25]
