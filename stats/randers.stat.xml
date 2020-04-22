@@ -2,6 +2,25 @@
     <general inhabitants="70000" households="33333"/>
     <parameters uniformRandomTraffic="0.2" />
 
+    <schools>
+        <!-- Hobrovejens Skole, Gethersvej 36 -->
+        <school edge="54434217#0" pos="0" capacity="600" />
+        <!-- Kristrup Skole, Skolegade 4 -->
+        <school edge="87449304#2" pos="0" capacity="600" />
+        <!-- Nørrevangsskolen, Glentevej 15 -->
+        <school edge="-30155165#4" pos="0" capacity="600" />
+        <!-- Rismølleskolen, Rismøllegade 15 -->
+        <school edge="59875117#7" pos="0" capacity="600" />
+        <!-- Søndermarkskolen, Skanderborggade 65 -->
+        <school edge="76466828#3" pos="0" capacity="600" />
+        <!-- Tirsdalens Skole, Rs. Hougårdsvej 50 -->
+        <school edge="51264914#19" pos="0" capacity="600" />
+        <!-- Vestervangsskolen, Nålemagervej 120 -->
+        <school edge="-56072658#3" pos="0" capacity="600" />
+        <!-- Østervangsskolen, Dronningborg Boulevard 33 -->
+        <school edge="-60995980#1" pos="0" capacity="600" />
+    </schools>
+
     <cityGates>
         <entrance edge="-526254116" pos="0" incoming="1" outgoing="1" />
         <entrance edge="99529300#1" pos="0" incoming="1" outgoing="1" />
