@@ -156,8 +156,8 @@ def main():
     logging.info("Setting up schools")
     setup_schools(args, net, stats, centre)
 
-    # logging.info(f"Setting up bus-stops")
-    # setup_bus_stops(net, stats, int(args["--bus-stop.distance"]), int(args["--bus-stop.k"]))
+    logging.info(f"Setting up bus-stops")
+    setup_bus_stops(net, stats, int(args["--bus-stop.distance"]), int(args["--bus-stop.k"]))
 
     # Write statistics back
     logging.info(f"Writing statistics file to {args['--output-file']}")
