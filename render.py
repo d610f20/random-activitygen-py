@@ -216,8 +216,8 @@ class Legend:
         # line
         self.draw.line([2, line_height, 2 + self.offset, line_height], (0, 0, 0), int(self.scale))
         # ticks
-        self.draw.line([2, line_height + 5, 2, line_height - 5], (0, 0, 0), int(self.scale / 2))
-        self.draw.line([2 + self.offset, line_height + 5, 2 + self.offset, line_height - 5], (0, 0, 0), int(self.scale / 2))
+        self.draw.line([2, line_height + 5, 2, line_height - 5], (0, 0, 0), int(self.scale))
+        self.draw.line([2 + self.offset, line_height + 5, 2 + self.offset, line_height - 5], (0, 0, 0), int(self.scale))
 
         self.draw.text([6, self.icon_height - 18], f"{meters} m", (0, 0, 0), font=self.font)
         # add padding
