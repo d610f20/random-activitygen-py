@@ -1,6 +1,43 @@
 <city>
     <general inhabitants="70000" households="33333"/>
     <parameters uniformRandomTraffic="0.2" />
+
+    <cityGates>
+        <entrance edge="6193125#1" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="-4060944" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="4060945" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="-149947973" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="7930384#3" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="-144723790" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="-448016636#0" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="-gneE1" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="-447537595#0" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="89835226" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="-134997464#0" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="55130144#4" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="-773697694#0" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="-85806621#0" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="-4228224#0" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="448016631" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="500769231#1" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="500769236#0" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="507876697#1" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="-165879263#0" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="-4048634#0" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="-3308333" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="672628778#1" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="3308334#6" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="448205653#3" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="448205656#2" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="-87771990" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="96820552" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="542099530" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="137307988" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="-444402437#1" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="2953353" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="87942053#1" pos="0" incoming="1" outgoing="1" />
+    </cityGates>
+
     <schools>
         <!-- Hjerting Skole Aura, 0.-4. klasse, Hjertingparken 202 -->
         <school edge="-87327887#3" pos="0" capacity="600" />
