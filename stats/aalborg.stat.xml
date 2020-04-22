@@ -4,6 +4,51 @@
         inhabitants="139016"
         households="66198"    
         />
+
+    <cityGates>
+        <!-- North of the fjord, starting at airport going clockwise -->
+        <entrance edge="-13799576" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="339892653#0" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="-97231141" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="-97231180#1" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="-339591835#4" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="-39226607#2" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="218939132#0" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="8169310#0" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="100519837#1-AddedOnRampEdge" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="93897165#6" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="-298209863#0" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="307944427" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="-30909803#0" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="21730681#2-AddedOnRampEdge" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="-23298469#8" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="25633483#0" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="-169287293#5" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="106835081#1" pos="0" incoming="1" outgoing="1" />
+        <!-- South of the fjord -->
+        <entrance edge="-242527768#6" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="98252410" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="-98252408" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="-146971685#9" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="342949170" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="-73011083#0" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="28981167" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="758238092#1" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="-25524611#13" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="-25499355#11" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="-25460671#0" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="378261832#13" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="-25511775#3" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="136821990#0" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="29314711#0" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="96420591" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="22817011" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="120060469#3" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="-142894255#0" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="36996778#15" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="329014638" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="457517175#26" pos="0" incoming="1" outgoing="1" />
+    </cityGates>
     <schools>
         <!-- Aalborg -->
         <!-- Filstedvejens Skole, Filstedvej 16, 9000 -->
