@@ -55,10 +55,10 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, max_size: int, 
 
     # Load pretty fonts for Linux and Windows, falling back to defaults
     try:
-        font = ImageFont.truetype("LiberationMono-Regular.ttf", size=12)
+        font = ImageFont.truetype("LiberationMono-Regular.ttf", size=max_size // 100)
     except IOError:
         try:
-            font = ImageFont.truetype("arial.ttf", size=12)
+            font = ImageFont.truetype("arial.ttf", size=max_size // 100)
         except IOError:
             logging.warning("[display] Could not load font, falling back to default")
             font = ImageFont.load_default()
@@ -89,7 +89,7 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, max_size: int, 
             edge = net.getEdge(gate_xml.attrib["edge"])
             traffic = max(float(gate_xml.attrib["incoming"]), float(gate_xml.attrib["outgoing"]))
             x, y = to_png_space(position_on_edge(edge, float(gate_xml.attrib["pos"])))
-            r = int(2 + traffic / 1.3)
+            r = int(max_size / 600 + traffic / 1.3)
             draw.ellipse((x - r, y - r, x + r, y + r), fill=(255, 0, 0))
     else:
         logging.warning(f"[render] Could not find any city-gates in statistics")
@@ -99,7 +99,7 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, max_size: int, 
         for stop_xml in stats.find("busStations").findall("busStation"):
             edge = net.getEdge(stop_xml.attrib["edge"])
             x, y = to_png_space(position_on_edge(edge, float(stop_xml.attrib["pos"])))
-            r = 2
+            r = max_size / 600
             draw.ellipse((x - r, y - r, x + r, y + r), fill=(250, 146, 0))
     else:
         logging.warning(f"[render] Could not find any bus-stations in statistics")
@@ -110,7 +110,7 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, max_size: int, 
             edge = net.getEdge(school_xml.attrib["edge"])
             capacity = int(school_xml.get('capacity'))
             x, y = to_png_space(position_on_edge(edge, float(school_xml.get('pos'))))
-            r = int(2 + capacity / 175)
+            r = int(max_size / 600 + capacity / 175)
             draw.ellipse((x - r, y - r, x + r, y + r), fill=(255, 0, 216))
     else:
         logging.warning(f"[render] Could not find any schools in statistics")
@@ -121,7 +121,7 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, max_size: int, 
 
     # Draw city centre
     x, y = to_png_space(centre)
-    r = 15
+    r = max_size / 100
     draw.ellipse((x - r, y - r, x + r, y + r), fill=COLOUR_CENTRE)
 
     # Flip image on the horizontal axis and update draw-pointer
@@ -214,10 +214,10 @@ class Legend:
         line_height = self.icon_height + self.r_box // 2
 
         # line
-        self.draw.line([2, line_height, 2 + self.offset, line_height], (0, 0, 0), 1)
+        self.draw.line([2, line_height, 2 + self.offset, line_height], (0, 0, 0), int(self.scale))
         # ticks
-        self.draw.line([2, line_height + 5, 2, line_height - 5], (0, 0, 0), 1)
-        self.draw.line([2 + self.offset, line_height + 5, 2 + self.offset, line_height - 5], (0, 0, 0), 1)
+        self.draw.line([2, line_height + 5, 2, line_height - 5], (0, 0, 0), int(self.scale / 2))
+        self.draw.line([2 + self.offset, line_height + 5, 2 + self.offset, line_height - 5], (0, 0, 0), int(self.scale / 2))
 
         self.draw.text([6, self.icon_height - 18], f"{meters} m", (0, 0, 0), font=self.font)
         # add padding
