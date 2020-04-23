@@ -1,4 +1,5 @@
-"""Usage: randomActivityGen.py --net-file=FILE --stat-file=FILE --output-file=FILE [--centre.pos=args]
+"""Usage:
+    randomActivityGen.py --net-file=FILE --stat-file=FILE --output-file=FILE [--centre.pos=args]
     [--centre.pop-weight=F] [--centre.work-weight=F] [--gates.count=N] [--schools.stepsize=F] [--schools.open=args]
     [--schools.close=args]  [--primary-school.begin-age=args] [--primary-school.end-age=args] [--primary-school.count=N]
     [--primary-school.ratio=F] [--primary-school.capacity=args] [--high-school.begin-age=args]
@@ -6,6 +7,7 @@
     [--college.begin-age=args] [--college.end-age=args] [--college.count=N] [--college.ratio=F]
     [--college.capacity=args] [--bus-stop.distance=N] [--bus-stop.k=N] [--display] [--display.size=N]
     [--seed=S | --random] ([--quiet] | [--verbose] | [--log-level=LEVEL]) [--log-file=FILENAME]
+    randomActivityGen.py --net-file=FILE --stat-file=FILE [--output-file=FILE] --display-only
 
 Input Options:
     -n, --net-file FILE         Input road network file to create activity for
@@ -39,8 +41,9 @@ Other Options:
     --college.capacity=args     The range for capacity in schools [default: 1000,2000]
     --bus-stop.distance N       Minimum distance between bus stops [default: 500]
     --bus-stop.k N              Placement attempts in the poisson-disc algorithm [default: 10]
-    --display                   Displays an image of cities elements and the noise used to generate them.
+    --display                   Displays an image of city elements and the noise used to generate them.
     --display.size N            Set max width and height of image to display to N [default: 800]
+    --display-only              Displays an image of city elements from existing statistics file. If given uses --stat-file for input.
     --verbose                   Sets log-level to DEBUG
     --quiet                     Sets log-level to ERROR
     --log-level=<LEVEL>         Explicitly set log-level {DEBUG, INFO, WARN, ERROR, CRITICAL} [default: INFO]
@@ -140,9 +143,20 @@ def main():
     stats = ET.parse(args["--stat-file"])
     verify_stats(stats)
 
-    logging.info("Writing Perlin noise to population and industry")
+    max_display_size = int(args["--display.size"])
+
     centre = find_city_centre(net) if args["--centre.pos"] == "auto" else tuple(
         map(int, args["--centre.pos"].split(",")))
+
+    # If display-only, load stat-file as input and exit after rendering
+    if args["--display-only"]:
+        # Try the output-file first, as, if given, it contains a computed statistics file, otherwise try the input
+        stats = ET.parse(args["--output-file"] or args["--stat-file"])
+        logging.info(f"Displaying network as image of max size {max_display_size}x{max_display_size}")
+        display_network(net, stats, max_display_size, centre, args["--net-file"])
+        exit(0)
+
+    logging.info("Writing Perlin noise to population and industry")
 
     # Populate network with street data
     logging.debug(f"Using centre: {centre}, "
@@ -164,9 +178,8 @@ def main():
     stats.write(args["--output-file"])
 
     if args["--display"]:
-        max_size = int(args["--display.size"])
-        logging.info(f"Displaying network as image of max size {max_size}x{max_size}")
-        display_network(net, stats, max_size, centre, args["--net-file"])
+        logging.info(f"Displaying network as image of max size {max_display_size}x{max_display_size}")
+        display_network(net, stats, max_display_size, centre, args["--net-file"])
 
 
 if __name__ == "__main__":
