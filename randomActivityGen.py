@@ -1,9 +1,12 @@
 """Usage:
     randomActivityGen.py --net-file=FILE --stat-file=FILE --output-file=FILE [--centre.pos=args]
-    [--centre.pop-weight=F] [--centre.work-weight=F] [--gates.count=N] [--schools.count=N] [--schools.ratio=F]
-    [--schools.stepsize=F] [--schools.open=args] [--schools.close=args]  [--schools.begin-age=args]
-    [--schools.end-age=args] [--schools.capacity=args] [--bus-stop.distance=N] [--bus-stop.k=N] [--display]
-    [--display.size=N] [--seed=S | --random] ([--quiet] | [--verbose] | [--log-level=LEVEL]) [--log-file=FILENAME]
+    [--centre.pop-weight=F] [--centre.work-weight=F] [--gates.count=N] [--schools.stepsize=F] [--schools.open=args]
+    [--schools.close=args]  [--primary-school.begin-age=args] [--primary-school.end-age=args] [--primary-school.count=N]
+    [--primary-school.ratio=F] [--primary-school.capacity=args] [--high-school.begin-age=args]
+    [--high-school.end-age=args] [--high-school.count=N] [--high-school.ratio=F] [--high-school.capacity=args]
+    [--college.begin-age=args] [--college.end-age=args] [--college.count=N] [--college.ratio=F]
+    [--college.capacity=args] [--bus-stop.distance=N] [--bus-stop.k=N] [--display] [--display.size=N]
+    [--seed=S | --random] ([--quiet] | [--verbose] | [--log-level=LEVEL]) [--log-file=FILENAME]
     randomActivityGen.py --net-file=FILE --stat-file=FILE [--output-file=FILE] --display-only
 
 Input Options:
@@ -18,14 +21,24 @@ Other Options:
     --centre.pop-weight F       The increase in population near the city center [default: 0.8]
     --centre.work-weight F      The increase in work places near the city center [default: 0.1]
     --gates.count N             Number of city gates in the city [default: 4]
-    --schools.count N           Number of schools in the city, if not used, number of schools is based on population [default: auto]
-    --schools.ratio F           Number of schools per 1000 inhabitants [default: 0.2]
     --schools.stepsize F        Stepsize in opening/closing hours, in parts of an hour, e.g 0.25 is every 15 mins [default: 0.25]
     --schools.open=args         The interval at which the schools opens (24h clock) [default: 7,10]
     --schools.close=args        The interval at which the schools closes (24h clock) [default: 13,17]
-    --schools.begin-age=args    The range of ages at which students start going to school [default: 6,20]
-    --schools.end-age=args      The range of ages at which students stops going to school [default: 10,30]
-    --schools.capacity=args     The range for capacity in schools [default: 100,500]
+    --primary-school.count N           Number of schools in the city, if not used, number of schools is based on population [default: auto]
+    --primary-school.ratio F           Number of schools per 1000 inhabitants [default: 0.2]
+    --primary-school.begin-age=args    The range of ages at which students start going to school [default: 6,14]
+    --primary-school.end-age=args      The range of ages at which students stops going to school [default: 12,16]
+    --primary-school.capacity=args     The range for capacity in schools [default: 100,500]
+    --high-school.count N           Number of schools in the city, if not used, number of schools is based on population [default: auto]
+    --high-school.ratio F           Number of schools per 1000 inhabitants [default: 0.04]
+    --high-school.begin-age=args    The range of ages at which students start going to school [default: 15,18]
+    --high-school.end-age=args      The range of ages at which students stops going to school [default: 18,23]
+    --high-school.capacity=args     The range for capacity in schools [default: 500,1000]
+    --college.count N           Number of schools in the city, if not used, number of schools is based on population [default: auto]
+    --college.ratio F           Number of schools per 1000 inhabitants [default: 0.015]
+    --college.begin-age=args    The range of ages at which students start going to school [default: 19,25]
+    --college.end-age=args      The range of ages at which students stops going to school [default: 24,29]
+    --college.capacity=args     The range for capacity in schools [default: 1000,2000]
     --bus-stop.distance N       Minimum distance between bus stops [default: 500]
     --bus-stop.k N              Placement attempts in the poisson-disc algorithm [default: 10]
     --display                   Displays an image of city elements and the noise used to generate them.
@@ -154,12 +167,8 @@ def main():
     logging.info(f"Setting up {int(args['--gates.count'])} city gates")
     setup_city_gates(net, stats, int(args["--gates.count"]))
 
-    if args["--schools.count"] == "auto":
-        logging.info("Setting up schools automatically")
-        setup_schools(args, net, stats, None, centre)
-    else:
-        logging.info(f"Setting up {int(args['--schools.count'])} schools")
-        setup_schools(args, net, stats, int(args["--schools.count"]), centre)
+    logging.info("Setting up schools")
+    setup_schools(args, net, stats, centre)
 
     logging.info(f"Setting up bus-stops")
     setup_bus_stops(net, stats, int(args["--bus-stop.distance"]), int(args["--bus-stop.k"]))
