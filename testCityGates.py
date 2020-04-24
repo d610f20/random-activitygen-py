@@ -20,7 +20,7 @@ test_instances = [
     TestInstance("Aalborg", "out/cities/aalborg.stat.xml", "stats/aalborg.stat.xml"),
 ]
 
-# ===================== TEST ======================
+# ===================== MEASUREMENTS ======================
 
 correct_gates_sum = 0
 incorrect_gates_sum = 0
@@ -65,7 +65,7 @@ print("  Incorrect gates:", incorrect_gates_sum)
 N = len(results)
 mu = 0.5  # Null-hypothesis: less than 50% of gates are placed correctly
 
-data = np.array(results).transpose()[4]  # Correct Percentage
+data = np.array(results).transpose()[4]  # Extract correct percentages
 average = sum(data) / N
 variance = sum((average - data) ** 2) / N
 tstat = math.sqrt(N / variance) * (average - mu)
