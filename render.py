@@ -55,10 +55,10 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, max_size: int, 
 
     # Load pretty fonts for Linux and Windows, falling back to defaults
     try:
-        font = ImageFont.truetype("LiberationMono-Regular.ttf", size=max_size // 100)
+        font = ImageFont.truetype("LiberationMono-Regular.ttf", size=max_size // 90)
     except IOError:
         try:
-            font = ImageFont.truetype("arial.ttf", size=max_size // 100)
+            font = ImageFont.truetype("arial.ttf", size=max_size // 90)
         except IOError:
             logging.warning("[display] Could not load font, falling back to default")
             font = ImageFont.load_default()
@@ -141,11 +141,11 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, max_size: int, 
 
 
 class Legend:
-    def __init__(self, scale, height, draw, font):
-        self.offset = 0
+    def __init__(self, scale, height, draw, font, margin=10):
+        self.offset = margin
         self.scale = scale / 800
-        self.r_box = 10 * self.scale
-        self.icon_height = height - self.r_box - 10
+        self.legend_height = 10 * self.scale
+        self.y = height - self.legend_height - margin
         self.draw: ImageDraw.ImageDraw = draw
         self.font = font
 
@@ -157,19 +157,19 @@ class Legend:
         :return: self
         """
         # Draw box and icon from beginning of offset
-        x_icon, y_icon = self.offset, self.icon_height
-        self.draw.rectangle((x_icon, y_icon, x_icon + self.r_box, y_icon + self.r_box), "#ffffff", "#000000")
+        x_icon, y_icon = self.offset, self.y
+        self.draw.rectangle((x_icon, y_icon, x_icon + self.legend_height, y_icon + self.legend_height), "#ffffff", "#000000")
 
-        x_box_centre, y_box_centre = x_icon + self.r_box // 2, y_icon + self.r_box // 2
+        x_box_centre, y_box_centre = x_icon + self.legend_height // 2, y_icon + self.legend_height // 2
 
         r_icon = 4 * self.scale
         self.draw.ellipse((x_box_centre - r_icon, y_box_centre - r_icon, x_box_centre + r_icon, y_box_centre + r_icon),
                           colour)
 
         # offset by text-width
-        self.draw.text((self.offset + self.r_box + 5, self.icon_height), text, "#000000", font=self.font)
+        self.draw.text((self.offset + self.legend_height + 5, self.y), text, "#000000", font=self.font)
         # Update offset
-        self.offset += self.font.getsize(text=text)[0] + self.r_box * 2
+        self.offset += self.font.getsize(text=text)[0] + self.legend_height * 2
 
         # Return self to allow chaining
         return self
@@ -182,11 +182,11 @@ class Legend:
         :return: self
         """
         # Define box dimensions
-        h_box = int(self.r_box)
+        h_box = int(self.legend_height)
         w_box = h_box * 2
 
         # draw box
-        self.draw.rectangle((self.offset, self.icon_height, self.offset + w_box, self.icon_height + h_box),
+        self.draw.rectangle((self.offset, self.y, self.offset + w_box, self.y + h_box),
                             "#ffffff", "#000000")
 
         for x in range(1, w_box):
@@ -194,10 +194,10 @@ class Legend:
                 x_intensity = 1 - x / w_box
                 y_intensity = y / h_box
                 point_colour = (0, int(35 + 220 * x_intensity), int(35 + 220 * y_intensity))
-                self.draw.point((self.offset + x, self.icon_height + y), point_colour)
+                self.draw.point((self.offset + x, self.y + y), point_colour)
 
         # draw text
-        self.draw.text((self.offset + w_box + 5, self.icon_height), text, "#000000", font=self.font)
+        self.draw.text((self.offset + w_box + 5, self.y), text, "#000000", font=self.font)
 
         self.offset += self.font.getsize(text=text)[0] + w_box + 15
         return self
@@ -210,18 +210,18 @@ class Legend:
         :return: self
         """
         meters = find_dist_legend_size(max(city_size))
-        self.offset += int(meters * width_scale)
-        line_height = self.icon_height + self.r_box // 2
+        width = int(meters * width_scale)
+        line_y = self.y + self.legend_height // 2
 
         # line
-        self.draw.line([2, line_height, 2 + self.offset, line_height], (0, 0, 0), int(self.scale))
+        self.draw.line([self.offset, line_y, self.offset + width, line_y], (0, 0, 0), int(self.scale))
         # ticks
-        self.draw.line([2, line_height + 5, 2, line_height - 5], (0, 0, 0), int(self.scale))
-        self.draw.line([2 + self.offset, line_height + 5, 2 + self.offset, line_height - 5], (0, 0, 0), int(self.scale))
+        self.draw.line([self.offset, self.y, self.offset, self.y + self.legend_height], (0, 0, 0), int(self.scale))
+        self.draw.line([self.offset + width, self.y, self.offset + width, self.y + self.legend_height], (0, 0, 0), int(self.scale))
 
-        self.draw.text([6, self.icon_height - 18], f"{meters} m", (0, 0, 0), font=self.font)
+        self.draw.text([self.offset + 5 * int(self.scale), self.y - 8 * int(self.scale)], f"{meters} m", (0, 0, 0), font=self.font)
         # add padding
-        self.offset += 10 + int(self.scale)
+        self.offset += width + 12 * int(self.scale)
         return self
 
     def draw_network_name(self, name):
