@@ -14,7 +14,10 @@ class TestInstance:
 
 test_instances = [
     TestInstance("Esbjerg", "out/cities/esbjerg.stat.xml", "stats/esbjerg.stat.xml"),
-    TestInstance("Slagelse", "out/cities/slagelse.stat.xml", "stats/slagelse.stat.xml")
+    TestInstance("Slagelse", "out/cities/slagelse.stat.xml", "stats/slagelse.stat.xml"),
+    TestInstance("Randers", "out/cities/randers.stat.xml", "stats/randers.stat.xml"),
+    TestInstance("Vejen", "out/cities/vejen.stat.xml", "stats/vejen.stat.xml"),
+    TestInstance("Aalborg", "out/cities/aalborg.stat.xml", "stats/aalborg.stat.xml"),
 ]
 
 # ===================== TEST ======================
@@ -47,10 +50,10 @@ for test in test_instances:
     results.append((len(real_gate_edges), len(gen_gate_edges), correct_gates, incorrect_gates, correct_gates / len(gen_gate_edges)))
 
     # Print results
-    print("  Real gate count:", len(real_gate_edges))
-    print("  Generated gate count:", len(gen_gate_edges))
+    print("  Generated / real gate count:", len(gen_gate_edges), "/", len(real_gate_edges))
     print("  Correct gates:", correct_gates)
     print("  Incorrect edges:", incorrect_gates)
+    print("  % correct:", correct_gates / len(gen_gate_edges))
 
 
 print("Summed results")
