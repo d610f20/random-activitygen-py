@@ -158,20 +158,27 @@ class Legend:
         """
         # Draw box and icon from beginning of offset
         x_icon, y_icon = self.offset, self.y
-        self.draw.rectangle((x_icon, y_icon, x_icon + self.legend_height, y_icon + self.legend_height), "#ffffff", "#000000")
+        width = self.legend_height
 
-        x_box_centre, y_box_centre = x_icon + self.legend_height // 2, y_icon + self.legend_height // 2
+        # White background
+        self.draw.rectangle((x_icon, y_icon, x_icon + width, y_icon + width), "#ffffff")
 
-        r_icon = 4 * self.scale
-        self.draw.ellipse((x_box_centre - r_icon, y_box_centre - r_icon, x_box_centre + r_icon, y_box_centre + r_icon),
-                          colour)
+        # Draw circle
+        r = width // 2
+        x_box_centre, y_box_centre = x_icon + r, y_icon + r
+        self.draw.ellipse((x_box_centre - r, y_box_centre - r, x_box_centre + r, y_box_centre + r), colour)
 
-        # offset by text-width
-        self.draw.text((self.offset + self.legend_height + 5, self.y), text, "#000000", font=self.font)
+        # Draw box
+        self.draw.rectangle((x_icon, y_icon, x_icon + width, y_icon + width), outline="#000000", width=int(self.scale))
+
+        self.offset += int(1.5 * width)
+
+        # Draw text
+        self.draw.text((self.offset, self.y), text, "#000000", font=self.font)
+
         # Update offset
-        self.offset += self.font.getsize(text=text)[0] + self.legend_height * 2
+        self.offset += self.font.getsize(text=text)[0] + 2 * width
 
-        # Return self to allow chaining
         return self
 
     def draw_gradient(self, text):
@@ -185,10 +192,6 @@ class Legend:
         h_box = int(self.legend_height)
         w_box = h_box * 2
 
-        # draw box
-        self.draw.rectangle((self.offset, self.y, self.offset + w_box, self.y + h_box),
-                            "#ffffff", "#000000")
-
         for x in range(1, w_box):
             for y in range(1, h_box):
                 x_intensity = 1 - x / w_box
@@ -196,10 +199,15 @@ class Legend:
                 point_colour = (0, int(35 + 220 * x_intensity), int(35 + 220 * y_intensity))
                 self.draw.point((self.offset + x, self.y + y), point_colour)
 
-        # draw text
-        self.draw.text((self.offset + w_box + 5, self.y), text, "#000000", font=self.font)
+        # draw box
+        self.draw.rectangle((self.offset, self.y, self.offset + w_box, self.y + h_box),
+                            None, "#000000ff", width=int(self.scale))
+        self.offset += w_box + int(0.5 * self.legend_height)
 
-        self.offset += self.font.getsize(text=text)[0] + w_box + 15
+        # draw text
+        self.draw.text((self.offset, self.y), text, "#000000", font=self.font)
+        self.offset += self.font.getsize(text=text)[0] + 2 * self.legend_height
+
         return self
 
     def draw_scale_legend(self, city_size, width_scale):
@@ -221,7 +229,7 @@ class Legend:
 
         self.draw.text([self.offset + 5 * int(self.scale), self.y - 8 * int(self.scale)], f"{meters} m", (0, 0, 0), font=self.font)
         # add padding
-        self.offset += width + 12 * int(self.scale)
+        self.offset += width + 2 * self.legend_height
         return self
 
     def draw_network_name(self, name):
