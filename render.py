@@ -54,11 +54,12 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, max_size: int, 
         return (xy[0] - boundary[0]) * width_scale, (xy[1] - boundary[1]) * height_scale
 
     # Load pretty fonts for Linux and Windows, falling back to defaults
+    fontsize = max(max_size // 90, 10)
     try:
-        font = ImageFont.truetype("LiberationMono-Regular.ttf", size=max_size // 90)
+        font = ImageFont.truetype("LiberationMono-Regular.ttf", size=fontsize)
     except IOError:
         try:
-            font = ImageFont.truetype("arial.ttf", size=max_size // 90)
+            font = ImageFont.truetype("arial.ttf", size=fontsize)
         except IOError:
             logging.warning("[display] Could not load font, falling back to default")
             font = ImageFont.load_default()
