@@ -1,0 +1,92 @@
+<?xml version="1.0"?>
+<city>
+    <general 
+        inhabitants="139016"
+        households="66198"    
+        />
+
+    <cityGates>
+        <!-- North of the fjord, starting at airport going clockwise -->
+        <entrance edge="-13799576" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="339892653#0" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="-97231141" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="-97231180#1" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="-339591835#4" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="-39226607#2" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="218939132#0" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="8169310#0" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="100519837#1-AddedOnRampEdge" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="93897165#6" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="-298209863#0" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="307944427" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="-30909803#0" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="21730681#2-AddedOnRampEdge" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="-23298469#8" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="25633483#0" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="-169287293#5" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="106835081#1" pos="0" incoming="1" outgoing="1" />
+        <!-- South of the fjord -->
+        <entrance edge="-242527768#6" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="98252410" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="-98252408" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="-146971685#9" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="342949170" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="-73011083#0" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="28981167" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="758238092#1" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="-25524611#13" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="-25499355#11" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="-25460671#0" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="378261832#13" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="-25511775#3" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="136821990#0" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="29314711#0" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="96420591" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="22817011" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="120060469#3" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="-142894255#0" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="36996778#15" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="329014638" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="457517175#26" pos="0" incoming="1" outgoing="1" />
+    </cityGates>
+    <schools>
+        <!-- Aalborg -->
+        <!-- Filstedvejens Skole, Filstedvej 16, 9000 -->
+        <school edge="-713525481#0" pos="0" capacity="600" />
+        <!-- Gl. Hasseris Skole, Mester Eriks Vej 57, 9000 -->
+        <school edge="-338356231#7" pos="0" capacity="600" />
+        <!-- Gug Skole, Solhøjsvej 2, 9210 -->
+        <school edge="-125450808#1" pos="0" capacity="600" />
+        <!-- Herningvej Skole, Herningvej Skole, 9220 -->
+        <school edge="38755832#8" pos="0" capacity="600" />
+        <!-- Kærbyskolen, Oluf Borchs vej 2, 9000 -->
+        <school edge="-44158157#1" pos="0" capacity="600" />
+        <!-- Mellervangskolen, Frøstrupvej 4, 9220 -->
+        <school edge="88139904#3" pos="0" capacity="600" />
+        <!-- Seminarieskolen, Mylius Erichsensvej 127, 9210 -->
+        <school edge="-762743228#5" pos="0" capacity="600" />
+        <!-- Sofiendalskolen, Lange Müllers Vej 18, 9200 -->
+        <school edge="30660456#10" pos="0" capacity="600" />
+        <!-- Stolpedalsskolen, Stolpedalsvej 2, 9000 -->
+        <school edge="-41827641" pos="0" capacity="600" />
+        <!-- Sønderbroskolen, Sjællandsgade 2, 9000 -->
+        <school edge="-332538435#2" pos="0" capacity="600" />
+        <!-- Tornhøjskolen, Tornhøjvej 1, 9220 -->
+        <school edge="-31968817#4" pos="0" capacity="600" />
+        <!-- Vejgaard Østre Skole, Chr. Koldsvej 1, 9000 -->
+        <school edge="-8599643#1" pos="0" capacity="600" />
+        <!-- Vester Mariendal Skole, Stjernevej, 9200 -->
+        <school edge="-31112645#2" pos="0" capacity="600" />
+        <!-- Vesterkærets Skole, Skydebanevej 1, 9000 -->
+        <school edge="-492468841#2" pos="0" capacity="600" />
+
+        <!-- Nørresundby -->
+        <!-- Gl. Lindholm Skole, Lindholmsvej 65, 9400 -->
+        <school edge="-682002083#0" pos="0" capacity="600" />
+        <!-- Nr. Uttrup Skole, Hjørringvej 81 - 83, 9400 -->
+        <school edge="128572669#2" pos="0" capacity="600" />
+        <!--  Skansevejens Skole, Skansevej 2, 9400 -->
+        <school edge="26463726#12" pos="0" capacity="600" />
+
+    </schools>
+</city>
