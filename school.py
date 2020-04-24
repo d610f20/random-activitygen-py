@@ -1,13 +1,12 @@
-import math
-import random
-import xml.etree.ElementTree as ET
-import os
-import sys
 import logging
-
+import os
+import random
+import sys
+import xml.etree.ElementTree as ET
 from typing import Tuple
+
 from perlin import POPULATION_BASE, sample_edge_noise
-from utility import find_city_centre, radius_of_network, k_means_clusters
+from utility import radius_of_network, k_means_clusters
 
 if 'SUMO_HOME' in os.environ:
     tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
@@ -23,7 +22,6 @@ def find_school_edges(net: sumolib.net.Net, num_schools: int, centre: Tuple[floa
     districts = k_means_clusters(net, num_schools)
 
     school_edges = []
-    centre = find_city_centre(net)
     radius = radius_of_network(net, centre)
     # Sort each edge in each district based on their noise, and return edge with highest noise from each district
     for district in districts:
@@ -33,31 +31,7 @@ def find_school_edges(net: sumolib.net.Net, num_schools: int, centre: Tuple[floa
     return school_edges
 
 
-def setup_schools(args, net: sumolib.net.Net, stats: ET.ElementTree, school_count: int or None,
-                  centre: Tuple[float, float]):
-    xml_schools = stats.find('schools')
-    if xml_schools is None:
-        xml_schools = ET.SubElement(stats.getroot(), "schools")
-    if school_count is None:
-        # Voodoo parameter, seems to be about the value for a couple of danish cities.
-        # In general one high school, per 5000-7000 inhabitant in a city, so 0.2 pr 1000 inhabitants
-        schools_per_1000_inhabitants = float(args["--schools.ratio"])
-
-        # Calculate default number of schools, based on population if none input parameter
-        xml_general = stats.find('general')
-        inhabitants = xml_general.get('inhabitants')
-        num_schools_default = math.ceil(int(inhabitants) * schools_per_1000_inhabitants / 1000)
-
-        # Number of new schools to be placed
-        number_new_schools = num_schools_default - len(xml_schools.findall("school"))
-    else:
-        # Else place new number of schools as according to input
-        number_new_schools = school_count - len(xml_schools.findall("school"))
-
-    if number_new_schools <= 0:
-        logging.warning(f"{school_count} schools was requested, but there are already {len(xml_schools)} defined")
-        return
-
+def insert_schools(args, new_school_edges: list, stats: ET.ElementTree, school_type: str):
     school_open_earliest = int(args["--schools.open"].split(",")[0]) * 3600
     school_open_latest = int(args["--schools.open"].split(",")[1]) * 3600
     school_close_earliest = int(args["--schools.close"].split(",")[0]) * 3600
@@ -69,26 +43,78 @@ def setup_schools(args, net: sumolib.net.Net, stats: ET.ElementTree, school_coun
                   f"school_close_latest:\t {school_close_latest}\n\t"
                   f"school_stepsize:\t\t {school_stepsize}")
 
-    # Find edges to place schools on
-    new_school_edges = find_school_edges(net, number_new_schools, centre)
+    xml_schools = stats.find('schools')
+    if xml_schools is None:
+        xml_schools = ET.SubElement(stats.getroot(), "schools")
 
     # Insert schools, with semi-random parameters
-    logging.info("Inserting " + str(len(new_school_edges)) + " new school(s)")
-    for school in new_school_edges:
-        begin_age = random.randint(int(args["--schools.begin-age"].split(",")[0]),
-                                   int(args["--schools.begin-age"].split(",")[1]))
-        end_age = random.randint(int(args["--schools.end-age"].split(",")[0]) if begin_age + 1 <= int(
-            args["--schools.end-age"].split(",")[0]) else begin_age + 1,
-                                 int(args["--schools.end-age"].split(",")[1]))
-        logging.debug(f"Using begin_age: {begin_age}, end_age: {end_age} for school(s)")
+    logging.info(f"Inserting {str(len(new_school_edges))} {school_type}(s)")
+    for school_edge in new_school_edges:
+        begin_age = random.randint(int(args[f"--{school_type}.begin-age"].split(",")[0]),
+                                   int(args[f"--{school_type}.begin-age"].split(",")[1]))
+        end_age = random.randint(int(args[f"--{school_type}.end-age"].split(",")[0]) if begin_age + 1 <= int(
+            args[f"--{school_type}.end-age"].split(",")[0]) else begin_age + 1,
+                                 int(args[f"--{school_type}.end-age"].split(",")[1]))
+        logging.debug(f"Using begin_age: {begin_age}, end_age: {end_age} for {school_type}(s)")
 
         ET.SubElement(xml_schools, "school", attrib={
-            "edge": str(school.getID()),
-            "pos": str(random.randint(0, 100)),
+            "edge": str(school_edge.getID()),
+            "pos": str(random.randint(0, int(school_edge.getLength()))),
             "beginAge": str(begin_age),
             "endAge": str(end_age),
-            "capacity": str(random.randint(int(args["--schools.capacity"].split(",")[0]),
-                                           int(args["--schools.capacity"].split(",")[1]))),
+            "capacity": str(random.randint(int(args[f"--{school_type}.capacity"].split(",")[0]),
+                                           int(args[f"--{school_type}.capacity"].split(",")[1]))),
             "opening": str(random.randrange(school_open_earliest, school_open_latest, school_stepsize)),
             "closing": str(random.randrange(school_close_earliest, school_close_latest, school_stepsize))
         })
+
+
+def get_school_count(args, stats: ET.ElementTree, school_type: str):
+    if args[f"--{school_type}.count"] == "auto":
+        schools_per_1000_inhabitants = float(args[f"--{school_type}.ratio"])
+
+        # Calculate default number of schools, based on population if none input parameter
+        xml_general = stats.find('general')
+        inhabitants = xml_general.get('inhabitants')
+        school_count = int(inhabitants) * schools_per_1000_inhabitants // 1000
+
+    else:
+        # Else place new number of schools as according to input
+        school_count = int(args[f"--{school_type}.count"])
+
+    return school_count
+
+
+def setup_schools(args, net: sumolib.net.Net, stats: ET.ElementTree, centre: Tuple[float, float]):
+    xml_schools = stats.find('schools')
+    # Remove all previous schools if any exists, effectively overwriting these
+    if xml_schools is not None:
+        schools = xml_schools.findall('school')
+        for school in schools:
+            xml_schools.remove(school)
+
+    # Get number of schools to be placed
+    primary_school_count = int(get_school_count(args, stats, "primary-school"))
+    high_school_count = int(get_school_count(args, stats, "high-school"))
+    college_count = int(get_school_count(args, stats, "college"))
+
+    school_count = primary_school_count + high_school_count + college_count
+
+    # Find edges to place schools on
+    if 0 < school_count:
+        new_school_edges = find_school_edges(net, school_count, centre)
+
+    # Place primary schools (if any) on the first edges in new_school_edges
+    if 0 < primary_school_count:
+        insert_schools(args, new_school_edges[:primary_school_count], stats, "primary-school")
+
+    # Then place high schools (if any) on the next edges in new_school_edges
+    if 0 < high_school_count:
+        insert_schools(args, new_school_edges[primary_school_count:primary_school_count + high_school_count], stats,
+                       "high-school")
+
+    # Place colleges (if any) on the remaining edges in new_school_edges, as the remaining number of edges should
+    # reflect number of colleges
+    if 0 < college_count:
+        insert_schools(args, new_school_edges[primary_school_count + high_school_count:school_count],
+                       stats, "college")

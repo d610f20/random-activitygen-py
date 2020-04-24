@@ -1,0 +1,36 @@
+<city>
+    <general inhabitants="9500" households="4520"/>
+    <parameters uniformRandomTraffic="0.2" />
+    <cityGates>
+        <!-- Starting in west, going clockwise -->
+        <entrance edge="-670808753#0" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="-30182018" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="-383460934" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="184108774#4-AddedOnRampEdge" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="30427258#0-AddedOffRampEdge" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="-27296404#1" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="30427258#4-AddedOnRampEdge" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="184108774#0-AddedOffRampEdge" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="28003235#0" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="-23094005#3" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="-102353539#0" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="226370719" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="-102353539#3" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="-26367479#5" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="-583238420" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="-27558679#0" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="47296648#0" pos="0" incoming="1" outgoing="1" />
+        <!-- Note that edge below is marked in network as cycleway but is an actual road -->
+        <entrance edge="38034270#7" pos="0" incoming="1" outgoing="1" />
+        <entrance edge="-28076920#0" pos="0" incoming="1" outgoing="1" />
+
+    </cityGates>
+    <schools>
+        <!-- Askov-Malt Skole, Maltvej 86, 6600 (0-6th grade) -->
+        <school edge="-38034268#1" pos="0" capacity="600" />
+        <!-- Grønvangskolen, Jacob Gades Allé 16, 6600 (0-9th grade) -->
+        <school edge="-28269907#2" pos="0" capacity="600" />
+        <!-- Østerbyskolen, Nygade 17, 6600 (0-9th grade) -->
+        <school edge="654232671#1" pos="0" capacity="600" />
+    </schools>
+</city>
