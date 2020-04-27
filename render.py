@@ -54,11 +54,12 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, max_size: int, 
         return (xy[0] - boundary[0]) * width_scale, (xy[1] - boundary[1]) * height_scale
 
     # Load pretty fonts for Linux and Windows, falling back to defaults
+    fontsize = max(max_size // 90, 10)
     try:
-        font = ImageFont.truetype("LiberationMono-Regular.ttf", size=12)
+        font = ImageFont.truetype("LiberationMono-Regular.ttf", size=fontsize)
     except IOError:
         try:
-            font = ImageFont.truetype("arial.ttf", size=12)
+            font = ImageFont.truetype("arial.ttf", size=fontsize)
         except IOError:
             logging.warning("[display] Could not load font, falling back to default")
             font = ImageFont.load_default()
@@ -88,7 +89,7 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, max_size: int, 
             edge = net.getEdge(gate_xml.attrib["edge"])
             traffic = max(float(gate_xml.attrib["incoming"]), float(gate_xml.attrib["outgoing"]))
             x, y = to_png_space(position_on_edge(edge, float(gate_xml.attrib["pos"])))
-            r = int(2 + traffic / 1.3)
+            r = int(max_size / 600 + traffic / 1.3)
             draw.ellipse((x - r, y - r, x + r, y + r), fill=(255, 0, 0))
     else:
         logging.warning(f"[render] Could not find any city-gates in statistics")
@@ -98,7 +99,7 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, max_size: int, 
         for stop_xml in stats.find("busStations").findall("busStation"):
             edge = net.getEdge(stop_xml.attrib["edge"])
             x, y = to_png_space(position_on_edge(edge, float(stop_xml.attrib["pos"])))
-            r = 2
+            r = max_size / 600
             draw.ellipse((x - r, y - r, x + r, y + r), fill=(250, 146, 0))
     else:
         logging.warning(f"[render] Could not find any bus-stations in statistics")
@@ -109,7 +110,7 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, max_size: int, 
             edge = net.getEdge(school_xml.attrib["edge"])
             capacity = int(school_xml.get('capacity'))
             x, y = to_png_space(position_on_edge(edge, float(school_xml.get('pos'))))
-            r = int(2 + capacity / 175)
+            r = int(max_size / 600 + capacity / 175)
             draw.ellipse((x - r, y - r, x + r, y + r), fill=(255, 0, 216))
     else:
         logging.warning(f"[render] Could not find any schools in statistics")
@@ -120,7 +121,7 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, max_size: int, 
 
     # Draw city centre
     x, y = to_png_space(centre)
-    r = 15
+    r = max_size / 100
     draw.ellipse((x - r, y - r, x + r, y + r), fill=COLOUR_CENTRE)
 
     # Flip image on the horizontal axis and update draw-pointer
@@ -140,11 +141,11 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, max_size: int, 
 
 
 class Legend:
-    def __init__(self, scale, height, draw, font):
-        self.offset = 0
+    def __init__(self, scale, height, draw, font, margin=10):
+        self.offset = margin
         self.scale = scale / 800
-        self.r_box = 10 * self.scale
-        self.icon_height = height - self.r_box - 10
+        self.legend_height = 10 * self.scale
+        self.y = height - self.legend_height - margin
         self.draw: ImageDraw.ImageDraw = draw
         self.font = font
 
@@ -156,21 +157,28 @@ class Legend:
         :return: self
         """
         # Draw box and icon from beginning of offset
-        x_icon, y_icon = self.offset, self.icon_height
-        self.draw.rectangle((x_icon, y_icon, x_icon + self.r_box, y_icon + self.r_box), "#ffffff", "#000000")
+        x_icon, y_icon = self.offset, self.y
+        width = self.legend_height
 
-        x_box_centre, y_box_centre = x_icon + self.r_box // 2, y_icon + self.r_box // 2
+        # White background
+        self.draw.rectangle((x_icon, y_icon, x_icon + width, y_icon + width), "#ffffff")
 
-        r_icon = 4 * self.scale
-        self.draw.ellipse((x_box_centre - r_icon, y_box_centre - r_icon, x_box_centre + r_icon, y_box_centre + r_icon),
-                          colour)
+        # Draw circle
+        r = width // 2
+        x_box_centre, y_box_centre = x_icon + r, y_icon + r
+        self.draw.ellipse((x_box_centre - r, y_box_centre - r, x_box_centre + r, y_box_centre + r), colour)
 
-        # offset by text-width
-        self.draw.text((self.offset + self.r_box + 5, self.icon_height), text, "#000000", font=self.font)
+        # Draw box
+        self.draw.rectangle((x_icon, y_icon, x_icon + width, y_icon + width), outline="#000000", width=int(self.scale))
+
+        self.offset += int(1.5 * width)
+
+        # Draw text
+        self.draw.text((self.offset, self.y), text, "#000000", font=self.font)
+
         # Update offset
-        self.offset += self.font.getsize(text=text)[0] + self.r_box * 2
+        self.offset += self.font.getsize(text=text)[0] + 2 * width
 
-        # Return self to allow chaining
         return self
 
     def draw_gradient(self, text):
@@ -181,24 +189,25 @@ class Legend:
         :return: self
         """
         # Define box dimensions
-        h_box = int(self.r_box)
+        h_box = int(self.legend_height)
         w_box = h_box * 2
-
-        # draw box
-        self.draw.rectangle((self.offset, self.icon_height, self.offset + w_box, self.icon_height + h_box),
-                            "#ffffff", "#000000")
 
         for x in range(1, w_box):
             for y in range(1, h_box):
                 x_intensity = 1 - x / w_box
                 y_intensity = y / h_box
                 point_colour = (0, int(35 + 220 * x_intensity), int(35 + 220 * y_intensity))
-                self.draw.point((self.offset + x, self.icon_height + y), point_colour)
+                self.draw.point((self.offset + x, self.y + y), point_colour)
+
+        # draw box
+        self.draw.rectangle((self.offset, self.y, self.offset + w_box, self.y + h_box),
+                            None, "#000000ff", width=int(self.scale))
+        self.offset += w_box + int(0.5 * self.legend_height)
 
         # draw text
-        self.draw.text((self.offset + w_box + 5, self.icon_height), text, "#000000", font=self.font)
+        self.draw.text((self.offset, self.y), text, "#000000", font=self.font)
+        self.offset += self.font.getsize(text=text)[0] + 2 * self.legend_height
 
-        self.offset += self.font.getsize(text=text)[0] + w_box + 15
         return self
 
     def draw_scale_legend(self, city_size, width_scale):
@@ -209,18 +218,18 @@ class Legend:
         :return: self
         """
         meters = find_dist_legend_size(max(city_size))
-        self.offset += int(meters * width_scale)
-        line_height = self.icon_height + self.r_box // 2
+        width = int(meters * width_scale)
+        line_y = self.y + self.legend_height // 2
 
         # line
-        self.draw.line([2, line_height, 2 + self.offset, line_height], (0, 0, 0), 1)
+        self.draw.line([self.offset, line_y, self.offset + width, line_y], (0, 0, 0), int(self.scale))
         # ticks
-        self.draw.line([2, line_height + 5, 2, line_height - 5], (0, 0, 0), 1)
-        self.draw.line([2 + self.offset, line_height + 5, 2 + self.offset, line_height - 5], (0, 0, 0), 1)
+        self.draw.line([self.offset, self.y, self.offset, self.y + self.legend_height], (0, 0, 0), int(self.scale))
+        self.draw.line([self.offset + width, self.y, self.offset + width, self.y + self.legend_height], (0, 0, 0), int(self.scale))
 
-        self.draw.text([6, self.icon_height - 18], f"{meters} m", (0, 0, 0), font=self.font)
+        self.draw.text([self.offset + 5 * int(self.scale), self.y - 8 * int(self.scale)], f"{meters} m", (0, 0, 0), font=self.font)
         # add padding
-        self.offset += 10
+        self.offset += width + 2 * self.legend_height
         return self
 
     def draw_network_name(self, name):
