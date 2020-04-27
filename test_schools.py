@@ -35,6 +35,7 @@ class TestInstance:
             Path(self.real_stats_file).resolve(strict=True)
         except FileNotFoundError:
             print(f"Files for test instance: {self.name} does not exist", file=stderr)
+            pprint(self.__dict__)
             exit(1)
 
 
