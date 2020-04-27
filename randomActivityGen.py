@@ -80,7 +80,7 @@ import sumolib
 
 
 def main():
-    city_name = "slagelse"
+    city_name = "aalborg"
     args = docopt(__doc__, version="RandomActivityGen v0.1")
 
     setup_logging(args)

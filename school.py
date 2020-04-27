@@ -102,12 +102,10 @@ def setup_schools(args, net: sumolib.net.Net, stats: ET.ElementTree, centre: Tup
 
     real_schools = len([xml_school for xml_school in ET.parse(f"stats\{city_name}.stat.xml").find("schools").findall("school")])
     difference = real_schools - school_count
-    if school_count < real_schools:
-        school_count += difference
-        primary_school_count += difference
-    if real_schools < school_count:
-        school_count -= difference
-        primary_school_count -= difference
+
+    school_count += difference
+    primary_school_count += difference
+
 
     # Find edges to place schools on
     if 0 < school_count:
