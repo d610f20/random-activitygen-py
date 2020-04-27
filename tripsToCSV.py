@@ -50,26 +50,24 @@ with open(os.path.dirname(args["--trips-file"]) + f"/{fname}-trip-starts.csv", "
         progress = 0
         for edge in net.getEdges():
 
-            trip_starts = len([trip for trip in trips.findall("trip") if trip.attrib["from"] == edge.getID()])
-            trip_ends = len([trip for trip in trips.findall("trip") if trip.attrib["to"] == edge.getID()])
+            trip_starts = [float(trip.attrib["arrivalPos"]) for trip in trips.findall("trip") if trip.attrib["from"] == edge.getID()]
+            trip_ends = [float(trip.attrib["departPos"]) for trip in trips.findall("trip") if trip.attrib["to"] == edge.getID()]
 
-            x, y = position_on_edge(edge, edge.getLength() / 2)
-            x -= offset_x
-            y -= offset_y
+            for start in trip_starts:
+                x, y = position_on_edge(edge, start)
+                x -= offset_x
+                y -= offset_y
+                start = (x, y)
+                writer_starts.writerow(start)
+                starts.append(start)
 
-            start = (x, y, trip_starts)
-            end = (x, y, trip_ends)
-
-            writer_starts.writerow(start)
-            writer_ends.writerow(end)
-
-            starts.append(start)
-            ends.append(end)
-
-            progress += 1
-            if progress > next_print:
-                next_print += 0.1 * edge_count
-                print(".", end="")
+            for end in trip_ends:
+                x, y = position_on_edge(edge, end)
+                x -= offset_x
+                y -= offset_y
+                end = (x, y)
+                writer_starts.writerow(end)
+                ends.append(end)
 
 if args["--display"]:
     max_size = 800
@@ -86,12 +84,10 @@ if args["--display"]:
     img = Image.new("RGB", (width, height), (255, 255, 255))
     draw = ImageDraw.Draw(img, "RGBA")
     for point in starts:
-        x, y, c = point
-        if c == 0:
-            continue
+        x, y = point
         x *= width_scale
         y = (net_height - y) * height_scale
-        color = (0, min(255, 40 * c), 0)
+        color = (0, 200, 0)
         r = 2
         draw.ellipse([x - r, y - r, x + r, y + r], fill=color)
     img.show()
@@ -99,12 +95,10 @@ if args["--display"]:
     img = Image.new("RGB", (width, height), (255, 255, 255))
     draw = ImageDraw.Draw(img, "RGBA")
     for point in ends:
-        x, y, c = point
-        if c == 0:
-            continue
+        x, y = point
         x *= width_scale
         y = (net_height - y) * height_scale
-        color = (0, 0, min(255, 40 * c))
+        color = (0, 0, 200)
         r = 2
         draw.ellipse([x - r, y - r, x + r, y + r], fill=color)
     img.show()
