@@ -19,6 +19,9 @@ else:
 import sumolib
 
 
+# TODO; maybe do image drawing like test() og gen vs real school placement over network, if extra time
+
+
 class TestInstance:
     def __init__(self, name: str, net_file: str, gen_stats_file: str, real_stats_file: str):
         self.name = name
@@ -41,9 +44,7 @@ test_instances = [
 ]
 
 
-def main():
-    test = test_instances[0]
-
+def calc_school_divergence(test: TestInstance):
     net = sumolib.net.readNet(test.net_file)
     gen_stats = ET.parse(test.gen_stats_file)
     real_stats = ET.parse(test.real_stats_file)
@@ -60,15 +61,12 @@ def main():
     dist = cdist(gen_mean_school_coords, real_mean_school_coords)
     row, col = linear_sum_assignment(dist)
 
-    total_cost = dist[row, col].sum()
-    print(total_cost)
+    # total_cost = dist[row, col].sum()
+    # print(total_cost)
 
-    school_cost = [dist[i, col[i]] for i in row]
-    pprint(school_cost)
-    pprint(np.mean(school_cost))
-    # Calculate mean distance between schools in both sets
-
-    # FIXME: Hypothesis, schools are not placed worse than 2km from real ones on average
+    # return list of assigned schools divergence
+    return [dist[i, col[i]] for i in row]
+    # pprint(np.mean(school_cost))
 
 
 def get_mean_coords(schools: list):
@@ -83,7 +81,14 @@ def get_mean_coords(schools: list):
     return normalised_coords
 
 
-def test():
+def test(results: list, max_distance: float):
+    for result in results:
+        if result >= max_distance:
+            return False
+    return True
+
+
+def stack_test():
     np.random.seed(100)
 
     points1 = np.array([(x, y) for x in np.linspace(-1, 1, 7) for y in np.linspace(-1, 1, 7)])
@@ -105,5 +110,7 @@ def test():
 
 
 if __name__ == '__main__':
-    main()
-    # test()
+    # FIXME: Hypothesis, schools are not placed worse than 2km from real ones on average
+    results = [test(calc_school_divergence(test_instance), 2000) for test_instance in test_instances]
+    print(results)
+    # stack_test()
