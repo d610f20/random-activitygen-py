@@ -40,7 +40,10 @@ class TestInstance:
 
 test_instances = [
     TestInstance("Esbjerg", "in/cities/esbjerg.net.xml", "out/cities/esbjerg.stat.xml", "stats/esbjerg.stat.xml"),
-    TestInstance("Slagelse", "in/cities/slagelse.net.xml", "out/cities/slagelse.stat.xml", "stats/slagelse.stat.xml")
+    TestInstance("Slagelse", "in/cities/slagelse.net.xml", "out/cities/slagelse.stat.xml", "stats/slagelse.stat.xml"),
+    TestInstance("Randers", "in/cities/randers.net.xml", "out/cities/randers.stat.xml", "stats/randers.stat.xml"),
+    TestInstance("Vejen", "in/cities/vejen.net.xml", "out/cities/vejen.stat.xml", "stats/vejen.stat.xml"),
+    TestInstance("Aalborg", "in/cities/aalborg.net.xml", "out/cities/aalborg.stat.xml", "stats/aalborg.stat.xml")
 ]
 
 
