@@ -31,6 +31,10 @@ args = docopt(__doc__)
 net = sumolib.net.readNet(args["--net-file"])
 trips = ET.parse(args["--trips-file"])
 
+offset_x, offset_y, xmax, ymax = net.getBoundary()
+width, height = xmax - offset_x, ymax - offset_y
+edge_count = len(net.getEdges())
+
 fname = os.path.splitext(os.path.splitext(os.path.splitext(os.path.basename(args["--trips-file"]))[0])[0])[0]
 
 with open(os.path.dirname(args["--trips-file"]) + f"/{fname}-trip-starts.csv", "w", newline="") as csv_starts:
@@ -38,7 +42,6 @@ with open(os.path.dirname(args["--trips-file"]) + f"/{fname}-trip-starts.csv", "
         writer_starts = csv.writer(csv_starts)
         writer_ends = csv.writer(csv_ends)
 
-        edge_count = len(net.getEdges())
         next_print = 0.1 * edge_count
         progress = 0
         for edge in net.getEdges():
@@ -47,6 +50,8 @@ with open(os.path.dirname(args["--trips-file"]) + f"/{fname}-trip-starts.csv", "
             tripEnds = len([trip for trip in trips.findall("trip") if trip.attrib["to"] == edge.getID()])
 
             x, y = position_on_edge(edge, edge.getLength() / 2)
+            x -= offset_x
+            y -= offset_y
 
             writer_starts.writerow([x, y, tripStarts])
             writer_ends.writerow([x, y, tripEnds])
