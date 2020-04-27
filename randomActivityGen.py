@@ -54,20 +54,20 @@ Other Options:
     --version                   Show version.
 """
 
+import logging
 import os
 import random
 import sys
 import xml.etree.ElementTree as ET
 
-import logging
-
 from docopt import docopt
-from school import setup_schools
-from perlin import apply_network_noise
-from utility import find_city_centre, verify_stats, setup_logging, position_on_edge
-from gates import setup_city_gates
-from render import display_network
+
 from bus import bus_stop_generator
+from gates import setup_city_gates
+from perlin import apply_network_noise
+from render import display_network
+from school import setup_schools
+from utility import find_city_centre, verify_stats, setup_logging, position_on_edge, write_all_school_coords
 
 if 'SUMO_HOME' in os.environ:
     tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
@@ -180,6 +180,8 @@ def main():
     if args["--display"]:
         logging.info(f"Displaying network as image of max size {max_display_size}x{max_display_size}")
         display_network(net, stats, max_display_size, centre, args["--net-file"])
+
+    write_all_school_coords(net, "esbjerg")
 
 
 if __name__ == "__main__":

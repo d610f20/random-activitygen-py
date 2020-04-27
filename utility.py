@@ -1,13 +1,12 @@
+import csv
 import logging
 import os
 import sys
-
-import numpy as np
+import xml.etree.ElementTree as ET
 from typing import Tuple
 
+import numpy as np
 from scipy.cluster.vq import kmeans
-
-import xml.etree.ElementTree as ET
 
 if 'SUMO_HOME' in os.environ:
     tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
@@ -125,7 +124,7 @@ def position_on_edge(edge: sumolib.net.edge.Edge, pos: float):
     # meters in total
     coord1, coord2 = None, None
     remaining_distance = pos
-    for coord1, coord2 in [edge.getShape()[i:i + 2] for i in range(0, int(len(edge.getShape())-1))]:
+    for coord1, coord2 in [edge.getShape()[i:i + 2] for i in range(0, int(len(edge.getShape()) - 1))]:
         if 0 < remaining_distance - distance(coord1, coord2):
             remaining_distance -= distance(coord1, coord2)
         else:
@@ -189,3 +188,24 @@ def firstn(n, gen):
     """
     for _ in range(0, n):
         yield next(gen)
+
+
+def write_all_school_coords(net, city_name):
+    write_school_coords(net, ET.parse(f"out\{city_name}.stat.xml"), f"out\{city_name}-generated-schools-pos.stat.xml")
+    write_school_coords(net, ET.parse(f"in\cities\{city_name}.stat.xml"), f"out\{city_name}-real-schools-pos.stat.xml")
+
+
+def write_school_coords(net: sumolib.net.Net, stats: ET.ElementTree, filename):
+    xml_schools = [xml_school for xml_school in stats.find("schools").findall("school")]
+
+    positions = []
+
+    for gen_school_edge in xml_schools:
+        pos = float(gen_school_edge.get("pos"))
+        edge = net.getEdge(gen_school_edge.get("edge"))
+        positions.append(position_on_edge(edge, pos))
+
+    file = open(f'{filename}.csv', 'w')
+    with file:
+        writer = csv.writer(file)
+        writer.writerows(positions)
