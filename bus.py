@@ -1,5 +1,58 @@
+import logging
+import os
 import random
+import sys
+import xml.etree.ElementTree as ET
+
 from utility import distance, firstn, position_on_edge
+
+if 'SUMO_HOME' in os.environ:
+    tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
+    sys.path.append(tools)
+else:
+    sys.exit("Please declare environment variable 'SUMO_HOME' to use sumolib")
+
+import sumolib
+
+
+def setup_bus_stops(net: sumolib.net.Net, stats: ET.ElementTree, min_distance, k):
+    logging.debug(f"[bus-stops] Using min_distance: {min_distance}, and k (attempts): {k}")
+    edges = net.getEdges()
+
+    city = stats.getroot()
+    bus_stations = city.find("busStations")
+    seed_bus_stops = []
+    if bus_stations is None:
+        bus_stations = ET.SubElement(city, "busStations")
+    else:
+        for station in bus_stations.findall("busStation"):
+            assert "edge" in station.attrib, "BusStation isn't placed on an edge"
+            edge_id = station.attrib["edge"]
+            assert "pos" in station.attrib, "BusStation doesn't have a position along the edge"
+            along = float(station.attrib["pos"])
+
+            edge = net.getEdge(edge_id)
+            if edge is None:
+                logging.warning("BusStation in stat file reference edge (id=\"{}\") that doesn't exist in the road "
+                                "network".format(edge_id))
+                continue
+
+            pos = position_on_edge(edge, along)
+
+            seed_bus_stops.append([
+                pos[0],
+                pos[1],
+                edge,
+                along])
+
+    for i, busstop in enumerate(bus_stop_generator(edges, min_distance, min_distance * 2, k, seeds=seed_bus_stops)):
+        edge = busstop[2]
+        dist_along = busstop[3]
+        ET.SubElement(bus_stations, "busStation", attrib={
+            "id": str(i),
+            "edge": edge.getID(),
+            "pos": str(dist_along),
+        })
 
 
 def _road_point_generator(roads):
