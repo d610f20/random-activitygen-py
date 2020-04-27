@@ -69,7 +69,7 @@ def calc_school_divergence(test: TestInstance):
     # print(total_cost)
 
     # return list of assigned schools divergence
-    return [dist[i, col[i]] for i in row]
+    return [dist[i, col[i]] for i in range(0, min(len(gen_mean_school_coords), len(real_mean_school_coords)))]
     # pprint(np.mean(school_cost))
 
 
@@ -113,9 +113,26 @@ def stack_test():
     # plt.axes().set_aspect('equal')
 
 
-if __name__ == '__main__':
+def run_tests(bound: float):
     # FIXME: Hypothesis, schools are not placed worse than 2km from real ones on average
-    results = [(test_instance.name, test(calc_school_divergence(test_instance), 2000)) for test_instance in
-               test_instances]
-    print(results)
+    for test_instance in test_instances:
+        divergence = calc_school_divergence(test_instance)
+        total_placement_result = test(divergence, bound)
+        print(f"Divergence of {test_instance.name}:")
+        pprint(divergence)
+        print(f"Results\n\tTotal placement:{total_placement_result}\n\tMean placement:{np.mean(divergence) <= bound}")
+
+
+def debug():
+    divergence = calc_school_divergence(test_instances[2])
+    result = test(divergence, 2000)
+    print(f"Divergence of {test_instances[2].name}:")
+    pprint(divergence)
+    print(f"Result of test: {result}")
+
+
+if __name__ == '__main__':
+    run_tests(2000)
+    # debug()
+
     # stack_test()
