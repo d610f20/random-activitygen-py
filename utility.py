@@ -192,7 +192,7 @@ def firstn(n, gen):
 
 def write_all_school_coords(net, city_name):
     write_school_coords(net, ET.parse(f"out\{city_name}.stat.xml"), f"out\{city_name}-generated-schools-pos.stat.xml")
-    write_school_coords(net, ET.parse(f"in\cities\{city_name}.stat.xml"), f"out\{city_name}-real-schools-pos.stat.xml")
+    write_school_coords(net, ET.parse(f"stats\{city_name}.stat.xml"), f"out\{city_name}-real-schools-pos.stat.xml")
 
 
 def write_school_coords(net: sumolib.net.Net, stats: ET.ElementTree, filename):

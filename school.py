@@ -85,7 +85,7 @@ def get_school_count(args, stats: ET.ElementTree, school_type: str):
     return school_count
 
 
-def setup_schools(args, net: sumolib.net.Net, stats: ET.ElementTree, centre: Tuple[float, float]):
+def setup_schools(args, net: sumolib.net.Net, stats: ET.ElementTree, centre: Tuple[float, float], city_name: str):
     xml_schools = stats.find('schools')
     # Remove all previous schools if any exists, effectively overwriting these
     if xml_schools is not None:
@@ -99,6 +99,15 @@ def setup_schools(args, net: sumolib.net.Net, stats: ET.ElementTree, centre: Tup
     college_count = int(get_school_count(args, stats, "college"))
 
     school_count = primary_school_count + high_school_count + college_count
+
+    real_schools = len([xml_school for xml_school in ET.parse(f"stats\{city_name}.stat.xml").find("schools").findall("school")])
+    difference = real_schools - school_count
+    if school_count < real_schools:
+        school_count += difference
+        primary_school_count += difference
+    if real_schools < school_count:
+        school_count -= difference
+        primary_school_count -= difference
 
     # Find edges to place schools on
     if 0 < school_count:

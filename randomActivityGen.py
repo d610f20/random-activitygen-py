@@ -80,6 +80,7 @@ import sumolib
 
 
 def main():
+    city_name = "slagelse"
     args = docopt(__doc__, version="RandomActivityGen v0.1")
 
     setup_logging(args)
@@ -129,7 +130,7 @@ def main():
     setup_city_gates(net, stats, int(args["--gates.count"]))
 
     logging.info("Setting up schools")
-    setup_schools(args, net, stats, centre)
+    setup_schools(args, net, stats, centre, city_name)
 
     if args["--bus-stop"]:
         logging.info(f"Setting up bus-stops")
@@ -143,7 +144,7 @@ def main():
         logging.info(f"Displaying network as image of max size {max_display_size}x{max_display_size}")
         display_network(net, stats, max_display_size, centre, args["--net-file"])
 
-    write_all_school_coords(net, "esbjerg")
+    write_all_school_coords(net, city_name)
 
 
 if __name__ == "__main__":
