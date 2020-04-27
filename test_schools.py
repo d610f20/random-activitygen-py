@@ -111,6 +111,7 @@ def stack_test():
 
 if __name__ == '__main__':
     # FIXME: Hypothesis, schools are not placed worse than 2km from real ones on average
-    results = [test(calc_school_divergence(test_instance), 2000) for test_instance in test_instances]
+    results = [(test_instance.name, test(calc_school_divergence(test_instance), 2000)) for test_instance in
+               test_instances]
     print(results)
     # stack_test()
