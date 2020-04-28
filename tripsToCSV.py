@@ -1,6 +1,6 @@
 """
 Usage:
-    tripsToCSV.py --net-file=FILE --trips-file=FILE [--display]
+    tripsToCSV.py --net-file=FILE --trips-file=FILE [--gif]
 
 Input Options:
     -n, --net-file FILE         Input road network
@@ -38,41 +38,29 @@ net_width, net_height = xmax - offset_x, ymax - offset_y
 edge_count = len(net.getEdges())
 
 # base of file name, e.g. "vejen.trips.rou.xml" -> "vejen"
-fname = os.path.splitext(os.path.splitext(os.path.splitext(os.path.basename(args["--trips-file"]))[0])[0])[0]
+fname = os.path.basename(args["--trips-file"])
+while "." in fname:
+    fname = os.path.splitext(fname)[0]
 
-starts = []
-ends = []
-
+data = []
 with open(os.path.dirname(args["--trips-file"]) + f"/{fname}-trip-starts.csv", "w", newline="") as csv_starts:
-    with open(os.path.dirname(args["--trips-file"]) + f"/{fname}-trip-ends.csv", "w", newline="") as csv_ends:
         writer_starts = csv.writer(csv_starts)
-        writer_ends = csv.writer(csv_ends)
 
         next_print = 0.1 * edge_count
         progress = 0
         for edge in net.getEdges():
 
-            # Find all trips that starts and ends on this edge and save the position along the edge
-            trip_starts = [float(trip.attrib["arrivalPos"]) for trip in trips.findall("trip") if trip.attrib["from"] == edge.getID()]
-            trip_ends = [float(trip.attrib["departPos"]) for trip in trips.findall("trip") if trip.attrib["to"] == edge.getID()]
+            # Find all trips that starts on this edge and save the position along the edge
+            trip_starts = [(float(trip.attrib["departPos"]), float(trip.attrib["depart"])) for trip in trips.findall("trip") if trip.attrib["from"] == edge.getID()]
 
             # Add trip start data points
-            for start in trip_starts:
-                x, y = position_on_edge(edge, start)
+            for (departPos, departTime) in trip_starts:
+                x, y = position_on_edge(edge, departPos)
                 x -= offset_x
                 y -= offset_y
-                start = (x, y)
-                writer_starts.writerow(start)
-                starts.append(start)
-
-            # Add trip end data points
-            for end in trip_ends:
-                x, y = position_on_edge(edge, end)
-                x -= offset_x
-                y -= offset_y
-                end = (x, y)
-                writer_starts.writerow(end)
-                ends.append(end)
+                datapoint = (x, y, departTime)
+                writer_starts.writerow(datapoint)
+                data.append(datapoint)
 
             # Print a . whenever another 10% is done
             progress += 1
@@ -81,7 +69,7 @@ with open(os.path.dirname(args["--trips-file"]) + f"/{fname}-trip-starts.csv", "
                 print(".", end="")
 
 # Display the start and end positions
-if args["--display"]:
+if args["--gif"]:
     # Calculate dimensions and scaling
     max_size = 800
     width_height_relation = net_height / net_width
@@ -94,26 +82,22 @@ if args["--display"]:
     width_scale = width / net_width
     height_scale = height / net_height
 
-    # Render start points
-    img = Image.new("RGB", (width, height), (255, 255, 255))
-    draw = ImageDraw.Draw(img, "RGBA")
-    for point in starts:
-        x, y = point
-        x *= width_scale
-        y = (net_height - y) * height_scale
-        color = (0, 200, 0)
-        r = 2
-        draw.ellipse([x - r, y - r, x + r, y + r], fill=color)
-    img.show()
+    timeslot_size = 300
+    buckets = [(timeslot, [datapoint for datapoint in data if timeslot < datapoint[2] < timeslot + timeslot_size * 3]) for timeslot in range(0, 86400, timeslot_size)]
 
-    # Render end points
-    img = Image.new("RGB", (width, height), (255, 255, 255))
-    draw = ImageDraw.Draw(img, "RGBA")
-    for point in ends:
-        x, y = point
-        x *= width_scale
-        y = (net_height - y) * height_scale
-        color = (0, 0, 200)
-        r = 2
-        draw.ellipse([x - r, y - r, x + r, y + r], fill=color)
-    img.show()
+    images = []
+    for (timeslot, departures) in buckets:
+        # Render start points
+        img = Image.new("RGB", (width, height), (255, 255, 255))
+        draw = ImageDraw.Draw(img, "RGBA")
+        for point in departures:
+            x, y, z = point
+            x *= width_scale
+            y = (net_height - y) * height_scale
+            r = 2
+            draw.ellipse([x - r, y - r, x + r, y + r], fill=(0, 0, 0))
+        draw.text((10, 10), f"t={timeslot}", fill=(0, 0, 0))
+        draw.line([0, 1, width * timeslot / 84600, 1], fill=(0, 0, 0))
+        images.append(img)
+
+    images[0].save(f"out/cities/{fname}-trips.gif", save_all=True, append_images=images[1:], optimize=False, duration=10, loop=0)
