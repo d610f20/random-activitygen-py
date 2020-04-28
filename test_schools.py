@@ -48,29 +48,45 @@ test_instances = [
 ]
 
 
-def calc_school_divergence(test: TestInstance):
+def calc_school_divergence(test: TestInstance, plot: bool):
     net = sumolib.net.readNet(test.net_file)
-    gen_stats = ET.parse(test.gen_stats_file)
-    real_stats = ET.parse(test.real_stats_file)
 
     # Get mean school coordinates for real and generated statistics
-    gen_mean_school_coords = get_mean_coords([net.getEdge(xml_school.get("edge")).getShape() for xml_school in
-                                              gen_stats.find("schools").findall("school")])
-    real_mean_school_coords = get_mean_coords([net.getEdge(xml_school.get("edge")).getShape() for xml_school in
-                                               real_stats.find("schools").findall("school")])
+    gen_coords = np.array(get_mean_coords([net.getEdge(xml_school.get("edge")).getShape() for xml_school in
+                                           ET.parse(test.gen_stats_file).find("schools").findall("school")]))
+    real_coords = np.array(get_mean_coords([net.getEdge(xml_school.get("edge")).getShape() for xml_school in
+                                            ET.parse(test.real_stats_file).find("schools").findall("school")]))
 
-    # Map each school in both sets to each other by shortest respective distance
-    # Note leftover schools are ignored in either set
-    # https://stackoverflow.com/questions/39016821/minimize-total-distance-between-two-sets-of-points-in-python
-    dist = cdist(gen_mean_school_coords, real_mean_school_coords)
-    row, col = linear_sum_assignment(dist)
+    # Get euclidean distance between all points in both sets as a cost matrix.
+    # Note that the ordering is seemingly important for linear_sum_assignment to work.
+    #  Not ordering causes points in the larger set, larger than the max size of the smaller set to be ignored.
+    if len(real_coords) >= len(gen_coords):
+        dist = cdist(gen_coords, real_coords)
+    else:
+        dist = cdist(real_coords, gen_coords)
 
-    # total_cost = dist[row, col].sum()
-    # print(total_cost)
+    # Solve the assignment problem
+    _, col = linear_sum_assignment(dist)
+
+    if plot:
+        # Plot generated points as blue circles, and real ones as red squares
+        plt.plot(gen_coords[:, 0], gen_coords[:, 1], 'bo', markersize=10)
+        plt.plot(real_coords[:, 0], real_coords[:, 1], 'rs', markersize=7)
+
+        # Plot lines between assigned points. Note that this is also ordered.
+        if len(real_coords) >= len(gen_coords):
+            for p in range(0, min(len(gen_coords), len(real_coords))):
+                plt.plot([gen_coords[p, 0], real_coords[col[p], 0]],
+                         [gen_coords[p, 1], real_coords[col[p], 1]], 'k')
+        else:
+            for p in range(0, min(len(gen_coords), len(real_coords))):
+                plt.plot([real_coords[p, 0], gen_coords[col[p], 0]],
+                         [real_coords[p, 1], gen_coords[col[p], 1]], 'k')
+
+        plt.show()
 
     # return list of assigned schools divergence
-    return [dist[i, col[i]] for i in range(0, min(len(gen_mean_school_coords), len(real_mean_school_coords)))]
-    # pprint(np.mean(school_cost))
+    return [dist[i, col[i]] for i in range(0, min(len(gen_coords), len(real_coords)))]
 
 
 def get_mean_coords(schools: list):
@@ -93,6 +109,11 @@ def test(results: list, max_distance: float):
 
 
 def stack_test():
+    """
+    Taken from stack, may be useful for drawing assignment images for paper
+    https://stackoverflow.com/questions/39016821/minimize-total-distance-between-two-sets-of-points-in-python
+    :return:
+    """
     np.random.seed(100)
 
     points1 = np.array([(x, y) for x in np.linspace(-1, 1, 7) for y in np.linspace(-1, 1, 7)])
@@ -109,8 +130,7 @@ def stack_test():
         plt.plot([points1[p, 0], points2[assigment[p], 0]], [points1[p, 1], points2[assigment[p], 1]], 'k')
     plt.xlim(-1.1, 1.1)
     plt.ylim(-1.1, 1.1)
-    plt.show()
-    # plt.axes().set_aspect('equal')
+    # plt.axes().set_aspect('equal')  # fails
 
 
 def run_tests(bound: float):
@@ -120,19 +140,19 @@ def run_tests(bound: float):
         total_placement_result = test(divergence, bound)
         print(f"Divergence of {test_instance.name}:")
         pprint(divergence)
-        print(f"Results\n\tTotal placement:{total_placement_result}\n\tMean placement:{np.mean(divergence) <= bound}")
+        print(f"Results\n\tTotal placement:{total_placement_result}\n\tMean placement:{np.mean(divergence)}")
+        # FIXME: do one sample t-test
 
 
 def debug():
-    divergence = calc_school_divergence(test_instances[2])
+    divergence = calc_school_divergence(test_instances[4])
     result = test(divergence, 2000)
-    print(f"Divergence of {test_instances[2].name}:")
+    print(f"Divergence of {test_instances[4].name}:")
     pprint(divergence)
     print(f"Result of test: {result}")
+    print(f"Mean divergence: {np.mean(divergence)}")
 
 
 if __name__ == '__main__':
     run_tests(2000)
     # debug()
-
-    # stack_test()
