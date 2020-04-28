@@ -11,6 +11,7 @@ import os
 import sys
 import csv
 import xml.etree.ElementTree as ET
+import random
 
 from PIL import Image, ImageDraw
 from docopt import docopt
@@ -51,10 +52,12 @@ with open(os.path.dirname(args["--trips-file"]) + f"/{fname}-trip-starts.csv", "
         for edge in net.getEdges():
 
             # Find all trips that starts on this edge and save the position along the edge
-            trip_starts = [(float(trip.attrib["departPos"]), float(trip.attrib["depart"])) for trip in trips.findall("trip") if trip.attrib["from"] == edge.getID()]
+            trip_starts = [(trip.get("departPos"), float(trip.get("depart"))) for trip in trips.findall("trip") if trip.get("from") == edge.getID()]
 
             # Add trip start data points
             for (departPos, departTime) in trip_starts:
+                if departPos is None:
+                    departPos = edge.getLength() * random.random()
                 x, y = position_on_edge(edge, departPos)
                 x -= offset_x
                 y -= offset_y
