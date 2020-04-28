@@ -1,6 +1,6 @@
 """
 Usage:
-    tripsToCSV.py --net-file=FILE --trips-file=FILE [--gif]
+    tripsToCSV.py --net-file=FILE --trips-file=FILE [--png] [--gif]
 
 Input Options:
     -n, --net-file FILE         Input road network
@@ -58,7 +58,7 @@ with open(os.path.dirname(args["--trips-file"]) + f"/{fname}-trip-starts.csv", "
             for (departPos, departTime) in trip_starts:
                 if departPos is None:
                     departPos = edge.getLength() * random.random()
-                x, y = position_on_edge(edge, departPos)
+                x, y = position_on_edge(edge, float(departPos))
                 x -= offset_x
                 y -= offset_y
                 datapoint = (x, y, departTime)
@@ -72,7 +72,7 @@ with open(os.path.dirname(args["--trips-file"]) + f"/{fname}-trip-starts.csv", "
                 print(".", end="")
 
 # Display the start and end positions
-if args["--gif"]:
+if args["--png"] or args["--gif"]:
     # Calculate dimensions and scaling
     max_size = 800
     width_height_relation = net_height / net_width
@@ -85,22 +85,45 @@ if args["--gif"]:
     width_scale = width / net_width
     height_scale = height / net_height
 
-    timeslot_size = 300
-    buckets = [(timeslot, [datapoint for datapoint in data if timeslot < datapoint[2] < timeslot + timeslot_size * 3]) for timeslot in range(0, 86400, timeslot_size)]
-
-    images = []
-    for (timeslot, departures) in buckets:
-        # Render start points
+    if args["--png"]:
         img = Image.new("RGB", (width, height), (255, 255, 255))
+        imgPre12 = Image.new("RGB", (width, height), (255, 255, 255))
+        imgPost12 = Image.new("RGB", (width, height), (255, 255, 255))
         draw = ImageDraw.Draw(img, "RGBA")
-        for point in departures:
+        drawPre12 = ImageDraw.Draw(imgPre12, "RGBA")
+        drawPost12 = ImageDraw.Draw(imgPost12, "RGBA")
+        for point in data:
             x, y, z = point
             x *= width_scale
             y = (net_height - y) * height_scale
             r = 2
             draw.ellipse([x - r, y - r, x + r, y + r], fill=(0, 0, 0))
-        draw.text((10, 10), f"t={timeslot}", fill=(0, 0, 0))
-        draw.line([0, 1, width * timeslot / 84600, 1], fill=(0, 0, 0))
-        images.append(img)
+            if z < 86400 / 2:
+                drawPre12.ellipse([x - r, y - r, x + r, y + r], fill=(0, 0, 0))
+            if z >= 86400 / 2:
+                drawPost12.ellipse([x - r, y - r, x + r, y + r], fill=(0, 0, 0))
 
-    images[0].save(f"out/cities/{fname}-trips.gif", save_all=True, append_images=images[1:], optimize=False, duration=10, loop=0)
+        img.save(f"out/cities/{fname}-trips.png")
+        imgPre12.save(f"out/cities/{fname}-trips-pre12.png")
+        imgPost12.save(f"out/cities/{fname}-trips-post12.png")
+
+    if args["--gif"]:
+        timeslot_size = 300  # 5 minutes
+        buckets = [(timeslot, [datapoint for datapoint in data if timeslot < datapoint[2] < timeslot + timeslot_size * 3]) for timeslot in range(0, 86400, timeslot_size)]
+
+        images = []
+        for (timeslot, departures) in buckets:
+            # Render start points
+            img = Image.new("RGB", (width, height), (255, 255, 255))
+            draw = ImageDraw.Draw(img, "RGBA")
+            for point in departures:
+                x, y, z = point
+                x *= width_scale
+                y = (net_height - y) * height_scale
+                r = 2
+                draw.ellipse([x - r, y - r, x + r, y + r], fill=(0, 0, 0))
+            draw.text((10, 10), f"t={timeslot}", fill=(0, 0, 0))
+            draw.line([0, 1, width * timeslot / 86400, 1], fill=(0, 0, 0))
+            images.append(img)
+
+        images[0].save(f"out/cities/{fname}-trips.gif", save_all=True, append_images=images[1:], optimize=False, duration=10, loop=0)
