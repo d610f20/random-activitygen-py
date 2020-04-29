@@ -45,33 +45,20 @@ while "." in fname:
 
 data = []
 with open(os.path.dirname(args["--trips-file"]) + f"/{fname}-trip-starts.csv", "w", newline="") as csv_starts:
-        writer_starts = csv.writer(csv_starts)
+    writer_starts = csv.writer(csv_starts)
 
-        next_print = 0.1 * edge_count
-        progress = 0
-        for edge in net.getEdges():
+    for trip_xml in trips.findall("trip"):
+        edge = net.getEdge(trip_xml.get("from"))
+        departTime = float(trip_xml.get("depart"))
+        departPos = float(trip_xml.get("departPos") or edge.getLength() * random.random())
 
-            # Find all trips that starts on this edge and save the position along the edge
-            trip_starts = [(trip.get("departPos"), float(trip.get("depart"))) for trip in trips.findall("trip") if trip.get("from") == edge.getID()]
+        x, y = position_on_edge(edge, departPos)
+        x -= offset_x
+        y -= offset_y
+        datapoint = (x, y, departTime)
+        writer_starts.writerow(datapoint)
+        data.append(datapoint)
 
-            # Add trip start data points
-            for (departPos, departTime) in trip_starts:
-                if departPos is None:
-                    departPos = edge.getLength() * random.random()
-                x, y = position_on_edge(edge, float(departPos))
-                x -= offset_x
-                y -= offset_y
-                datapoint = (x, y, departTime)
-                writer_starts.writerow(datapoint)
-                data.append(datapoint)
-
-            # Print a . whenever another 10% is done
-            progress += 1
-            if progress > next_print:
-                next_print += 0.1 * edge_count
-                print(".", end="")
-
-# Display the start and end positions
 if args["--png"] or args["--gif"]:
     # Calculate dimensions and scaling
     max_size = 800
@@ -87,11 +74,13 @@ if args["--png"] or args["--gif"]:
 
     if args["--png"]:
         img = Image.new("RGB", (width, height), (255, 255, 255))
-        imgPre12 = Image.new("RGB", (width, height), (255, 255, 255))
-        imgPost12 = Image.new("RGB", (width, height), (255, 255, 255))
+        imgBefore12 = Image.new("RGB", (width, height), (255, 255, 255))
+        imgAfter12 = Image.new("RGB", (width, height), (255, 255, 255))
         draw = ImageDraw.Draw(img, "RGBA")
-        drawPre12 = ImageDraw.Draw(imgPre12, "RGBA")
-        drawPost12 = ImageDraw.Draw(imgPost12, "RGBA")
+        drawBefore12 = ImageDraw.Draw(imgBefore12, "RGBA")
+        drawAfter12 = ImageDraw.Draw(imgAfter12, "RGBA")
+        before = 0
+        after = 0
         for point in data:
             x, y, z = point
             x *= width_scale
@@ -99,13 +88,16 @@ if args["--png"] or args["--gif"]:
             r = 2
             draw.ellipse([x - r, y - r, x + r, y + r], fill=(0, 0, 0))
             if z < 86400 / 2:
-                drawPre12.ellipse([x - r, y - r, x + r, y + r], fill=(0, 0, 0))
+                drawBefore12.ellipse([x - r, y - r, x + r, y + r], fill=(0, 0, 0))
+                before += 1
             if z >= 86400 / 2:
-                drawPost12.ellipse([x - r, y - r, x + r, y + r], fill=(0, 0, 0))
+                drawAfter12.ellipse([x - r, y - r, x + r, y + r], fill=(0, 0, 0))
+                after += 1
 
         img.save(f"out/cities/{fname}-trips.png")
-        imgPre12.save(f"out/cities/{fname}-trips-pre12.png")
-        imgPost12.save(f"out/cities/{fname}-trips-post12.png")
+        imgBefore12.save(f"out/cities/{fname}-trips-before12.png")
+        imgAfter12.save(f"out/cities/{fname}-trips-after12.png")
+        print(before, after)
 
     if args["--gif"]:
         timeslot_size = 300  # 5 minutes
@@ -113,7 +105,6 @@ if args["--png"] or args["--gif"]:
 
         images = []
         for (timeslot, departures) in buckets:
-            # Render start points
             img = Image.new("RGB", (width, height), (255, 255, 255))
             draw = ImageDraw.Draw(img, "RGBA")
             for point in departures:
