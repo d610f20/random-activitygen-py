@@ -21,9 +21,6 @@ else:
 import sumolib
 
 
-# TODO; maybe do image drawing like test() og gen vs real school placement over network, if extra time
-
-
 class TestInstance:
     def __init__(self, name: str, net_file: str, gen_stats_file: str, real_stats_file: str):
         self.name = name
@@ -72,24 +69,26 @@ def calc_school_divergence(test: TestInstance, plot: bool):
 
     if plot:
         # Draw streets
-        #for pos1, pos2 in [edge.getShape()[i:i + 2] for edge in
-        #                   net.getEdges() for i in range(0, int(len(edge.getShape()) - 1))]:
-        #    plt.plot((np.mean(pos1[0], pos2[0]), np.mean(pos1[1] + pos2[1]), "k"))
+
+        [plt.plot([pos1[0], pos2[0]], [pos1[1], pos2[1]], "grey", ) for pos1, pos2 in
+         [edge.getShape()[i:i + 2] for edge in net.getEdges() for i in range(0, int(len(edge.getShape()) - 1))]]
 
         # Plot generated points as blue circles, and real ones as red squares
-        plt.plot(gen_coords[:, 0], gen_coords[:, 1], 'bo', markersize=10)
-        plt.plot(real_coords[:, 0], real_coords[:, 1], 'rs', markersize=7)
+        plt.plot(gen_coords[:, 0], gen_coords[:, 1], 'bo', markersize=10, label="Gen")
+        plt.plot(real_coords[:, 0], real_coords[:, 1], 'rs', markersize=7, label="Real")
 
         # Plot lines between assigned points. Note that this is also ordered.
         if len(real_coords) >= len(gen_coords):
             for p in range(0, min(len(gen_coords), len(real_coords))):
                 plt.plot([gen_coords[p, 0], real_coords[col[p], 0]],
-                         [gen_coords[p, 1], real_coords[col[p], 1]], 'k')
+                         [gen_coords[p, 1], real_coords[col[p], 1]], 'k', label="Assign" if p == 0 else "")
         else:
             for p in range(0, min(len(gen_coords), len(real_coords))):
                 plt.plot([real_coords[p, 0], gen_coords[col[p], 0]],
-                         [real_coords[p, 1], gen_coords[col[p], 1]], 'k')
+                         [real_coords[p, 1], gen_coords[col[p], 1]], 'k', label="Assign" if p == 0 else "")
 
+        plt.legend()
+        plt.title(f"School placement test for {test.name}")
         plt.show()
 
     # return list of assigned schools divergence
@@ -136,5 +135,5 @@ def debug(bound: float):
 
 
 if __name__ == '__main__':
-    run_tests(1500)
-    #debug(10)
+    # run_tests(1500)
+    debug(1500)
