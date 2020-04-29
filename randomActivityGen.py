@@ -18,7 +18,7 @@ Output Options:
 
 Other Options:
     --centre.pos args           The coordinates for the city's centre, e.g. "300,500" or "auto" [default: auto]
-    --centre.pop-weight F       The increase in population near the city center [default: 0.8]
+    --centre.pop-weight F       The increase in population near the city center [default: 0.5]
     --centre.work-weight F      The increase in work places near the city center [default: 0.1]
     --gates.count N             Number of city gates in the city [default: 4]
     --schools.stepsize F        Stepsize in opening/closing hours, in parts of an hour, e.g 0.25 is every 15 mins [default: 0.25]

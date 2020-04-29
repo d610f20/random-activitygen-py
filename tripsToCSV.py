@@ -90,7 +90,7 @@ if args["--png"] or args["--gif"]:
             if z < 86400 / 2:
                 drawBefore12.ellipse([x - r, y - r, x + r, y + r], fill=(0, 0, 0))
                 before += 1
-            if z >= 86400 / 2:
+            if 72000 > z >= 86400 / 2:
                 drawAfter12.ellipse([x - r, y - r, x + r, y + r], fill=(0, 0, 0))
                 after += 1
 
