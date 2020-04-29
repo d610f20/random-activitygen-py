@@ -10,6 +10,8 @@ from scipy.spatial.distance import cdist
 from scipy.optimize import linear_sum_assignment
 import xml.etree.ElementTree as ET
 
+from scipy.stats import ttest_1samp
+
 if 'SUMO_HOME' in os.environ:
     tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
     sys.path.append(tools)
@@ -69,6 +71,11 @@ def calc_school_divergence(test: TestInstance, plot: bool):
     _, col = linear_sum_assignment(dist)
 
     if plot:
+        # Draw streets
+        #for pos1, pos2 in [edge.getShape()[i:i + 2] for edge in
+        #                   net.getEdges() for i in range(0, int(len(edge.getShape()) - 1))]:
+        #    plt.plot((np.mean(pos1[0], pos2[0]), np.mean(pos1[1] + pos2[1]), "k"))
+
         # Plot generated points as blue circles, and real ones as red squares
         plt.plot(gen_coords[:, 0], gen_coords[:, 1], 'bo', markersize=10)
         plt.plot(real_coords[:, 0], real_coords[:, 1], 'rs', markersize=7)
@@ -101,58 +108,33 @@ def get_mean_coords(schools: list):
     return normalised_coords
 
 
-def test(results: list, max_distance: float):
+def test_total_placement(results: list, max_distance: float):
     for result in results:
         if result >= max_distance:
             return False
     return True
 
 
-def stack_test():
-    """
-    Taken from stack, may be useful for drawing assignment images for paper
-    https://stackoverflow.com/questions/39016821/minimize-total-distance-between-two-sets-of-points-in-python
-    :return:
-    """
-    np.random.seed(100)
-
-    points1 = np.array([(x, y) for x in np.linspace(-1, 1, 7) for y in np.linspace(-1, 1, 7)])
-    N = points1.shape[0]
-    points2 = 2 * np.random.rand(N, 2) - 1
-
-    C = cdist(points1, points2)
-
-    _, assigment = linear_sum_assignment(C)
-
-    plt.plot(points1[:, 0], points1[:, 1], 'bo', markersize=10)
-    plt.plot(points2[:, 0], points2[:, 1], 'rs', markersize=7)
-    for p in range(N):
-        plt.plot([points1[p, 0], points2[assigment[p], 0]], [points1[p, 1], points2[assigment[p], 1]], 'k')
-    plt.xlim(-1.1, 1.1)
-    plt.ylim(-1.1, 1.1)
-    # plt.axes().set_aspect('equal')  # fails
-
-
 def run_tests(bound: float):
-    # FIXME: Hypothesis, schools are not placed worse than 2km from real ones on average
     for test_instance in test_instances:
-        divergence = calc_school_divergence(test_instance)
-        total_placement_result = test(divergence, bound)
+        divergence = calc_school_divergence(test_instance, True)
+        total_placement_result = test_total_placement(divergence, bound)
         print(f"Divergence of {test_instance.name}:")
         pprint(divergence)
         print(f"Results\n\tTotal placement:{total_placement_result}\n\tMean placement:{np.mean(divergence)}")
-        # FIXME: do one sample t-test
+        print(f"T-test with bound {bound}: {ttest_1samp(divergence, bound)}")
 
 
-def debug():
-    divergence = calc_school_divergence(test_instances[4])
-    result = test(divergence, 2000)
-    print(f"Divergence of {test_instances[4].name}:")
+def debug(bound: float):
+    test = test_instances[0]
+    divergence = calc_school_divergence(test, True)
+    print(f"Divergence of {test.name}:")
     pprint(divergence)
-    print(f"Result of test: {result}")
+    print(f"Total placement: {test_total_placement(divergence, bound)}")
     print(f"Mean divergence: {np.mean(divergence)}")
+    print(f"T-test with bound {bound}m: {ttest_1samp(divergence, bound)}")
 
 
 if __name__ == '__main__':
-    run_tests(2000)
-    # debug()
+    run_tests(1500)
+    #debug(10)
