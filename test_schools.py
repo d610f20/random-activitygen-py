@@ -75,13 +75,13 @@ def calc_school_divergence(test: TestInstance, plot: bool):
     _, assignment = linear_sum_assignment(dist)
 
     if plot:
-        plot_school_assignment(net, gen_coords, real_coords, assignment)
+        plot_school_assignment(net, test.name, gen_coords, real_coords, assignment)
 
     # return list of assigned schools divergence
     return [dist[i, assignment[i]] for i in range(0, min(len(gen_coords), len(real_coords)))]
 
 
-def plot_school_assignment(net: sumolib.net.Net, gen_coords: np.ndarray, real_coords: np.ndarray,
+def plot_school_assignment(net: sumolib.net.Net, test_name: str, gen_coords: np.ndarray, real_coords: np.ndarray,
                            assignment: np.ndarray):
     # Draw streets
     [plt.plot([pos1[0], pos2[0]], [pos1[1], pos2[1]], "grey", ) for pos1, pos2 in
@@ -91,18 +91,15 @@ def plot_school_assignment(net: sumolib.net.Net, gen_coords: np.ndarray, real_co
     plt.plot(gen_coords[:, 0], gen_coords[:, 1], 'bo', markersize=10, label="Gen")
     plt.plot(real_coords[:, 0], real_coords[:, 1], 'rs', markersize=7, label="Real")
 
-    # Plot lines between assigned points. Note that this is also ordered.
-    if len(real_coords) >= len(gen_coords):
-        for p in range(0, min(len(gen_coords), len(real_coords))):
-            plt.plot([gen_coords[p, 0], real_coords[assignment[p], 0]],
-                     [gen_coords[p, 1], real_coords[assignment[p], 1]], 'k', label="Assign" if p == 0 else "")
-    else:
-        for p in range(0, min(len(gen_coords), len(real_coords))):
-            plt.plot([real_coords[p, 0], gen_coords[assignment[p], 0]],
-                     [real_coords[p, 1], gen_coords[assignment[p], 1]], 'k', label="Assign" if p == 0 else "")
+    # Plot lines between assigned points. Note that this is also ordered, hence the swap
+    if len(real_coords) <= len(gen_coords):
+        real_coords, gen_coords = gen_coords, real_coords
+    for p in range(0, min(len(gen_coords), len(real_coords))):
+        plt.plot([gen_coords[p, 0], real_coords[assignment[p], 0]],
+                 [gen_coords[p, 1], real_coords[assignment[p], 1]], 'k', label="Assign" if p == 0 else "")
 
     plt.legend()
-    plt.title(f"School placement test for {test.name}")
+    plt.title(f"School placement test for {test_name}")
     plt.show()
 
 
