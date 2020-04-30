@@ -69,7 +69,6 @@ def calc_school_divergence(test: TestInstance, plot: bool):
 
     if plot:
         # Draw streets
-
         [plt.plot([pos1[0], pos2[0]], [pos1[1], pos2[1]], "grey", ) for pos1, pos2 in
          [edge.getShape()[i:i + 2] for edge in net.getEdges() for i in range(0, int(len(edge.getShape()) - 1))]]
 
@@ -114,26 +113,38 @@ def test_total_placement(results: list, max_distance: float):
     return True
 
 
-def run_tests(bound: float):
-    for test_instance in test_instances:
-        divergence = calc_school_divergence(test_instance, True)
-        total_placement_result = test_total_placement(divergence, bound)
-        print(f"Divergence of {test_instance.name}:")
-        pprint(divergence)
-        print(f"Results\n\tTotal placement:{total_placement_result}\n\tMean placement:{np.mean(divergence)}")
-        print(f"T-test with bound {bound}: {ttest_1samp(divergence, bound)}")
-
-
-def debug(bound: float):
-    test = test_instances[0]
-    divergence = calc_school_divergence(test, True)
-    print(f"Divergence of {test.name}:")
-    pprint(divergence)
-    print(f"Total placement: {test_total_placement(divergence, bound)}")
-    print(f"Mean divergence: {np.mean(divergence)}")
-    print(f"T-test with bound {bound}m: {ttest_1samp(divergence, bound)}")
+def run_test(test: TestInstance, bound: float, plot: bool):
+    divergence = calc_school_divergence(test, plot)
+    print(f"School placement test of {test.name}:")
+    # pprint(divergence)
+    print(f"\tAll schools placed better than bound: {test_total_placement(divergence, bound)}")
+    print(f"\tMean divergence: {np.mean(divergence):.2f} meters")
+    if len(divergence) < 2:
+        print("\t[WARN] Cannot make a t-test on a single divergence")
+        if np.mean(divergence) <= bound:
+            print(f"\tHowever, the divergence ({np.mean(divergence):.2f} meters) is less or equal than {bound}")
+        else:
+            print(f"\tHowever, the divergence ({np.mean(divergence):.2f} meters) is greater than {bound}", )
+        return
+    t_stat, p_val = ttest_1samp(divergence, bound)
+    print(f"\tT-test with bound {bound} meters. T-stat: {t_stat:.5f}, p-value: {p_val:.5f}")
+    if t_stat <= 0:
+        if p_val <= 0.05:
+            print(f"\tSince t-stat is zero or negative, and p-value is of statistical significance (p <= 0.05), "
+                  f"the null-hypothesis can be rejected.")
+        else:
+            print("\tSince p-value is not of statistical significance, the null-hypothesis cannot be rejected.")
+    else:
+        if p_val <= 0.05:
+            print("\tThe t-stat is not zero or negative, and p-value is of statistical significance (p <= 0.05),"
+                  "the null-hypothesis cannot be rejected.")  # FIXME: does this mean that we can accept the null?
+        else:
+            print("\tSince p-value is not of statistical significance, the null-hypothesis cannot be rejected.")
 
 
 if __name__ == '__main__':
-    # run_tests(1500)
-    debug(1500)
+    bound = 1500
+    print(f"Testing school placement on following cities: {', '.join([test.name for test in test_instances])}")
+    print(f"Null hypothesis: Generated schools are placed worse than {bound} meters away from real schools")
+    print(f"Alt. hypothesis: Generated schools are placed exactly or better than {bound} meters away from real schools")
+    [run_test(test, bound, True) for test in test_instances]
