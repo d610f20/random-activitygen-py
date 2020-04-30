@@ -84,7 +84,7 @@ def calc_school_divergence(test: TestInstance, plot: bool):
 def plot_school_assignment(net: sumolib.net.Net, test_name: str, gen_coords: np.ndarray, real_coords: np.ndarray,
                            assignment: np.ndarray):
     # Draw streets
-    [plt.plot([pos1[0], pos2[0]], [pos1[1], pos2[1]], "grey", ) for pos1, pos2 in
+    [plt.plot([pos1[0], pos2[0]], [pos1[1], pos2[1]], "grey") for pos1, pos2 in
      [edge.getShape()[i:i + 2] for edge in net.getEdges() for i in range(0, int(len(edge.getShape()) - 1))]]
 
     # Plot generated points as blue circles, and real ones as red squares
