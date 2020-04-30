@@ -48,7 +48,14 @@ test_instances = [
 
 
 def calc_school_divergence(test: TestInstance, plot: bool):
-    net = sumolib.net.readNet(test.net_file)
+    """
+    Calculate the divergence between generated and real schools by solving the assignment problem on them
+     and plot these schools and assignments on the network if enabled.
+    :param test: the given TestInstance to test
+    :param plot: whether to plot the city, schools, and assignments
+    :return: the divergence for each assigned school
+    """
+    net: sumolib.net.Net = sumolib.net.readNet(test.net_file)
 
     # Get mean school coordinates for real and generated statistics
     gen_coords = np.array(get_mean_coords([net.getEdge(xml_school.get("edge")).getShape() for xml_school in
@@ -65,36 +72,46 @@ def calc_school_divergence(test: TestInstance, plot: bool):
         dist = cdist(real_coords, gen_coords)
 
     # Solve the assignment problem
-    _, col = linear_sum_assignment(dist)
+    _, assignment = linear_sum_assignment(dist)
 
     if plot:
-        # Draw streets
-        [plt.plot([pos1[0], pos2[0]], [pos1[1], pos2[1]], "grey", ) for pos1, pos2 in
-         [edge.getShape()[i:i + 2] for edge in net.getEdges() for i in range(0, int(len(edge.getShape()) - 1))]]
-
-        # Plot generated points as blue circles, and real ones as red squares
-        plt.plot(gen_coords[:, 0], gen_coords[:, 1], 'bo', markersize=10, label="Gen")
-        plt.plot(real_coords[:, 0], real_coords[:, 1], 'rs', markersize=7, label="Real")
-
-        # Plot lines between assigned points. Note that this is also ordered.
-        if len(real_coords) >= len(gen_coords):
-            for p in range(0, min(len(gen_coords), len(real_coords))):
-                plt.plot([gen_coords[p, 0], real_coords[col[p], 0]],
-                         [gen_coords[p, 1], real_coords[col[p], 1]], 'k', label="Assign" if p == 0 else "")
-        else:
-            for p in range(0, min(len(gen_coords), len(real_coords))):
-                plt.plot([real_coords[p, 0], gen_coords[col[p], 0]],
-                         [real_coords[p, 1], gen_coords[col[p], 1]], 'k', label="Assign" if p == 0 else "")
-
-        plt.legend()
-        plt.title(f"School placement test for {test.name}")
-        plt.show()
+        plot_school_assignment(net, gen_coords, real_coords, assignment)
 
     # return list of assigned schools divergence
-    return [dist[i, col[i]] for i in range(0, min(len(gen_coords), len(real_coords)))]
+    return [dist[i, assignment[i]] for i in range(0, min(len(gen_coords), len(real_coords)))]
+
+
+def plot_school_assignment(net: sumolib.net.Net, gen_coords: np.ndarray, real_coords: np.ndarray,
+                           assignment: np.ndarray):
+    # Draw streets
+    [plt.plot([pos1[0], pos2[0]], [pos1[1], pos2[1]], "grey", ) for pos1, pos2 in
+     [edge.getShape()[i:i + 2] for edge in net.getEdges() for i in range(0, int(len(edge.getShape()) - 1))]]
+
+    # Plot generated points as blue circles, and real ones as red squares
+    plt.plot(gen_coords[:, 0], gen_coords[:, 1], 'bo', markersize=10, label="Gen")
+    plt.plot(real_coords[:, 0], real_coords[:, 1], 'rs', markersize=7, label="Real")
+
+    # Plot lines between assigned points. Note that this is also ordered.
+    if len(real_coords) >= len(gen_coords):
+        for p in range(0, min(len(gen_coords), len(real_coords))):
+            plt.plot([gen_coords[p, 0], real_coords[assignment[p], 0]],
+                     [gen_coords[p, 1], real_coords[assignment[p], 1]], 'k', label="Assign" if p == 0 else "")
+    else:
+        for p in range(0, min(len(gen_coords), len(real_coords))):
+            plt.plot([real_coords[p, 0], gen_coords[assignment[p], 0]],
+                     [real_coords[p, 1], gen_coords[assignment[p], 1]], 'k', label="Assign" if p == 0 else "")
+
+    plt.legend()
+    plt.title(f"School placement test for {test.name}")
+    plt.show()
 
 
 def get_mean_coords(schools: list):
+    """
+    Takes a list of schools and returns a list of schools with their coordinates averaged out
+    :param schools: the list of schools to get mean coords of
+    :return: a new list of the schools mean coordinates
+    """
     # Get centre of each school edge coordinate
     normalised_coords = []
     for school in schools:
@@ -107,6 +124,12 @@ def get_mean_coords(schools: list):
 
 
 def test_total_placement(results: list, max_distance: float):
+    """
+    Tests whether each result is within some max distance
+    :param results: a list of results/divergences
+    :param max_distance: the max distance to test for
+    :return: bool whether all are placed within max distance
+    """
     for result in results:
         if result >= max_distance:
             return False
@@ -116,7 +139,6 @@ def test_total_placement(results: list, max_distance: float):
 def run_test(test: TestInstance, bound: float, plot: bool):
     divergence = calc_school_divergence(test, plot)
     print(f"School placement test of {test.name}:")
-    # pprint(divergence)
     print(f"\tAll schools placed better than bound: {test_total_placement(divergence, bound)}")
     print(f"\tMean divergence: {np.mean(divergence):.2f} meters")
     if len(divergence) < 2:
