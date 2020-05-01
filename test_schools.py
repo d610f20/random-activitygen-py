@@ -146,6 +146,9 @@ def run_test(test: TestInstance, bound: float, plot: bool):
             print(f"\tHowever, the divergence ({np.mean(divergence):.2f} meters) is greater than {bound}", )
         return
     t_stat, p_val = ttest_1samp(divergence, bound)
+    # To obtain a one-sided p-value, divide by 2 as the probability density function is symmetric
+    p_val = p_val / 2
+
     print(f"\tT-test with bound {bound} meters. T-stat: {t_stat:.5f}, p-value: {p_val:.5f}")
     if t_stat <= 0:
         if p_val <= 0.05:
@@ -162,7 +165,7 @@ def run_test(test: TestInstance, bound: float, plot: bool):
 
 
 if __name__ == '__main__':
-    bound = 1500
+    bound = 1150
     print(f"Testing school placement on following cities: {', '.join([test.name for test in test_instances])}")
     print(f"Null hypothesis: Generated schools are placed further than {bound} meters away from real schools")
     print(f"Alt. hypothesis: Generated schools are placed exactly or closer than {bound} meters away from real schools")
