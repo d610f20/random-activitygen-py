@@ -136,7 +136,7 @@ def test_total_placement(results: list, max_distance: float):
 def run_test(test: TestInstance, bound: float, plot: bool):
     divergence = calc_school_divergence(test, plot)
     print(f"School placement test of {test.name}:")
-    print(f"\tAll schools placed better than bound: {test_total_placement(divergence, bound)}")
+    print(f"\tAll schools placed closer than bound: {test_total_placement(divergence, bound)}")
     print(f"\tMean divergence: {np.mean(divergence):.2f} meters")
     if len(divergence) < 2:
         print("\t[WARN] Cannot make a t-test on a single divergence")
@@ -164,6 +164,6 @@ def run_test(test: TestInstance, bound: float, plot: bool):
 if __name__ == '__main__':
     bound = 1500
     print(f"Testing school placement on following cities: {', '.join([test.name for test in test_instances])}")
-    print(f"Null hypothesis: Generated schools are placed worse than {bound} meters away from real schools")
-    print(f"Alt. hypothesis: Generated schools are placed exactly or better than {bound} meters away from real schools")
+    print(f"Null hypothesis: Generated schools are placed further than {bound} meters away from real schools")
+    print(f"Alt. hypothesis: Generated schools are placed exactly or closer than {bound} meters away from real schools")
     [run_test(test, bound, True) for test in test_instances]
