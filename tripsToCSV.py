@@ -6,7 +6,7 @@ Input Options:
     -n, --net-file FILE         Input road network
     -s, --trips-file FILE       Input trips file
 """
-
+import datetime
 import os
 import sys
 import csv
@@ -113,8 +113,8 @@ if args["--png"] or args["--gif"]:
                 y = (net_height - y) * height_scale
                 r = 2
                 draw.ellipse([x - r, y - r, x + r, y + r], fill=(0, 0, 0))
-            draw.text((10, 10), f"t={timeslot}", fill=(0, 0, 0))
+            draw.text((10, 10), f"{datetime.timedelta(seconds=timeslot)} ({timeslot})", fill=(0, 0, 0))
             draw.line([0, 1, width * timeslot / 86400, 1], fill=(0, 0, 0))
             images.append(img)
 
-        images[0].save(f"out/cities/{fname}-trips.gif", save_all=True, append_images=images[1:], optimize=False, duration=10, loop=0)
+        images[0].save(f"out/cities/{fname}-trips.gif", save_all=True, append_images=images[1:], optimize=False, duration=8, loop=0)
