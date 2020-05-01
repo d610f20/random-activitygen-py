@@ -49,7 +49,7 @@ def setup_city_gates(net: sumolib.net.Net, stats: ET.ElementTree, gate_count: in
 
     for direction in directions:
         # Find the dead ends furthest in each direction using the dot product and argmax. Those nodes will be our gates.
-        # Duplicates are possible and no problem. That just means there will be more traffic through that gate.
+        # Dead ends are removed from the list to avoid duplicates.
         gate_index = int(np.argmax([np.dot(node.getCoord(), direction) for node in dead_ends]))
         gate = dead_ends[gate_index]
         dead_ends.remove(gate)
