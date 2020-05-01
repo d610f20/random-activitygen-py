@@ -23,10 +23,26 @@ def find_school_edges(net: sumolib.net.Net, num_schools: int, centre: Tuple[floa
 
     school_edges = []
     radius = radius_of_network(net, centre)
-    # Sort each edge in each district based on their noise, and return edge with highest noise from each district
+
+    def find_valid_edge(edges):
+        for edge in edges:
+            if edge.allows("pedestrian") and edge.allows("passenger"):
+                return edge
+        logging.warning(f"Not able to find valid edge for school in cluster")
+
+    # Sort each edge in each district based on their noise
     for district in districts:
         district.sort(key=lambda x: sample_edge_noise(x, centre=centre, radius=radius, base=POPULATION_BASE))
-        school_edges.append(district[-1])
+
+        # Reverse list, so 0 index has highest noise
+        district.reverse()
+
+        # Get the edge with highest noise, that also allows for both pedestrians, and passenger cars This is done to
+        # avoid placing schools on highways (pedestrians not allowed) and also on small paths in forests,
+        # parks and so on (passenger cars not allowed)
+        valid_edge = (find_valid_edge(district))
+        if valid_edge is not None:
+            school_edges.append(valid_edge)
 
     return school_edges
 
