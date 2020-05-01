@@ -8,7 +8,7 @@ from xml.etree import ElementTree
 import noise
 import numpy as np
 
-from utility import distance, radius_of_network
+from utility import distance, radius_of_network, smoothstep
 
 if 'SUMO_HOME' in os.environ:
     tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
@@ -61,9 +61,9 @@ def sample_edge_noise(edge: sumolib.net.edge.Edge, base: int, centre,
     """
     x, y = get_edge_pair_centroid(edge.getShape())
     noise_value = get_perlin_noise(x, y, base=base, scale=scale, octaves=octaves)
-    gradient = (1 - (distance((x, y), centre) / radius)) * centre_weight
+    gradient = (1 - (distance((x, y), centre) / radius))
     # Normalise value to [0..1] range by dividing with its max potential value
-    return (noise_value + gradient) / (1 + centre_weight)
+    return (smoothstep(noise_value) + gradient * centre_weight) / (1 + centre_weight)
 
 
 def apply_network_noise(net: sumolib.net.Net, xml: ElementTree, centre: Tuple[float, float], centre_pop_weight: float,
@@ -81,7 +81,7 @@ def apply_network_noise(net: sumolib.net.Net, xml: ElementTree, centre: Tuple[fl
     logging.debug(f"[perlin] City centre: {centre}")
     radius = radius_of_network(net, centre)
     logging.debug(f"[perlin] City radius: {radius:.2f}")
-    noise_scale = 3.5 / radius
+    noise_scale = 4 / radius
     logging.debug(f"[perlin] Using noise scale: {noise_scale:.2f}")
 
     streets = xml.find("streets")
@@ -100,7 +100,8 @@ def apply_network_noise(net: sumolib.net.Net, xml: ElementTree, centre: Tuple[fl
             industry = sample_edge_noise(edge=edge, base=INDUSTRY_BASE, scale=noise_scale, octaves=3,
                                          centre=centre, radius=radius, centre_weight=centre_work_weight)
 
-            logging.debug(f"[perlin] Adding street with eid: {eid},\t population: {population:.4f}, industry: {industry:.4f}")
+            logging.debug(
+                f"[perlin] Adding street with eid: {eid},\t population: {population:.4f}, industry: {industry:.4f}")
             ET.SubElement(streets, "street", {
                 "edge": eid,
                 "population": str(population),

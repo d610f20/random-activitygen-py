@@ -183,6 +183,10 @@ def setup_logging(args: dict):
     logger.addHandler(log_file_handler)
 
 
+def smoothstep(t: float):
+    return t * t * (3 - 2 * t)
+
+
 def firstn(n, gen):
     """
     Restricts generator to yields at most N element
