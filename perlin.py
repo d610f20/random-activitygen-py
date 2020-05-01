@@ -60,7 +60,7 @@ def sample_edge_noise(edge: sumolib.net.edge.Edge, base: int, centre,
     :return: the value between [0:1]
     """
     x, y = get_edge_pair_centroid(edge.getShape())
-    noise_value = get_perlin_noise(x, y, base=base, scale=scale, octaves=octaves) ** 1.3
+    noise_value = get_perlin_noise(x, y, base=base, scale=scale, octaves=octaves)
     gradient = (1 - (distance((x, y), centre) / radius))
     # Normalise value to [0..1] range by dividing with its max potential value
     return (smoothstep(noise_value) + gradient * centre_weight) / (1 + centre_weight)
