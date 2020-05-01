@@ -63,7 +63,7 @@ def sample_edge_noise(edge: sumolib.net.edge.Edge, base: int, centre,
     noise_value = get_perlin_noise(x, y, base=base, scale=scale, octaves=octaves) ** 1.3
     gradient = (1 - (distance((x, y), centre) / radius))
     # Normalise value to [0..1] range by dividing with its max potential value
-    return (noise_value * smoothstep(gradient) + gradient * centre_weight) / (1 + centre_weight)
+    return (smoothstep(noise_value) + gradient * centre_weight) / (1 + centre_weight)
 
 
 def apply_network_noise(net: sumolib.net.Net, xml: ElementTree, centre: Tuple[float, float], centre_pop_weight: float,
