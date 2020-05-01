@@ -87,16 +87,18 @@ if args["--png"] or args["--gif"]:
             y = (net_height - y) * height_scale
             r = 2
             draw.ellipse([x - r, y - r, x + r, y + r], fill=(0, 0, 0))
-            if z < 86400 / 2:
+            if 20000 < z < 35000:
+                # Early rush hour
                 drawBefore12.ellipse([x - r, y - r, x + r, y + r], fill=(0, 0, 0))
                 before += 1
-            if z >= 86400 / 2:
+            if 50000 < z < 65000:
+                # Late rush hour
                 drawAfter12.ellipse([x - r, y - r, x + r, y + r], fill=(0, 0, 0))
                 after += 1
 
         img.save(f"out/cities/{fname}-trips.png")
-        imgBefore12.save(f"out/cities/{fname}-trips-before12.png")
-        imgAfter12.save(f"out/cities/{fname}-trips-after12.png")
+        imgBefore12.save(f"out/cities/{fname}-trips-early-rush-hour.png")
+        imgAfter12.save(f"out/cities/{fname}-trips-late-rush-hour.png")
         print(before, after)
 
     if args["--gif"]:
