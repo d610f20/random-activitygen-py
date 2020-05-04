@@ -170,7 +170,7 @@ def t_test(test: TestInstance, divs: list, bound: float, times: int):
     else:
         if p_val <= 0.05:
             print("\tThe t-stat is not zero or negative, and p-value is of statistical significance (p <= 0.05),"
-                  "the null-hypothesis cannot be rejected.")
+                  "the null-hypothesis can be rejected.")
         else:
             print("\tSince p-value is not of statistical significance, the null-hypothesis cannot be rejected.")
 
