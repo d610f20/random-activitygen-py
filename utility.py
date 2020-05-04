@@ -94,7 +94,7 @@ def verify_stats(stats: ET.ElementTree):
     population = city.find("population")
     if population is None:
         # Population is missing, so we add a default population
-        logging.info("Population is missing from statistics, adding a default configuration")
+        logging.info("[utility] Population is missing from statistics, adding a default configuration")
         population = ET.SubElement(city, "population")
         ET.SubElement(population, "bracket", {"beginAge": "0", "endAge": "30", "peopleNbr": "30"})
         ET.SubElement(population, "bracket", {"beginAge": "30", "endAge": "60", "peopleNbr": "40"})
@@ -104,7 +104,7 @@ def verify_stats(stats: ET.ElementTree):
     work_hours = city.find("workHours")
     if work_hours is None:
         # Work hours are missing, so we add some default work hours
-        logging.info("Work hours are missing from statistics, adding a default configuration")
+        logging.info("[utility] Work hours are missing from statistics, adding a default configuration")
         work_hours = ET.SubElement(city, "workHours")
         ET.SubElement(work_hours, "opening", {"hour": "25200", "proportion": "15"})  # 15% at 7.00
         ET.SubElement(work_hours, "opening", {"hour": "27000", "proportion": "25"})  # 25% at 7.30

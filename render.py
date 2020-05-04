@@ -61,10 +61,10 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, max_size: int, 
         try:
             font = ImageFont.truetype("arial.ttf", size=fontsize)
         except IOError:
-            logging.warning("[display] Could not load font, falling back to default")
+            logging.warning("[render] Could not load font, falling back to default")
             font = ImageFont.load_default()
 
-    assert font is not None, "[display] No font loaded, cannot continue"
+    assert font is not None, "[render] No font loaded, cannot continue"
 
     # Make image and prepare for drawing
     img = Image.new("RGB", (width, height), (255, 255, 255))

@@ -93,14 +93,14 @@ def main():
     perlin.INDUSTRY_BASE = random.randint(0, 65_536)
     while perlin.POPULATION_BASE == perlin.INDUSTRY_BASE:
         perlin.INDUSTRY_BASE = random.randint(0, 65_536)
-    logging.debug(f"Using POPULATION_BASE: {perlin.POPULATION_BASE}, INDUSTRY_BASE: {perlin.INDUSTRY_BASE}")
+    logging.debug(f"[main] Using POPULATION_BASE: {perlin.POPULATION_BASE}, INDUSTRY_BASE: {perlin.INDUSTRY_BASE}")
 
     # Read in SUMO network
-    logging.info(f"Reading network from: {args['--net-file']}")
+    logging.debug(f"[main] Reading network from: {args['--net-file']}")
     net = sumolib.net.readNet(args["--net-file"])
 
     # Parse statistics configuration
-    logging.info(f"Parsing stat file: {args['--stat-file']}")
+    logging.debug(f"[main] Parsing stat file: {args['--stat-file']}")
     stats = ET.parse(args["--stat-file"])
     verify_stats(stats)
 
@@ -113,34 +113,34 @@ def main():
     if args["--display-only"]:
         # Try the output-file first, as, if given, it contains a computed statistics file, otherwise try the input
         stats = ET.parse(args["--output-file"] or args["--stat-file"])
-        logging.info(f"Displaying network as image of max size {max_display_size}x{max_display_size}")
+        logging.debug(f"[main] Displaying network as image of max size {max_display_size}x{max_display_size}")
         display_network(net, stats, max_display_size, centre, args["--net-file"])
         exit(0)
 
     logging.info("Writing Perlin noise to population and industry")
 
     # Populate network with street data
-    logging.debug(f"Using centre: {centre}, "
+    logging.debug(f"[main] Using centre: {centre}, "
                   f"centre.pop-weight: {float(args['--centre.pop-weight'])}, "
                   f"centre.work-weight: {float(args['--centre.work-weight'])}")
     apply_network_noise(net, stats, centre, float(args["--centre.pop-weight"]), float(args["--centre.work-weight"]))
 
-    logging.info(f"Setting up {int(args['--gates.count'])} city gates")
+    logging.debug(f"[main] Setting up {int(args['--gates.count'])} city gates")
     setup_city_gates(net, stats, int(args["--gates.count"]))
 
     logging.info("Setting up schools")
     setup_schools(args, net, stats, centre)
 
     if args["--bus-stop"]:
-        logging.info(f"Setting up bus-stops")
+        logging.debug(f"[main] Setting up bus-stops")
         setup_bus_stops(net, stats, int(args["--bus-stop.distance"]), int(args["--bus-stop.k"]))
 
     # Write statistics back
-    logging.info(f"Writing statistics file to {args['--output-file']}")
+    logging.debug(f"[main] Writing statistics file to {args['--output-file']}")
     stats.write(args["--output-file"])
 
     if args["--display"]:
-        logging.info(f"Displaying network as image of max size {max_display_size}x{max_display_size}")
+        logging.debug(f"[main] Displaying network as image of max size {max_display_size}x{max_display_size}")
         display_network(net, stats, max_display_size, centre, args["--net-file"])
 
 
