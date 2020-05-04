@@ -1,12 +1,14 @@
 """
 Usage:
-    tripsToCSV.py --net-file=FILE --trips-file=FILE [--png] [--gif]
+    tripsToCSV.py --net-file=FILE --trips-file=FILE [--png] [--gif] [--hist]
 
 Input Options:
     -n, --net-file FILE         Input road network
     -s, --trips-file FILE       Input trips file
 """
 import datetime
+import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
 import os
 import sys
 import csv
@@ -15,6 +17,7 @@ import random
 
 from PIL import Image, ImageDraw
 from docopt import docopt
+from matplotlib.ticker import FuncFormatter, MultipleLocator
 
 from utility import position_on_edge
 
@@ -120,3 +123,12 @@ if args["--png"] or args["--gif"]:
             images.append(img)
 
         images[0].save(f"out/cities/{fname}-trips.gif", save_all=True, append_images=images[1:], optimize=False, duration=8, loop=0)
+
+if args["--hist"]:
+    time_data = [datapoint[2] for datapoint in data]
+
+    fig, ax = plt.subplots(1, 1)
+    ax.hist(time_data, bins=86400 // (60 * 10))
+    ax.xaxis.set_major_locator(MultipleLocator(3600 * 4))
+    ax.xaxis.set_major_formatter(FuncFormatter(lambda x, pos: f"{int((x - x % 3600)/3600)}:00"))
+    plt.show()
