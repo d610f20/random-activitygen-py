@@ -28,7 +28,7 @@ def find_school_edges(net: sumolib.net.Net, num_schools: int, centre: Tuple[floa
         for edge in edges:
             if edge.allows("pedestrian") and edge.allows("passenger"):
                 return edge
-        logging.warning(f"Not able to find valid edge for school in cluster")
+        logging.debug(f"[school] Not able to find valid edge for school in cluster")
 
     # Sort each edge in each district based on their noise
     for district in districts:
@@ -53,7 +53,7 @@ def insert_schools(args, new_school_edges: list, stats: ET.ElementTree, school_t
     school_close_earliest = int(args["--schools.close"].split(",")[0]) * 3600
     school_close_latest = int(args["--schools.close"].split(",")[1]) * 3600
     school_stepsize = int((float(args["--schools.stepsize"]) * 3600))
-    logging.debug(f"For school generation using:\n\tschool_open_earliest:\t {school_open_earliest}\n\t"
+    logging.debug(f"[school] For school generation using:\n\tschool_open_earliest:\t {school_open_earliest}\n\t"
                   f"school_open_latest:\t\t {school_open_latest}\n\t"
                   f"school_close_earliest:\t {school_close_earliest}\n\t"
                   f"school_close_latest:\t {school_close_latest}\n\t"
@@ -64,14 +64,14 @@ def insert_schools(args, new_school_edges: list, stats: ET.ElementTree, school_t
         xml_schools = ET.SubElement(stats.getroot(), "schools")
 
     # Insert schools, with semi-random parameters
-    logging.info(f"Inserting {str(len(new_school_edges))} {school_type}(s)")
+    logging.debug(f"[school] Inserting {str(len(new_school_edges))} {school_type}(s)")
     for school_edge in new_school_edges:
         begin_age = random.randint(int(args[f"--{school_type}.begin-age"].split(",")[0]),
                                    int(args[f"--{school_type}.begin-age"].split(",")[1]))
         end_age = random.randint(int(args[f"--{school_type}.end-age"].split(",")[0]) if begin_age + 1 <= int(
             args[f"--{school_type}.end-age"].split(",")[0]) else begin_age + 1,
                                  int(args[f"--{school_type}.end-age"].split(",")[1]))
-        logging.debug(f"Using begin_age: {begin_age}, end_age: {end_age} for {school_type}(s)")
+        logging.debug(f"[school] Using begin_age: {begin_age}, end_age: {end_age} for {school_type}(s)")
 
         ET.SubElement(xml_schools, "school", attrib={
             "edge": str(school_edge.getID()),
