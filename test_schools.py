@@ -3,7 +3,6 @@ import subprocess
 import sys
 from pathlib import Path
 from pprint import pprint
-import random
 from sys import stderr
 
 import numpy as np
