@@ -19,7 +19,7 @@ import sumolib
 
 COLOUR_CITY_GATE = (255, 0, 0)
 COLOUR_BUS_STOP = (250, 146, 0, 128)
-COLOUR_SCHOOL = (0, 0, 0, 128)
+COLOUR_SCHOOL = (255, 0, 216, 160)
 COLOUR_CENTRE = (255, 0, 0, 128)
 
 
@@ -111,7 +111,7 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, max_size: int, 
             edge = net.getEdge(school_xml.attrib["edge"])
             capacity = int(school_xml.get('capacity'))
             x, y = to_png_space(position_on_edge(edge, float(school_xml.get('pos'))))
-            r = int(max_size / 275 * (capacity / 500) ** 0.4)
+            r = int((max_size / 275 * (capacity / 500) ** 0.4) * 1.1)
             draw.ellipse((x - r, y - r, x + r, y + r), fill=COLOUR_SCHOOL)
     else:
         logging.warning(f"[render] Could not find any schools in statistics")
