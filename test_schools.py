@@ -194,5 +194,5 @@ if __name__ == '__main__':
     print(f"Testing school placement on following cities: {', '.join([test.name for test in test_instances])}")
     print(f"Null hypothesis: Generated schools are placed further than {bound} meters away from real schools")
     print(f"Alt. hypothesis: Generated schools are placed exactly or closer than {bound} meters away from real schools")
-    [t_test(test, calc_school_divergence(test, True), bound, 1) for test in test_instances]  # One run per test
+    # [t_test(test, calc_school_divergence(test, True), bound, 1) for test in test_instances]  # One run per test
     [run_multiple_test(test, 1150, 10) for test in test_instances]  # Multiple runs per test
