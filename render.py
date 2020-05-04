@@ -18,8 +18,8 @@ else:
 import sumolib
 
 COLOUR_CITY_GATE = (255, 0, 0)
-COLOUR_BUS_STOP = (250, 146, 0)
-COLOUR_SCHOOL = (255, 0, 216)
+COLOUR_BUS_STOP = (250, 146, 0, 128)
+COLOUR_SCHOOL = (255, 0, 216, 160)
 COLOUR_CENTRE = (255, 0, 0, 128)
 
 
@@ -79,7 +79,8 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, max_size: int, 
             green = int(10 + 245 * (1 - industry))
             blue = int(10 + 245 * (1 - population))
             for pos1, pos2 in [edge.getShape()[i:i + 2] for i in range(0, int(len(edge.getShape()) - 1))]:
-                draw.line((to_png_space(pos1), to_png_space(pos2)), (0, green, blue), int(1.5 + 3.5 * population ** 1.5))
+                draw.line((to_png_space(pos1), to_png_space(pos2)), (0, green, blue),
+                          int(1.5 + 3.5 * population ** 1.5))
     else:
         logging.warning(f"[render] Could not find any streets in statistics")
 
@@ -90,7 +91,7 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, max_size: int, 
             traffic = max(float(gate_xml.attrib["incoming"]), float(gate_xml.attrib["outgoing"]))
             x, y = to_png_space(position_on_edge(edge, float(gate_xml.attrib["pos"])))
             r = int(max_size / 600 + traffic / 1.3)
-            draw.ellipse((x - r, y - r, x + r, y + r), fill=(255, 0, 0))
+            draw.ellipse((x - r, y - r, x + r, y + r), fill=COLOUR_CITY_GATE)
     else:
         logging.warning(f"[render] Could not find any city-gates in statistics")
 
@@ -100,7 +101,7 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, max_size: int, 
             edge = net.getEdge(stop_xml.attrib["edge"])
             x, y = to_png_space(position_on_edge(edge, float(stop_xml.attrib["pos"])))
             r = max_size / 600
-            draw.ellipse((x - r, y - r, x + r, y + r), fill=(250, 146, 0))
+            draw.ellipse((x - r, y - r, x + r, y + r), fill=COLOUR_BUS_STOP)
     else:
         logging.warning(f"[render] Could not find any bus-stations in statistics")
 
@@ -110,8 +111,8 @@ def display_network(net: sumolib.net.Net, stats: ET.ElementTree, max_size: int, 
             edge = net.getEdge(school_xml.attrib["edge"])
             capacity = int(school_xml.get('capacity'))
             x, y = to_png_space(position_on_edge(edge, float(school_xml.get('pos'))))
-            r = int(max_size / 600 + capacity / 175)
-            draw.ellipse((x - r, y - r, x + r, y + r), fill=(255, 0, 216))
+            r = int((max_size / 275 * (capacity / 500) ** 0.4) * 1.1)
+            draw.ellipse((x - r, y - r, x + r, y + r), fill=COLOUR_SCHOOL)
     else:
         logging.warning(f"[render] Could not find any schools in statistics")
 
@@ -225,9 +226,11 @@ class Legend:
         self.draw.line([self.offset, line_y, self.offset + width, line_y], (0, 0, 0), int(self.scale))
         # ticks
         self.draw.line([self.offset, self.y, self.offset, self.y + self.legend_height], (0, 0, 0), int(self.scale))
-        self.draw.line([self.offset + width, self.y, self.offset + width, self.y + self.legend_height], (0, 0, 0), int(self.scale))
+        self.draw.line([self.offset + width, self.y, self.offset + width, self.y + self.legend_height], (0, 0, 0),
+                       int(self.scale))
 
-        self.draw.text([self.offset + 5 * int(self.scale), self.y - 8 * int(self.scale)], f"{meters} m", (0, 0, 0), font=self.font)
+        self.draw.text([self.offset + 5 * int(self.scale), self.y - 8 * int(self.scale)], f"{meters} m", (0, 0, 0),
+                       font=self.font)
         # add padding
         self.offset += width + 2 * self.legend_height
         return self
