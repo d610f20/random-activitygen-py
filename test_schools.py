@@ -144,9 +144,6 @@ def test_total_placement(results: list, max_distance: float):
 
 def t_test(test: TestInstance, divs: list, bound: float, times: int):
     print(f"Executing school placement one-sided t-test on {times} runs of {test.name}")
-    # Print mean of each run
-    # print("Mean divergences for each run:")
-    # pprint([np.mean(div) for div in divs])
     # Flatten list of divergences
     divs = [dist for div in divs for dist in div]
 
