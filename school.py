@@ -104,7 +104,7 @@ def get_school_count(args, stats: ET.ElementTree, school_type: str):
 
 
 def setup_schools(args, net: sumolib.net.Net, stats: ET.ElementTree, centre: Tuple[float, float], pop_weight: float,
-                  pop_offset):
+                  pop_offset, city_name):
     xml_schools = stats.find('schools')
     # Remove all previous schools if any exists, effectively overwriting these
     if xml_schools is not None:

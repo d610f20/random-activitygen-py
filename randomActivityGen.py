@@ -5,7 +5,7 @@
     [--primary-school.ratio=F] [--primary-school.capacity=args] [--high-school.begin-age=args]
     [--high-school.end-age=args] [--high-school.count=N] [--high-school.ratio=F] [--high-school.capacity=args]
     [--college.begin-age=args] [--college.end-age=args] [--college.count=N] [--college.ratio=F]
-    [--college.capacity=args] [--bus-stop] [--bus-stop.distance=N] [--bus-stop.k=N] [--display] [--display.size=N]
+    [--college.capacity=args] [--bus-stop] [--bus-stop.distance=N] [--bus-stop.k=N] [--display] [--display.size=N] [--peacock=N]
     [--seed=S | --random] ([--quiet] | [--verbose] | [--log-level=LEVEL]) [--log-file=FILENAME]
     randomActivityGen.py --net-file=FILE --stat-file=FILE [--output-file=FILE] --display-only
 
@@ -44,6 +44,7 @@ Other Options:
     --bus-stop.k N              Placement attempts in the poisson-disc algorithm [default: 10]
     --display                   Displays an image of city elements and the noise used to generate them.
     --display.size N            Set max width and height of image to display to N [default: 800]
+    --peacock S                 Export school coord to csv [default: a]
     --display-only              Displays an image of city elements from existing statistics file. If given uses --stat-file for input.
     --verbose                   Sets log-level to DEBUG
     --quiet                     Sets log-level to ERROR
@@ -80,8 +81,8 @@ import sumolib
 
 
 def main():
-    city_name = "aalborg"
     args = docopt(__doc__, version="RandomActivityGen v0.1")
+    city_name = args["--peacock"]
 
     setup_logging(args)
 
@@ -130,7 +131,7 @@ def main():
 
     logging.info("Setting up schools")
 
-    setup_schools(args, net, stats, centre, float(args["--centre.pop-weight"]), pop_offset)
+    setup_schools(args, net, stats, centre, float(args["--centre.pop-weight"]), pop_offset, city_name)
 
     if args["--bus-stop"]:
         logging.debug(f"[main] Setting up bus-stops")
