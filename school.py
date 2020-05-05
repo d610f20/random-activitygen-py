@@ -5,7 +5,7 @@ import sys
 import xml.etree.ElementTree as ET
 from typing import Tuple
 
-from perlin import POPULATION_BASE, sample_edge_noise
+from perlin import sample_edge_noise
 from utility import radius_of_network, k_means_clusters
 
 if 'SUMO_HOME' in os.environ:
@@ -17,7 +17,7 @@ else:
 import sumolib
 
 
-def find_school_edges(net: sumolib.net.Net, num_schools: int, centre: Tuple[float, float]):
+def find_school_edges(net: sumolib.net.Net, num_schools: int, centre: Tuple[float, float], pop_weight: float, pop_offset: float):
     # Use k-means, to split the net into num_schools number of clusters, each containing approx same number of edges
     districts = k_means_clusters(net, num_schools)
 
@@ -32,7 +32,7 @@ def find_school_edges(net: sumolib.net.Net, num_schools: int, centre: Tuple[floa
 
     # Sort each edge in each district based on their noise
     for district in districts:
-        district.sort(key=lambda x: sample_edge_noise(x, centre=centre, radius=radius, base=POPULATION_BASE))
+        district.sort(key=lambda x: sample_edge_noise(x, centre=centre, radius=radius, offset=pop_offset, centre_weight=pop_weight))
 
         # Reverse list, so 0 index has highest noise
         district.reverse()
@@ -101,7 +101,7 @@ def get_school_count(args, stats: ET.ElementTree, school_type: str):
     return school_count
 
 
-def setup_schools(args, net: sumolib.net.Net, stats: ET.ElementTree, centre: Tuple[float, float]):
+def setup_schools(args, net: sumolib.net.Net, stats: ET.ElementTree, centre: Tuple[float, float], pop_weight: float, pop_offset):
     xml_schools = stats.find('schools')
     # Remove all previous schools if any exists, effectively overwriting these
     if xml_schools is not None:
@@ -118,7 +118,7 @@ def setup_schools(args, net: sumolib.net.Net, stats: ET.ElementTree, centre: Tup
 
     # Find edges to place schools on
     if 0 < school_count:
-        new_school_edges = find_school_edges(net, school_count, centre)
+        new_school_edges = find_school_edges(net, school_count, centre, pop_weight, pop_offset)
 
     # Place primary schools (if any) on the first edges in new_school_edges
     if 0 < primary_school_count:
