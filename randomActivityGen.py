@@ -87,13 +87,11 @@ def main():
     # Parse random and seed arguments
     if not args["--random"]:
         random.seed(args["--seed"])
-    # The 'noise' lib has good resolution until above 10 mil, but a SIGSEGV is had on values above [-100000, 100000]
-    import perlin
-    perlin.POPULATION_BASE = random.randint(0, 65_536)
-    perlin.INDUSTRY_BASE = random.randint(0, 65_536)
-    while perlin.POPULATION_BASE == perlin.INDUSTRY_BASE:
-        perlin.INDUSTRY_BASE = random.randint(0, 65_536)
-    logging.debug(f"[main] Using POPULATION_BASE: {perlin.POPULATION_BASE}, INDUSTRY_BASE: {perlin.INDUSTRY_BASE}")
+    pop_offset = 65_536 * random.random()
+    work_offset = 65_536 * random.random()
+    while pop_offset == work_offset:
+        work_offset = 65_536 * random.random()
+    logging.debug(f"[main] Using pop_offset: {pop_offset}, work_offset: {work_offset}")
 
     # Read in SUMO network
     logging.debug(f"[main] Reading network from: {args['--net-file']}")
@@ -123,13 +121,13 @@ def main():
     logging.debug(f"[main] Using centre: {centre}, "
                   f"centre.pop-weight: {float(args['--centre.pop-weight'])}, "
                   f"centre.work-weight: {float(args['--centre.work-weight'])}")
-    apply_network_noise(net, stats, centre, float(args["--centre.pop-weight"]), float(args["--centre.work-weight"]))
+    apply_network_noise(net, stats, centre, float(args["--centre.pop-weight"]), float(args["--centre.work-weight"]), pop_offset, work_offset)
 
     logging.debug(f"[main] Setting up {int(args['--gates.count'])} city gates")
     setup_city_gates(net, stats, int(args["--gates.count"]))
 
     logging.info("Setting up schools")
-    setup_schools(args, net, stats, centre)
+    setup_schools(args, net, stats, centre, float(args["--centre.pop-weight"]), pop_offset)
 
     if args["--bus-stop"]:
         logging.debug(f"[main] Setting up bus-stops")
