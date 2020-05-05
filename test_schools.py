@@ -1,4 +1,5 @@
 import os
+import subprocess
 import sys
 from pathlib import Path
 from pprint import pprint
@@ -22,15 +23,17 @@ import sumolib
 
 
 class TestInstance:
-    def __init__(self, name: str, net_file: str, gen_stats_file: str, real_stats_file: str):
+    def __init__(self, name: str, net_file: str, gen_stats_in_file: str, gen_stats_out_file: str, real_stats_file: str):
         self.name = name
         self.net_file = net_file
-        self.gen_stats_file = gen_stats_file
+        self.gen_stats_in_file = gen_stats_in_file
+        self.gen_stats_out_file = gen_stats_out_file
         self.real_stats_file = real_stats_file
 
         try:
             Path(self.net_file).resolve(strict=True)
-            Path(self.gen_stats_file).resolve(strict=True)
+            Path(self.gen_stats_in_file).resolve(strict=True)
+            Path(self.gen_stats_out_file).resolve(strict=True)
             Path(self.real_stats_file).resolve(strict=True)
         except FileNotFoundError:
             print(f"Files for test instance: {self.name} does not exist", file=stderr)
@@ -39,11 +42,16 @@ class TestInstance:
 
 
 test_instances = [
-    TestInstance("Esbjerg", "in/cities/esbjerg.net.xml", "out/cities/esbjerg.stat.xml", "stats/esbjerg.stat.xml"),
-    TestInstance("Slagelse", "in/cities/slagelse.net.xml", "out/cities/slagelse.stat.xml", "stats/slagelse.stat.xml"),
-    TestInstance("Randers", "in/cities/randers.net.xml", "out/cities/randers.stat.xml", "stats/randers.stat.xml"),
-    TestInstance("Vejen", "in/cities/vejen.net.xml", "out/cities/vejen.stat.xml", "stats/vejen.stat.xml"),
-    TestInstance("Aalborg", "in/cities/aalborg.net.xml", "out/cities/aalborg.stat.xml", "stats/aalborg.stat.xml")
+    TestInstance("Esbjerg", "in/cities/esbjerg.net.xml", "in/cities/esbjerg.stat.xml", "out/cities/esbjerg.stat.xml",
+                 "stats/esbjerg.stat.xml"),
+    TestInstance("Slagelse", "in/cities/slagelse.net.xml", "in/cities/slagelse.stat.xml",
+                 "out/cities/slagelse.stat.xml", "stats/slagelse.stat.xml"),
+    TestInstance("Randers", "in/cities/randers.net.xml", "in/cities/randers.stat.xml", "out/cities/randers.stat.xml",
+                 "stats/randers.stat.xml"),
+    TestInstance("Vejen", "in/cities/vejen.net.xml", "in/cities/vejen.stat.xml", "out/cities/vejen.stat.xml",
+                 "stats/vejen.stat.xml"),
+    TestInstance("Aalborg", "in/cities/aalborg.net.xml", "in/cities/aalborg.stat.xml", "out/cities/aalborg.stat.xml",
+                 "stats/aalborg.stat.xml")
 ]
 
 
@@ -59,7 +67,7 @@ def calc_school_divergence(test: TestInstance, plot: bool):
 
     # Get mean school coordinates for real and generated statistics
     gen_coords = np.array(get_mean_coords([net.getEdge(xml_school.get("edge")).getShape() for xml_school in
-                                           ET.parse(test.gen_stats_file).find("schools").findall("school")]))
+                                           ET.parse(test.gen_stats_out_file).find("schools").findall("school")]))
     real_coords = np.array(get_mean_coords([net.getEdge(xml_school.get("edge")).getShape() for xml_school in
                                             ET.parse(test.real_stats_file).find("schools").findall("school")]))
 
@@ -133,19 +141,21 @@ def test_total_placement(results: list, max_distance: float):
     return True
 
 
-def run_test(test: TestInstance, bound: float, plot: bool):
-    divergence = calc_school_divergence(test, plot)
-    print(f"School placement test of {test.name}:")
-    print(f"\tAll schools placed closer than bound: {test_total_placement(divergence, bound)}")
-    print(f"\tMean divergence: {np.mean(divergence):.2f} meters")
-    if len(divergence) < 2:
+def t_test(test: TestInstance, divs: list, bound: float, times: int):
+    print(f"Executing school placement one-sided t-test on {times} runs of {test.name}")
+    # Flatten list of divergences
+    divs = [dist for div in divs for dist in div]
+
+    print(f"\tAll schools placed closer than bound: {test_total_placement(divs, bound)}")
+    print(f"\tMean divergence: {np.mean(divs):.2f} meters")
+    if len(divs) < 2:
         print("\t[WARN] Cannot make a t-test on a single divergence")
-        if np.mean(divergence) <= bound:
-            print(f"\tHowever, the divergence ({np.mean(divergence):.2f} meters) is less or equal than {bound}")
+        if np.mean(divs) <= bound:
+            print(f"\tHowever, the divergence ({np.mean(divs):.2f} meters) is less or equal than {bound}")
         else:
-            print(f"\tHowever, the divergence ({np.mean(divergence):.2f} meters) is greater than {bound}", )
+            print(f"\tHowever, the divergence ({np.mean(divs):.2f} meters) is greater than {bound}", )
         return
-    t_stat, p_val = ttest_1samp(divergence, bound)
+    t_stat, p_val = ttest_1samp(divs, bound)
     # To obtain a one-sided p-value, divide by 2 as the probability density function is symmetric
     p_val = p_val / 2
 
@@ -159,9 +169,23 @@ def run_test(test: TestInstance, bound: float, plot: bool):
     else:
         if p_val <= 0.05:
             print("\tThe t-stat is not zero or negative, and p-value is of statistical significance (p <= 0.05),"
-                  "the null-hypothesis cannot be rejected.")  # FIXME: does this mean that we can accept the null?
+                  "the null-hypothesis can be rejected.")
         else:
             print("\tSince p-value is not of statistical significance, the null-hypothesis cannot be rejected.")
+
+
+def run_multiple_test(test: TestInstance, bound: float, times: int):
+    # execute a test-instance n times
+    divs = []
+    for n in range(0, times):
+        # run main
+        subprocess.run(
+            ["python", "./randomActivityGen.py", f"--net-file={test.net_file}", f"--stat-file={test.gen_stats_in_file}",
+             f"--output-file={test.gen_stats_out_file}", "--quiet", f"--random"])
+        # calculate and collect derivations
+        divs += [calc_school_divergence(test, False)]
+    # test within bound on derivations
+    t_test(test, divs, bound, times)
 
 
 if __name__ == '__main__':
@@ -169,4 +193,5 @@ if __name__ == '__main__':
     print(f"Testing school placement on following cities: {', '.join([test.name for test in test_instances])}")
     print(f"Null hypothesis: Generated schools are placed further than {bound} meters away from real schools")
     print(f"Alt. hypothesis: Generated schools are placed exactly or closer than {bound} meters away from real schools")
-    [run_test(test, bound, True) for test in test_instances]
+    # [t_test(test, calc_school_divergence(test, True), bound, 1) for test in test_instances]  # One run per test
+    [run_multiple_test(test, 1150, 10) for test in test_instances]  # Multiple runs per test
