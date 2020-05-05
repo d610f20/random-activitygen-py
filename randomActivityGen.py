@@ -65,10 +65,10 @@ from docopt import docopt
 
 from bus import setup_bus_stops
 from gates import setup_city_gates
-from perlin import apply_network_noise
+from perlin import setup_streets, NoiseSampler
 from render import display_network
 from school import setup_schools
-from utility import find_city_centre, verify_stats, setup_logging
+from utility import find_city_centre, verify_stats, setup_logging, radius_of_network
 
 if 'SUMO_HOME' in os.environ:
     tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
@@ -104,8 +104,8 @@ def main():
 
     max_display_size = int(args["--display.size"])
 
-    centre = find_city_centre(net) if args["--centre.pos"] == "auto" else tuple(
-        map(int, args["--centre.pos"].split(",")))
+    centre = find_city_centre(net) if args["--centre.pos"] == "auto" else tuple(map(int, args["--centre.pos"].split(",")))
+    radius = radius_of_network(net, centre)
 
     # If display-only, load stat-file as input and exit after rendering
     if args["--display-only"]:
@@ -115,19 +115,23 @@ def main():
         display_network(net, stats, max_display_size, centre, args["--net-file"])
         exit(0)
 
-    logging.info("Writing Perlin noise to population and industry")
+    # Prepare noise sampling
+    pop_noise = NoiseSampler(centre, float(args['--centre.pop-weight']), radius, pop_offset)
+    work_noise = NoiseSampler(centre, float(args['--centre.work-weight']), radius, work_offset)
 
-    # Populate network with street data
     logging.debug(f"[main] Using centre: {centre}, "
+                  f"radius: {radius}, "
                   f"centre.pop-weight: {float(args['--centre.pop-weight'])}, "
                   f"centre.work-weight: {float(args['--centre.work-weight'])}")
-    apply_network_noise(net, stats, centre, float(args["--centre.pop-weight"]), float(args["--centre.work-weight"]), pop_offset, work_offset)
+
+    logging.info("Setting up streets with population and workplaces")
+    setup_streets(net, stats, pop_noise, work_noise)
 
     logging.debug(f"[main] Setting up {int(args['--gates.count'])} city gates")
     setup_city_gates(net, stats, int(args["--gates.count"]))
 
     logging.info("Setting up schools")
-    setup_schools(args, net, stats, centre, float(args["--centre.pop-weight"]), pop_offset)
+    setup_schools(args, net, stats, pop_noise)
 
     if args["--bus-stop"]:
         logging.debug(f"[main] Setting up bus-stops")
