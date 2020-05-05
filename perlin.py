@@ -8,7 +8,7 @@ from xml.etree import ElementTree
 import noise
 import numpy as np
 
-from utility import distance, radius_of_network
+from utility import distance, radius_of_network, smoothstep
 
 if 'SUMO_HOME' in os.environ:
     tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
@@ -17,9 +17,6 @@ else:
     sys.exit("Please declare environment variable 'SUMO_HOME' to use sumolib")
 
 import sumolib
-
-POPULATION_BASE = -1  # Initialized in main
-INDUSTRY_BASE = -1  # Initialized in main
 
 
 def get_edge_pair_centroid(coords: List[Tuple[float, float]]) -> Tuple[float, float]:
@@ -33,25 +30,25 @@ def get_edge_pair_centroid(coords: List[Tuple[float, float]]) -> Tuple[float, fl
     return float(x_avg), float(y_avg)
 
 
-def get_perlin_noise(x: float, y: float, base: int, scale: float = 0.005, octaves: int = 3) -> float:
+def get_perlin_noise(x: float, y: float, offset: float, scale: float, octaves: int) -> float:
     """
     The 'noise' lib returns a value in the range of [-1:1]. The noise value is scaled to the range of [0:1].
     :param x: the sample point for x
     :param y: the sample point for y
-    :param base: the offset for the 2d slice
+    :param offset: the offset for the 2d slice
     :param scale: the scale to multiply to each coordinate, default is 0.005
     :param octaves: the octaves to use when sampling, default is 3
     :return: a normalised float of the sample in noisemap
     """
-    return (noise.pnoise3(x=x * scale, y=y * scale, z=base, octaves=octaves) + 1) / 2
+    return (noise.pnoise3(x=x * scale, y=y * scale, z=offset, octaves=octaves) + 1) / 2
 
 
-def sample_edge_noise(edge: sumolib.net.edge.Edge, base: int, centre,
-                      radius, centre_weight: float = 1.0, scale: float = 0.005, octaves: int = 3) -> float:
+def sample_edge_noise(edge: sumolib.net.edge.Edge, offset: float, centre,
+                      radius, centre_weight: float = 1.0, octaves: int = 3) -> float:
     """
     Returns a normalised Perlin noise sample at centre of given edge
     :param edge: the edge
-    :param base: offset into noisemap
+    :param offset: offset into noisemap
     :param centre: centre of the city
     :param radius: radius of the city
     :param centre_weight: how much impact being near the centre has
@@ -60,14 +57,14 @@ def sample_edge_noise(edge: sumolib.net.edge.Edge, base: int, centre,
     :return: the value between [0:1]
     """
     x, y = get_edge_pair_centroid(edge.getShape())
-    noise_value = get_perlin_noise(x, y, base=base, scale=scale, octaves=octaves)
-    gradient = (1 - (distance((x, y), centre) / radius)) * centre_weight
+    noise_value = get_perlin_noise(x, y, offset=offset, scale=4 / radius, octaves=octaves)
+    gradient = (1 - (distance((x, y), centre) / radius))
     # Normalise value to [0..1] range by dividing with its max potential value
-    return (noise_value + gradient) / (1 + centre_weight)
+    return (smoothstep(noise_value) + gradient * centre_weight) / (1 + centre_weight)
 
 
 def apply_network_noise(net: sumolib.net.Net, xml: ElementTree, centre: Tuple[float, float], centre_pop_weight: float,
-                        centre_work_weight: float):
+                        centre_work_weight: float, pop_offset: float, work_offset: float):
     """
     Calculate and apply Perlin noise in [0:1] range for each street for population and industry
     :param net: the SUMO network
@@ -78,11 +75,9 @@ def apply_network_noise(net: sumolib.net.Net, xml: ElementTree, centre: Tuple[fl
     :return:
     """
     # Calculate and apply Perlin noise for all edges in network to population in statistics
-    logging.debug(f"City centre: {centre}")
+    logging.debug(f"[perlin] City centre: {centre}")
     radius = radius_of_network(net, centre)
-    logging.debug(f"City radius: {radius:.2f}")
-    noise_scale = 3.5 / radius
-    logging.debug(f"Using noise scale: {noise_scale:.2f}")
+    logging.debug(f"[perlin] City radius: {radius:.2f}")
 
     streets = xml.find("streets")
     if streets is None:
@@ -95,12 +90,11 @@ def apply_network_noise(net: sumolib.net.Net, xml: ElementTree, centre: Tuple[fl
         eid = edge.getID()
         if eid not in known_streets:
             # This edge is missing a street entry. Find population and industry for this edge
-            population = sample_edge_noise(edge=edge, base=POPULATION_BASE, scale=noise_scale, octaves=3,
-                                           centre=centre, radius=radius, centre_weight=centre_pop_weight)
-            industry = sample_edge_noise(edge=edge, base=INDUSTRY_BASE, scale=noise_scale, octaves=3,
-                                         centre=centre, radius=radius, centre_weight=centre_work_weight)
+            population = sample_edge_noise(edge=edge, offset=pop_offset, centre=centre, radius=radius, centre_weight=centre_pop_weight)
+            industry = sample_edge_noise(edge=edge, offset=work_offset, centre=centre, radius=radius, centre_weight=centre_work_weight)
 
-            logging.debug(f"Adding street with eid: {eid},\t population: {population:.4f}, industry: {industry:.4f}")
+            logging.debug(
+                f"[perlin] Adding street with eid: {eid},\t population: {population:.4f}, industry: {industry:.4f}")
             ET.SubElement(streets, "street", {
                 "edge": eid,
                 "population": str(population),

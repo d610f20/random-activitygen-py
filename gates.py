@@ -25,10 +25,11 @@ def setup_city_gates(net: sumolib.net.Net, stats: ET.ElementTree, gate_count: in
     xml_entrances = xml_gates.findall("entrance")
     n = gate_count - len(xml_entrances)
     if n < 0:
-        logging.warning(f"{gate_count} city gate were requested, but there are already {len(xml_entrances)} defined")
+        logging.debug(
+            f"[gates] {gate_count} city gate were requested, but there are already {len(xml_entrances)} defined")
     if n <= 0:
         return
-    logging.info(f"Inserting {n} new city gates")
+    logging.debug(f"[gates] Inserting {n} new city gates")
 
     # Finds all nodes that are dead ends, i.e. nodes that only have one neighbouring node
     # and at least one of the connecting edges is a road (as opposed to path) and allows private vehicles
@@ -43,16 +44,16 @@ def setup_city_gates(net: sumolib.net.Net, stats: ET.ElementTree, gate_count: in
     # W<---o--->E
     #      |
     #      S
-    tau = math.pi * 2
-    base_rad = random.random() * tau
-    rads = [(base_rad + i * tau / n) % tau for i in range(0, n)]
+    base_rad = random.random() * math.tau
+    rads = [(base_rad + i * math.tau / n) % math.tau for i in range(0, n)]
     directions = [(math.cos(rad), math.sin(rad)) for rad in rads]
 
     for direction in directions:
         # Find the dead ends furthest in each direction using the dot product and argmax. Those nodes will be our gates.
-        # Duplicates are possible and no problem. That just means there will be more traffic through that gate.
+        # Dead ends are removed from the list to avoid duplicates.
         gate_index = int(np.argmax([np.dot(node.getCoord(), direction) for node in dead_ends]))
         gate = dead_ends[gate_index]
+        dead_ends.remove(gate)
 
         # Decide proportion of the incoming and outgoing vehicles coming through this gate
         # These numbers are relatively to the values of the other gates
@@ -65,7 +66,7 @@ def setup_city_gates(net: sumolib.net.Net, stats: ET.ElementTree, gate_count: in
         outgoing_traffic = (1 + random.random()) * incoming_lanes
 
         # Add entrance to stats file
-        edge, pos = (gate.getOutgoing()[0], 0) if len(gate.getOutgoing()) > 0\
+        edge, pos = (gate.getOutgoing()[0], 0) if len(gate.getOutgoing()) > 0 \
             else (gate.getIncoming()[0], gate.getIncoming()[0].getLength())
         logging.debug(
             f"Adding entrance to statistics, edge: {edge.getID()}, incoming traffic: {incoming_traffic}, outgoing "
