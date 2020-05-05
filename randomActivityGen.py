@@ -115,7 +115,7 @@ def main():
         display_network(net, stats, max_display_size, centre, args["--net-file"])
         exit(0)
 
-    logging.info("Writing Perlin noise to population and industry")
+    logging.info("[main] Writing Perlin noise to population and industry")
 
     # Populate network with street data
     logging.debug(f"[main] Using centre: {centre}, "
@@ -126,7 +126,7 @@ def main():
     logging.debug(f"[main] Setting up {int(args['--gates.count'])} city gates")
     setup_city_gates(net, stats, int(args["--gates.count"]))
 
-    logging.info("Setting up schools")
+    logging.info("[main] Setting up schools")
     setup_schools(args, net, stats, centre, float(args["--centre.pop-weight"]), pop_offset)
 
     if args["--bus-stop"]:
