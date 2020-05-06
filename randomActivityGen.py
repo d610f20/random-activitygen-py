@@ -124,13 +124,13 @@ def main():
                   f"centre.pop-weight: {float(args['--centre.pop-weight'])}, "
                   f"centre.work-weight: {float(args['--centre.work-weight'])}")
 
-    logging.info("Setting up streets with population and workplaces")
+    logging.info("[main] Setting up streets with population and workplaces")
     setup_streets(net, stats, pop_noise, work_noise)
 
     logging.debug(f"[main] Setting up {int(args['--gates.count'])} city gates")
     setup_city_gates(net, stats, int(args["--gates.count"]))
 
-    logging.info("Setting up schools")
+    logging.info("[main] Setting up schools")
     setup_schools(args, net, stats, pop_noise)
 
     if args["--bus-stop"]:
