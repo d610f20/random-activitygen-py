@@ -50,17 +50,16 @@
         <entrance edge="457517175#26" pos="0" incoming="1" outgoing="1" />
     </cityGates>
     <schools>
-        <!-- Aalborg -->
         <!-- Filstedvejens Skole, Filstedvej 16, 9000 -->
         <school edge="-713525481#0" pos="0" capacity="600" />
         <!-- Gl. Hasseris Skole, Mester Eriks Vej 57, 9000 -->
         <school edge="-338356231#7" pos="0" capacity="600" />
-        <!-- Gug Skole, Solhøjsvej 2, 9210 -->
-        <school edge="-125450808#1" pos="0" capacity="600" />
-        <!-- Herningvej Skole, Herningvej Skole, 9220 -->
-        <school edge="38755832#8" pos="0" capacity="600" />
         <!-- Kærbyskolen, Oluf Borchs vej 2, 9000 -->
         <school edge="-44158157#1" pos="0" capacity="600" />
+        <!-- Gug Skole, Solhøjsvej 2, 9210 -->
+        <school edge="-125450808#1" pos="0" capacity="600" />
+        <!-- Herningvej Skole, Herningvej 35, 9220 Check denne -->
+        <school edge="38755832#8" pos="0" capacity="600" />
         <!-- Mellervangskolen, Frøstrupvej 4, 9220 -->
         <school edge="88139904#3" pos="0" capacity="600" />
         <!-- Seminarieskolen, Mylius Erichsensvej 127, 9210 -->
@@ -79,14 +78,104 @@
         <school edge="-31112645#2" pos="0" capacity="600" />
         <!-- Vesterkærets Skole, Skydebanevej 1, 9000 -->
         <school edge="-492468841#2" pos="0" capacity="600" />
-
-        <!-- Nørresundby -->
         <!-- Gl. Lindholm Skole, Lindholmsvej 65, 9400 -->
         <school edge="-682002083#0" pos="0" capacity="600" />
         <!-- Nr. Uttrup Skole, Hjørringvej 81 - 83, 9400 -->
         <school edge="128572669#2" pos="0" capacity="600" />
         <!--  Skansevejens Skole, Skansevej 2, 9400 -->
         <school edge="26463726#12" pos="0" capacity="600" />
+        <!--  Gudumholm Skole, Ågade 72 -->
+        <school edge="39360568#2" pos="0" capacity="600" />
+        <!--  Frejlev Skole, Frejlev Skolevej 7-->
+        <school edge="389409175#2" pos="0" capacity="600" />
+        <!--  Langholt Skole, Øster Hassingvej 1-->
+        <school edge="23298469#8" pos="0" capacity="600" />
+        <!--  Nøvling Skole, Nøvling Skolevej 5-->
+        <school edge="29354073#0" pos="0" capacity="600" />
+        <!--  Hospitalsundervisningen, Mølleparkvej 10-->
+        <school edge="286895420#1" pos="0" capacity="600" />
+        <!--  Gistrup Skole, Hadsundvej 406-->
+        <school edge="30652940#0" pos="0" capacity="600" />
+        <!--  Klarup Skole, Hellasvej 17-->
+        <school edge="-242527771#0" pos="0" capacity="600" />
+        <!--  Svenstrup Skole, Egemarksvej 1 -->
+        <school edge="-22817013#2" pos="0" capacity="600" />
+        <!--  Vodskov Skole, Brorsonsvej 1-->
+        <school edge="-47853293#1" pos="0" capacity="600" />
+        <!--  Byplanvejens Skole, Byplanvej 2-->
+        <school edge="-25669715#0" pos="0" capacity="600" />
+        <!--  Klostermarksskolen, Dr Christinesvej 6-->
+        <school edge="9193321#1" pos="0" capacity="600" />
+        <!--  Solsideskolen, Kirkealle 7 -->
+        <school edge="-31985051#0" pos="0" capacity="600" />
+        <!--  Sct. Mariæ Skole, Valdemarsgade 14-->
+        <school edge="138403102#1" pos="0" capacity="600" />
+        <!--  Skipper Clement Skolen, Gl Kærvej 30-->
+        <school edge="9566430#3" pos="0" capacity="600" />
+        <!--  Højvangskolen, Tingstedet 20-->
+        <school edge="104711711#7" pos="0" capacity="600" />
+        <!--  Filipskolen Ålborg, Sohngårdsholmsvej 53 -->
+        <school edge="-368640727#4" pos="0" capacity="600" />
+        <!--  Aalborg Friskole, Sohngårdsholmsvej 47-->
+        <school edge="-37778637#4" pos="0" capacity="600" />
+        <!--  Østskolen, Tornhøjvej 14-->
+        <school edge="31968817#9" pos="0" capacity="600" />
+        <!--  Lyngbjerggårdskolen, Ridemandsmøllevej 52-->
+        <school edge="-96422837#2" pos="0" capacity="600" />
+        <!--  Egebakken, Gennem Bakkerne 5 -->
+        <school edge="-455551057#1" pos="0" capacity="600" />
+        <!--  Mentiqa-Nordjylland, Thistedvej 115-->
+        <school edge="107105438#1" pos="0" capacity="600" />
+        <!--  Kollegievejens Skole, Kollegievej 1-->
+        <school edge="37778630#6" pos="0" capacity="600" />
+
+        <!-- High schools -->
+        <!-- Aalborghus Gymnasium, Sohngårdsholmsvej 60 -->
+        <school edge="368640727#11" pos="0" capacity="600" />
+        <!-- Aalborg Katedralskole, Sankt Jørgens Gade 5 -->
+        <school edge="9193336#0" pos="0" capacity="600" />
+        <!-- Nørresundby Gymnasium og HF, Studievej 14 -->
+        <school edge="26502626#6" pos="0" capacity="600" />
+        <!-- Hasseris Gymnasium, Hasserisvej 300 -->
+        <school edge="-10059637#3" pos="0" capacity="600" />
+        <!-- TECHCOLLEGE, Øster Uttrup Vej 1 -->
+        <school edge="8885417#2" pos="0" capacity="600" />
+        <!-- Aalborg Tekniske Gymnasium - Friis, Nyhavnsgade 14 -->
+        <school edge="496588169#2" pos="0" capacity="600" />
+        <!-- Aalborg  Tekniske Gymnasium, Øster Uttrup Vej 5 -->
+        <school edge="-8885417#3" pos="0" capacity="600" />
+        <!-- TECHCOLLEGE, Struervej 70 -->
+        <school edge="-28913336#9" pos="0" capacity="600" />
+        <!-- TECHCOLLEGE, Teglværket 2 -->
+        <school edge="-275436119#1" pos="0" capacity="600" />
+        <!-- TECHCOLLEGE, Rørdalsvej 10 -->
+        <school edge="305691298" pos="0" capacity="600" />
+        <!-- TECHCOLLEGE, Sigrid Undsets Vej 3 -->
+        <school edge="333509813#1" pos="0" capacity="600" />
+        <!-- Aalborg Handelsskole, Strandvejen 25 -->
+        <school edge="-288567512#6" pos="0" capacity="600" />
+        <!-- Aalborg Handelsskole - 2 årig HHX, Turøgade 1 -->
+        <school edge="32312999" pos="0" capacity="600" />
+        <!-- Aalborg Handelsskole, Langagervej 16 -->
+        <school edge="-38755832#12" pos="0" capacity="600" />
+        <!-- Aalborg Handelsskole, Saxogade 10 -->
+        <school edge="-9193318#0" pos="0" capacity="600" />
+        <!-- AMU Nordjylland, Sofievej 61 -->
+        <school edge="9707751#2" pos="0" capacity="600" />
+        <!-- SOSU Nord, På Sporet 8A -->
+        <school edge="363050275#1" pos="0" capacity="600" />
+
+        <!-- Colleges -->
+        <!-- Aalborg Universitet, Fredrik Bajers Vej 7K -->
+        <school edge="7867286#8" pos="0" capacity="600" />
+        <!-- Professionshøjskolen University College Nordjylland, Selma Lagerløfs Vej 2 -->
+        <school edge="-332679254#0" pos="0" capacity="600" />
+        <!--  UCN Mylius Erichsens Vej, Mylius Erichsens Vej 137 -->
+        <school edge="762743227#2" pos="0" capacity="600" />
+        <!-- UCN Hobrovej, Hobrovej 85 -->
+        <school edge="363826752#3" pos="0" capacity="600" />
+        <!--  UCN, Sofiendalsvej 60 -->
+        <school edge="503013332#10" pos="0" capacity="600" />
 
     </schools>
 </city>
