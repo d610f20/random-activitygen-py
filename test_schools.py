@@ -1,4 +1,5 @@
 import os
+import pathlib
 import subprocess
 import sys
 from pathlib import Path
@@ -10,6 +11,7 @@ import matplotlib.pyplot as plt
 from scipy.spatial.distance import cdist
 from scipy.optimize import linear_sum_assignment
 import xml.etree.ElementTree as ET
+import seaborn as sns
 
 from scipy.stats import ttest_1samp
 
@@ -106,8 +108,9 @@ def plot_school_assignment(net: sumolib.net.Net, test_name: str, gen_coords: np.
         plt.plot([gen_coords[p, 0], real_coords[assignment[p], 0]],
                  [gen_coords[p, 1], real_coords[assignment[p], 1]], 'k', label="Assign" if p == 0 else "")
 
-    plt.legend()
-    plt.title(f"School placement test for {test_name}")
+    plt.legend(loc='lower left')
+    plt.axis('off')
+    # plt.title(f"School placement test for {test_name}")
     plt.show()
 
 
@@ -143,8 +146,9 @@ def test_total_placement(results: list, max_distance: float):
 
 def t_test(test: TestInstance, divs: list, bound: float, times: int):
     print(f"Executing school placement one-sided t-test on {times} runs of {test.name}")
-    # Flatten list of divergences
-    divs = [dist for div in divs for dist in div]
+    # Flatten list of divergences, only when divs contains lists
+    if any(isinstance(element, list) for element in divs):
+        divs = [dist for div in divs for dist in div]
 
     print(f"\tAll schools placed closer than bound: {test_total_placement(divs, bound)}")
     print(f"\tMean divergence: {np.mean(divs):.2f} meters")
@@ -159,7 +163,7 @@ def t_test(test: TestInstance, divs: list, bound: float, times: int):
     # To obtain a one-sided p-value, divide by 2 as the probability density function is symmetric
     p_val = p_val / 2
 
-    print(f"\tT-test with bound {bound} meters. T-stat: {t_stat:.5f}, p-value: {p_val:.5f}")
+    print(f"\tT-test with bound {bound} meters. T-stat: {t_stat}, p-value: {p_val}")
     if t_stat <= 0:
         if p_val <= 0.05:
             print(f"\tSince t-stat is zero or negative, and p-value is of statistical significance (p <= 0.05), "
@@ -188,10 +192,52 @@ def run_multiple_test(test: TestInstance, bound: float, times: int):
     t_test(test, divs, bound, times)
 
 
+def calc_divergence(test):
+    subprocess.run(
+        ["python", "./randomActivityGen.py", f"--net-file={test.net_file}",
+         f"--stat-file={test.gen_stats_in_file}",
+         f"--output-file={test.gen_stats_out_file}", "--quiet", f"--random"])
+    return calc_school_divergence(test, False)
+
+
+def write_divergences(test, dir: str):
+    import csv
+    if not os.path.exists(dir):
+        os.mkdir(dir)
+    if not os.path.exists(f"{dir}/{test.name}.txt"):
+        pathlib.Path(f"{dir}/{test.name}.txt").touch()
+
+    with open(f"{dir}/{test.name}.txt", "r", newline='') as f:
+        if len(f.readlines()) == 0:
+            f.close()
+            with open(f"{dir}/{test.name}.txt", "w", newline='') as f:
+                writer = csv.writer(f, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+                writer.writerow(calc_divergence(test))
+                f.close()
+        else:
+            f.close()
+            with open(f"{dir}/{test.name}.txt", "a+", newline='') as f:
+                writer = csv.writer(f, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+                writer.writerow(calc_divergence(test))
+                f.close()
+
+
+def read_divergences(test: TestInstance):
+    import csv
+    with open(f"divergences/{test.name}.txt", "r+", newline='') as f:
+        return np.array(list(csv.reader(f, delimiter=',', quotechar='|')), np.float32)
+
+
 if __name__ == '__main__':
-    bound = 1150
+    sns.set()  # Use seaborn bindings for matplotlib
+    bound = 1750
     print(f"Testing school placement on following cities: {', '.join([test.name for test in test_instances])}")
     print(f"Null hypothesis: Generated schools are placed further than {bound} meters away from real schools")
     print(f"Alt. hypothesis: Generated schools are placed exactly or closer than {bound} meters away from real schools")
-    # [t_test(test, calc_school_divergence(test, True), bound, 1) for test in test_instances]  # One run per test
-    [run_multiple_test(test, 1150, 10) for test in test_instances]  # Multiple runs per test
+    # [t_test(test, calc_school_divergence(test, True), bound, 1) for test in test_instances[4:]]  # One run per test
+    # [run_multiple_test(test_instances[3], bound, 3) for test in test_instances]  # Multiple runs per test
+    # [write_divergences(test, "divergences") for test in test_instances]
+    # [write_divergences(test_instances[0], "divergences") for _ in range(0, 2)]
+    sns.distplot(read_divergences(test_instances[0]))
+
+    plt.show()

@@ -1,3 +1,6 @@
+# Ignore written divergence CSV
+divergences/
+
 # Ignore logfile
 randomActivityGen-log.txt
 
