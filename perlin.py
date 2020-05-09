@@ -19,6 +19,30 @@ else:
 import sumolib
 
 
+class NoiseSampler:
+    """
+    The NoiseSampler defines a noise configuration that can be sampled from
+    """
+
+    def __init__(self, centre: Tuple[float, float], centre_weight: float, radius: float, offset: float, octaves: int = 3):
+        self._centre = centre
+        self._centre_weight = centre_weight
+        self._radius = radius
+        self._offset = offset
+        self._octaves = octaves
+
+    def sample(self, pos: Tuple[float, float]) -> float:
+        """
+        Samples the noise at the given position
+        :param pos: the position to sample at
+        :return: a float in the range [0,1)
+        """
+        scale = 4 / self._radius
+        noise01 = (noise.pnoise3(pos[0] * scale, pos[1] * scale, self._offset, octaves=self._octaves) + 1) / 2
+        gradient = (1 - (distance(pos, self._centre) / self._radius))
+        return (smoothstep(noise01) + gradient * self._centre_weight) / (1 + self._centre_weight)
+
+
 def get_edge_pair_centroid(coords: List[Tuple[float, float]]) -> Tuple[float, float]:
     """
     Centroid of rectangle (edge_pair) = (width/2, height/2)
@@ -43,41 +67,15 @@ def get_perlin_noise(x: float, y: float, offset: float, scale: float, octaves: i
     return (noise.pnoise3(x=x * scale, y=y * scale, z=offset, octaves=octaves) + 1) / 2
 
 
-def sample_edge_noise(edge: sumolib.net.edge.Edge, offset: float, centre,
-                      radius, centre_weight: float = 1.0, octaves: int = 3) -> float:
+def setup_streets(net: sumolib.net.Net, xml: ElementTree, pop_noise: NoiseSampler, work_noise: NoiseSampler):
     """
-    Returns a normalised Perlin noise sample at centre of given edge
-    :param edge: the edge
-    :param offset: offset into noisemap
-    :param centre: centre of the city
-    :param radius: radius of the city
-    :param centre_weight: how much impact being near the centre has
-    :param scale: the scale to multiply to each coordinate, default is 0.005
-    :param octaves: the octaves to use when sampling, default is 3
-    :return: the value between [0:1]
-    """
-    x, y = get_edge_pair_centroid(edge.getShape())
-    noise_value = get_perlin_noise(x, y, offset=offset, scale=4 / radius, octaves=octaves)
-    gradient = (1 - (distance((x, y), centre) / radius))
-    # Normalise value to [0..1] range by dividing with its max potential value
-    return (smoothstep(noise_value) + gradient * centre_weight) / (1 + centre_weight)
-
-
-def apply_network_noise(net: sumolib.net.Net, xml: ElementTree, centre: Tuple[float, float], centre_pop_weight: float,
-                        centre_work_weight: float, pop_offset: float, work_offset: float):
-    """
-    Calculate and apply Perlin noise in [0:1] range for each street for population and industry
+    Create a street for each edge in the network and calculate its population and workplaces based on
+    modified Perlin noise from NoiseSamplers
     :param net: the SUMO network
     :param xml: the statistics XML for the network
-    :param centre: the city's centre/downtown
-    :param centre_pop_weight: how much impact being near the centre has for population
-    :param centre_work_weight: how much impact being near the centre has for industry
-    :return:
+    :param pop_noise: NoiseSampler to use for population
+    :param work_noise: NoiseSample to use for workplaces
     """
-    # Calculate and apply Perlin noise for all edges in network to population in statistics
-    logging.debug(f"[perlin] City centre: {centre}")
-    radius = radius_of_network(net, centre)
-    logging.debug(f"[perlin] City radius: {radius:.2f}")
 
     streets = xml.find("streets")
     if streets is None:
@@ -90,8 +88,9 @@ def apply_network_noise(net: sumolib.net.Net, xml: ElementTree, centre: Tuple[fl
         eid = edge.getID()
         if eid not in known_streets:
             # This edge is missing a street entry. Find population and industry for this edge
-            population = sample_edge_noise(edge=edge, offset=pop_offset, centre=centre, radius=radius, centre_weight=centre_pop_weight)
-            industry = sample_edge_noise(edge=edge, offset=work_offset, centre=centre, radius=radius, centre_weight=centre_work_weight)
+            pos = get_edge_pair_centroid(edge.getShape())
+            population = pop_noise.sample(pos)
+            industry = work_noise.sample(pos)
 
             logging.debug(
                 f"[perlin] Adding street with eid: {eid},\t population: {population:.4f}, industry: {industry:.4f}")
