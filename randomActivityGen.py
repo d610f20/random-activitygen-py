@@ -8,11 +8,14 @@
     [--college.capacity=args] [--bus-stop] [--bus-stop.distance=N] [--bus-stop.k=N] [--display] [--display.size=N]
     [--seed=S | --random] ([--quiet] | [--verbose] | [--log-level=LEVEL]) [--log-file=FILENAME]
     randomActivityGen.py --net-file=FILE --stat-file=FILE [--output-file=FILE] --display-only
+
 Input Options:
     -n, --net-file FILE         Input road network file to create activity for
     -s, --stat-file FILE        Input statistics file to modify
+
 Output Options:
     -o, --output-file FILE      Write modified statistics to FILE
+
 Other Options:
     --centre.pos args           The coordinates for the city's centre, e.g. "300,500" or "auto" [default: auto]
     --centre.pop-weight F       The increase in population near the city center [default: 0.5]
