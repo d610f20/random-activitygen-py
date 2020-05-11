@@ -20,7 +20,7 @@ Other Options:
     --centre.pos args           The coordinates for the city's centre, e.g. "300,500" or "auto" [default: auto]
     --centre.pop-weight F       The increase in population near the city center [default: 0.5]
     --centre.work-weight F      The increase in work places near the city center [default: 0.1]
-    --gates.count N             Number of city gates in the city [default: 4]
+    --gates.count N             Number of city gates in the city [default: auto]
     --schools.stepsize F        Stepsize in opening/closing hours, in parts of an hour, e.g 0.25 is every 15 mins [default: 0.25]
     --schools.open=args         The interval at which the schools opens (24h clock) [default: 7,10]
     --schools.close=args        The interval at which the schools closes (24h clock) [default: 13,17]
@@ -127,8 +127,8 @@ def main():
     logging.info("[main] Setting up streets with population and workplaces")
     setup_streets(net, stats, pop_noise, work_noise)
 
-    logging.debug(f"[main] Setting up {int(args['--gates.count'])} city gates")
-    setup_city_gates(net, stats, int(args["--gates.count"]))
+    logging.debug(f"[main] Setting up city gates")
+    setup_city_gates(net, stats, args["--gates.count"], radius)
 
     logging.info("[main] Setting up schools")
     setup_schools(args, net, stats, pop_noise)
