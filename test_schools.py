@@ -76,7 +76,7 @@ def calc_school_divergence(test: TestInstance, plot: bool):
     # Get euclidean distance between all points in both sets as a cost matrix.
     # Note that the ordering is seemingly important for linear_sum_assignment to work.
     #  Not ordering causes points in the larger set, larger than the max size of the smaller set to be ignored.
-    if len(real_coords) >= len(gen_coords):
+    if len(real_coords) > len(gen_coords):
         dist = cdist(gen_coords, real_coords)
     else:
         dist = cdist(real_coords, gen_coords)
