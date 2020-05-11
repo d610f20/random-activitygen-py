@@ -3,9 +3,10 @@ import os
 import random
 import sys
 import xml.etree.ElementTree as ET
+from typing import Tuple
 
 from perlin import NoiseSampler, get_edge_pair_centroid
-from utility import k_means_clusters
+from utility import radius_of_network, k_means_clusters
 
 if 'SUMO_HOME' in os.environ:
     tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
@@ -30,7 +31,6 @@ def find_school_edges(net: sumolib.net.Net, num_schools: int, pop_noise: NoiseSa
 
     # Sort each edge in each district based on their noise
     for district in districts:
-
         district.sort(key=lambda x: pop_noise.sample(get_edge_pair_centroid(x.getShape())))
 
         # Reverse list, so 0 index has the highest noise
@@ -100,7 +100,7 @@ def get_school_count(args, stats: ET.ElementTree, school_type: str):
     return school_count
 
 
-def setup_schools(args, net: sumolib.net.Net, stats: ET.ElementTree, pop_noise: NoiseSampler, city_name):
+def setup_schools(args, net: sumolib.net.Net, stats: ET.ElementTree, pop_noise: NoiseSampler):
     xml_schools = stats.find('schools')
     # Remove all previous schools if any exists, effectively overwriting these
     if xml_schools is not None:
@@ -114,13 +114,6 @@ def setup_schools(args, net: sumolib.net.Net, stats: ET.ElementTree, pop_noise: 
     college_count = int(get_school_count(args, stats, "college"))
 
     school_count = primary_school_count + high_school_count + college_count
-
-    real_schools = len(
-        [xml_school for xml_school in ET.parse(f"stats\{city_name}.stat.xml").find("schools").findall("school")])
-    difference = real_schools - school_count
-
-    school_count += difference
-    primary_school_count += difference
 
     # Find edges to place schools on
     if 0 < school_count:
