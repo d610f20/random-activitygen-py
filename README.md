@@ -4,6 +4,23 @@ This tool provides an easy way to generate semi-realistic traffic demand for [SU
 
 RandomActivityGen works best for city networks, and works very well with a random [NETGENERATE](https://sumo.dlr.de/docs/NETGENERATE.html) network.  
 
+## Setup
+
+The project uses Python 3.
+Dependencies can be installed by running:
+
+```
+pip install -r requirements.txt
+```
+
+Additional dependencies for running some scripts from the `testing` directory can be installed by running:
+
+```
+pip install -r testing/requirements.txt
+```
+
+The use of a virtual environment is recommended.
+
 ## Usage
 
 **Required input:**
