@@ -3,6 +3,7 @@
     <parameters uniformRandomTraffic="0.2" />
 
     <schools>
+        <!-- Primary schools -->
         <!-- Hobrovejens Skole, Gethersvej 36 -->
         <school edge="54434217#0" pos="0" capacity="600" />
         <!-- Kristrup Skole, Skolegade 4 -->
@@ -19,6 +20,42 @@
         <school edge="-56072658#3" pos="0" capacity="600" />
         <!-- Østervangsskolen, Dronningborg Boulevard 33 -->
         <school edge="-60995980#1" pos="0" capacity="600" />
+        <!-- Forberedelsesskolen, Hobrovej 26a -->
+        <school edge="39140846#3" pos="0" capacity="600" />
+        <!-- C. la Cours Skole, Jyllandsgade 24 -->
+        <school edge="30155258#7" pos="0" capacity="600" />
+        <!-- Romalt Friskole, Romalt Boulevard 34 -->
+        <school edge="58882768#7" pos="0" capacity="600" />
+        <!-- Randers Realskole, Jensen Wærums Alle 3 -->
+        <school edge="-39140852#1" pos="0" capacity="600" />
+        <!-- Randers Lille Skole, Tøjhushavevej 28 -->
+        <school edge="-56025533" pos="0" capacity="600" />
+        <!-- Oust Mølleskolen, Oust Møllevej 25 -->
+        <school edge="89815261#2" pos="0" capacity="600" />
+        <!-- Randers Kristne Friskole, Moseskellet 2 -->
+        <school edge="69795870" pos="0" capacity="600" />
+        <!-- Vesterbakkeskolen, Blommevej 50 -->
+        <school edge="-60996570#0" pos="0" capacity="600" />
+
+        <!-- High schools -->
+        <!-- Tradium  Teknisk Gymnasium, Vester Alle 26 -->
+        <school edge="54632922#1" pos="0" capacity="600" />
+        <!-- Tradium Tekniske erhvervsuddannelser, Blommevej 40 -->
+        <school edge="60996570#5" pos="0" capacity="600" />
+        <!--Tradium	 Merkantile erhvervsuddannelser, Minervavej 57 -->
+        <school edge="-239858111#3" pos="0" capacity="600" />
+        <!-- Tradium Handelsgymnasiet, Rådmands Boulevard 19 -->
+        <school edge="-51943504#1" pos="0" capacity="600" />
+        <!-- Randers Statsskole, Rådmands Boulevard 20 -->
+        <school edge="-39140843#4" pos="0" capacity="600" />
+        <!-- Paderup gymnasium, Apollovej 64 -->
+        <school edge="150275363#2" pos="0" capacity="600" />
+        <!-- Randers Social- og Sundhedsskole, Minervavej 47 -->
+        <school edge="-87608752#3" pos="0" capacity="600" />
+
+        <!-- Colleges -->
+        <!-- VIA University College	Campus Randers, Jens Otto Krags Plads 3 -->
+        <school edge="61502036#2" pos="0" capacity="600" />
     </schools>
 
     <cityGates>
