@@ -36,6 +36,10 @@ class TestInstance:
 
 
 test_instances = [
+    TestInstance("aalborg", "in/cities/aalborg.net.xml", "in/cities/aalborg.stat.xml", "stats/aalborg.stat.xml"),
+    TestInstance("esbjerg", "in/cities/esbjerg.net.xml", "in/cities/esbjerg.stat.xml", "stats/esbjerg.stat.xml"),
+    TestInstance("randers", "in/cities/randers.net.xml", "in/cities/randers.stat.xml", "stats/randers.stat.xml"),
+    TestInstance("slagelse", "in/cities/slagelse.net.xml", "in/cities/slagelse.stat.xml", "stats/slagelse.stat.xml"),
     TestInstance("vejen", "in/cities/vejen.net.xml", "in/cities/vejen.stat.xml", "stats/vejen.stat.xml")
 ]
 
@@ -55,10 +59,33 @@ def write_school_coords(net: sumolib.net.Net, stats: ET.ElementTree, filename):
         edge = net.getEdge(gen_school_edge.get("edge"))
         positions.append(position_on_edge(edge, pos))
 
-    file = open(f'out\{filename}.csv', 'w')
-    with file:
-        writer = csv.writer(file)
-        writer.writerows(positions)
+    old_csv = f'out/{filename}.csv'
+    new_csv = f'out/{filename}-new.csv'
+
+    if os.path.exists(old_csv):
+        with open(old_csv, 'r') as read_obj, \
+                open(new_csv, 'w', newline='') as write_obj:
+            # Create a csv.reader object from the input file object
+            csv_reader = csv.reader(read_obj)
+            # Create a csv.writer object from the output file object
+            csv_writer = csv.writer(write_obj)
+            # Read each row of the input csv file as list
+            for i, row in enumerate(csv_reader):
+                # Append the default text in the row / list
+                row.append(positions[i][0])
+                row.append(positions[i][1])
+                # Add the updated row / list to the output file
+                csv_writer.writerow(row)
+        try:
+            os.rename(new_csv, old_csv)
+        except WindowsError:
+            os.remove(old_csv)
+            os.rename(new_csv, old_csv)
+    else:
+        file = open(old_csv, 'w', newline='')
+        with file:
+            writer = csv.writer(file)
+            writer.writerows(positions)
 
 
 def run_multiple_test(test: TestInstance, times: int):
@@ -76,4 +103,5 @@ def run_multiple_test(test: TestInstance, times: int):
 
 
 if __name__ == '__main__':
-    [run_multiple_test(test, 10) for test in test_instances]  # Multiple runs per test
+    runs_per_city = 10
+    [run_multiple_test(test, runs_per_city) for test in test_instances]
