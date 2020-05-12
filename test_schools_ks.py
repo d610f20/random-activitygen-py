@@ -43,12 +43,6 @@ test_instances = [
     TestInstance("vejen", "in/cities/vejen.net.xml", "in/cities/vejen.stat.xml", "stats/vejen.stat.xml")
 ]
 
-
-def write_all_school_coords(net, city_name):
-    write_school_coords(net, ET.parse(f"out\{city_name}.stat.xml"), f"out\{city_name}-generated-schools-pos.stat.xml")
-    write_school_coords(net, ET.parse(f"stats\{city_name}.stat.xml"), f"out\{city_name}-real-schools-pos.stat.xml")
-
-
 def write_school_coords(net: sumolib.net.Net, stats: ET.ElementTree, filename):
     xml_schools = [xml_school for xml_school in stats.find("schools").findall("school")]
 
