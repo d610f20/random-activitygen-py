@@ -43,32 +43,40 @@ test_instances = [
     TestInstance("vejen", "in/cities/vejen.net.xml", "in/cities/vejen.stat.xml", "stats/vejen.stat.xml")
 ]
 
+
 def write_school_coords(net: sumolib.net.Net, stats: ET.ElementTree, filename):
+    """
+        Writes all schools' positions found in stats file to a csv called 'filename'
+        :param net: network file that the schools in stats file is placed on
+        :param stats: stats file parsed with ElementTree containing schools
+        :param filename: name of csv to be written
+    """
     xml_schools = [xml_school for xml_school in stats.find("schools").findall("school")]
+
+    if xml_schools is None:
+        return
 
     positions = []
 
+    # find all generated school positions, append to positions
     for gen_school_edge in xml_schools:
         pos = float(gen_school_edge.get("pos"))
         edge = net.getEdge(gen_school_edge.get("edge"))
         positions.append(position_on_edge(edge, pos))
 
+    # workaround to append columns to csv file. read old_csv, make a new csv and write to this, rename to old csv when done
     old_csv = f'out/{filename}.csv'
     new_csv = f'out/{filename}-new.csv'
 
+    # if the old_csv already exists, do as mentioned above
     if os.path.exists(old_csv):
         with open(old_csv, 'r') as read_obj, \
                 open(new_csv, 'w', newline='') as write_obj:
-            # Create a csv.reader object from the input file object
             csv_reader = csv.reader(read_obj)
-            # Create a csv.writer object from the output file object
             csv_writer = csv.writer(write_obj)
-            # Read each row of the input csv file as list
             for i, row in enumerate(csv_reader):
-                # Append the default text in the row / list
                 row.append(positions[i][0])
                 row.append(positions[i][1])
-                # Add the updated row / list to the output file
                 csv_writer.writerow(row)
         try:
             os.rename(new_csv, old_csv)
@@ -76,6 +84,7 @@ def write_school_coords(net: sumolib.net.Net, stats: ET.ElementTree, filename):
             os.remove(old_csv)
             os.rename(new_csv, old_csv)
     else:
+        # if file does not exist, simply write to it
         file = open(old_csv, 'w', newline='')
         with file:
             writer = csv.writer(file)
@@ -85,10 +94,11 @@ def write_school_coords(net: sumolib.net.Net, stats: ET.ElementTree, filename):
 def run_multiple_test(test: TestInstance, times: int):
     # execute a test-instance n times
     for n in range(0, times):
-        # run main
+        # find number of actual schools in the city
         real_schools = len(
             [xml_school for xml_school in ET.parse(test.real_stats_file).find("schools").findall("school")])
 
+        # run randomActivityGen with correct number of schools
         subprocess.run(
             ["python", "./randomActivityGen.py", f"--net-file={test.net_file}", f"--stat-file={test.gen_stats_in_file}",
              f"--output-file=out/{test.name}.stat.xml", "--quiet", f"--random",
