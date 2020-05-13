@@ -45,6 +45,11 @@ def distance(pos1: Tuple[float, float], pos2: Tuple[float, float]):
 
 
 def k_means_clusters(net: sumolib.net.Net, num_clusters: int):
+    """
+        Return clusters of edges from running k-means on netfile
+        :param net: the net whose edges should be partitioned to clusters
+        :param num_clusters: how many clusters the network should be divided into
+    """
     from perlin import get_edge_pair_centroid
     edges = net.getEdges()
 
