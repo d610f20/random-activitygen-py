@@ -92,17 +92,18 @@ def write_school_coords(net: sumolib.net.Net, stats: ET.ElementTree, filename):
 
 
 def run_multiple_test(test: TestInstance, times: int):
+    # find number of actual schools in the city
+    real_schools_count = len(
+        [xml_school for xml_school in ET.parse(test.real_stats_file).find("schools").findall("school")])
+
     # execute a test-instance n times
     for n in range(0, times):
-        # find number of actual schools in the city
-        real_schools = len(
-            [xml_school for xml_school in ET.parse(test.real_stats_file).find("schools").findall("school")])
-
         # run randomActivityGen with correct number of schools
         subprocess.run(
             ["python", "./randomActivityGen.py", f"--net-file={test.net_file}", f"--stat-file={test.gen_stats_in_file}",
              f"--output-file=out/{test.name}.stat.xml", "--quiet", f"--random",
-             f"--primary-school.count={real_schools}", f"--high-school.count=0", f"--college.count=0"])
+             f"--primary-school.count=0", f"--high-school.count=0", f"--college.count={real_schools_count}"])
+
         write_school_coords(sumolib.net.readNet(test.net_file), ET.parse(f"out/{test.name}.stat.xml"), test.name)
 
 
