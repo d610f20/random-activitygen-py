@@ -19,8 +19,9 @@ import sumolib
 
 
 class TestInstance:
-    def __init__(self, name: str, net_file: str, gen_stats_in_file: str, real_stats_file: str):
+    def __init__(self, name: str, net_file: str, gen_stats_in_file: str, real_stats_file: str, centre):
         self.name = name
+        self.centre = centre
         self.net_file = net_file
         self.gen_stats_in_file = gen_stats_in_file
         self.real_stats_file = real_stats_file
@@ -36,11 +37,16 @@ class TestInstance:
 
 
 test_instances = [
-    TestInstance("aalborg", "../in/cities/aalborg.net.xml", "../in/cities/aalborg.stat.xml", "../stats/aalborg.stat.xml"),
-    TestInstance("esbjerg", "../in/cities/esbjerg.net.xml", "../in/cities/esbjerg.stat.xml", "../stats/esbjerg.stat.xml"),
-    TestInstance("randers", "../in/cities/randers.net.xml", "../in/cities/randers.stat.xml", "../stats/randers.stat.xml"),
-    TestInstance("slagelse", "../in/cities/slagelse.net.xml", "../in/cities/slagelse.stat.xml", "../stats/slagelse.stat.xml"),
-    TestInstance("vejen", "../in/cities/vejen.net.xml", "../in/cities/vejen.stat.xml", "../stats/vejen.stat.xml")
+    TestInstance("aalborg", "../in/cities/aalborg.net.xml", "../in/cities/aalborg.stat.xml",
+                 "../stats/aalborg.stat.xml", "9396,12766"),
+    TestInstance("esbjerg", "../in/cities/esbjerg.net.xml", "../in/cities/esbjerg.stat.xml",
+                 "../stats/esbjerg.stat.xml", "7476,1712"),
+    TestInstance("randers", "../in/cities/randers.net.xml", "../in/cities/randers.stat.xml",
+                 "../stats/randers.stat.xml", "19516,6606"),
+    TestInstance("slagelse", "../in/cities/slagelse.net.xml", "../in/cities/slagelse.stat.xml",
+                 "../stats/slagelse.stat.xml", "6073,4445"),
+    TestInstance("vejen", "../in/cities/vejen.net.xml", "../in/cities/vejen.stat.xml", "../stats/vejen.stat.xml",
+                 "37800,3790")
 ]
 
 
@@ -101,13 +107,15 @@ def run_multiple_test(test: TestInstance, times: int):
     for n in range(0, times):
         # run randomActivityGen with correct number of schools
         subprocess.run(
-            ["python", "../randomActivityGen.py", f"--net-file={test.net_file}", f"--stat-file={test.gen_stats_in_file}",
-             f"--output-file=../out/{test.name}.stat.xml", "--quiet", f"--random",
+            ["python", "../randomActivityGen.py", f"--net-file={test.net_file}",
+             f"--stat-file={test.gen_stats_in_file}", f"--centre.pos={test.centre}",
+             f"--output-file=../out/{test.name}.stat.xml", "--quiet",
+             f"--random",
              f"--primary-school.count=0", f"--high-school.count=0", f"--college.count={real_schools_count}"])
 
         write_school_coords(sumolib.net.readNet(test.net_file), ET.parse(f"../out/{test.name}.stat.xml"), test.name)
 
 
 if __name__ == '__main__':
-    runs_per_city = 1
+    runs_per_city = 5
     [run_multiple_test(test, runs_per_city) for test in test_instances]
