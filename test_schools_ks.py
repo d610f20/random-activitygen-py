@@ -54,6 +54,7 @@ def write_school_coords(net: sumolib.net.Net, stats: ET.ElementTree, filename):
     xml_schools = [xml_school for xml_school in stats.find("schools").findall("school")]
 
     if xml_schools is None:
+        print(f"Cannot write schools to CSV: no schools found in the generated stats file for {filename}")
         return
 
     positions = []
