@@ -46,10 +46,10 @@ test_instances = [
 
 def write_school_coords(net: sumolib.net.Net, stats: ET.ElementTree, filename):
     """
-        Writes all schools' positions found in stats file to a csv called 'filename'
-        :param net: network file that the schools in stats file is placed on
-        :param stats: stats file parsed with ElementTree containing schools
-        :param filename: name of csv to be written
+    Writes all schools' positions found in stats file to a csv called 'filename'. These coordinates can be used for
+    testing, e.g 2d KS tests between generated schools, and real school positions in the city
+    :param net: network file that the schools in stats file is placed on :param stats: stats
+    file parsed with ElementTree containing schools :param filename: name of csv to be written
     """
     xml_schools = [xml_school for xml_school in stats.find("schools").findall("school")]
 
