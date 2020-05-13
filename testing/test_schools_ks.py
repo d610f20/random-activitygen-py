@@ -36,11 +36,11 @@ class TestInstance:
 
 
 test_instances = [
-    TestInstance("aalborg", "in/cities/aalborg.net.xml", "in/cities/aalborg.stat.xml", "stats/aalborg.stat.xml"),
-    TestInstance("esbjerg", "in/cities/esbjerg.net.xml", "in/cities/esbjerg.stat.xml", "stats/esbjerg.stat.xml"),
-    TestInstance("randers", "in/cities/randers.net.xml", "in/cities/randers.stat.xml", "stats/randers.stat.xml"),
-    TestInstance("slagelse", "in/cities/slagelse.net.xml", "in/cities/slagelse.stat.xml", "stats/slagelse.stat.xml"),
-    TestInstance("vejen", "in/cities/vejen.net.xml", "in/cities/vejen.stat.xml", "stats/vejen.stat.xml")
+    TestInstance("aalborg", "../in/cities/aalborg.net.xml", "../in/cities/aalborg.stat.xml", "../stats/aalborg.stat.xml"),
+    TestInstance("esbjerg", "../in/cities/esbjerg.net.xml", "../in/cities/esbjerg.stat.xml", "../stats/esbjerg.stat.xml"),
+    TestInstance("randers", "../in/cities/randers.net.xml", "../in/cities/randers.stat.xml", "../stats/randers.stat.xml"),
+    TestInstance("slagelse", "../in/cities/slagelse.net.xml", "../in/cities/slagelse.stat.xml", "../stats/slagelse.stat.xml"),
+    TestInstance("vejen", "../in/cities/vejen.net.xml", "../in/cities/vejen.stat.xml", "../stats/vejen.stat.xml")
 ]
 
 
@@ -66,8 +66,8 @@ def write_school_coords(net: sumolib.net.Net, stats: ET.ElementTree, filename):
         positions.append(position_on_edge(edge, pos))
 
     # workaround to append columns to csv file. read old_csv, make a new csv and write to this, rename to old csv when done
-    old_csv = f'out/{filename}.csv'
-    new_csv = f'out/{filename}-new.csv'
+    old_csv = f'../out/{filename}.csv'
+    new_csv = f'../out/{filename}-new.csv'
 
     # if the old_csv already exists, do as mentioned above
     if os.path.exists(old_csv):
@@ -101,13 +101,13 @@ def run_multiple_test(test: TestInstance, times: int):
     for n in range(0, times):
         # run randomActivityGen with correct number of schools
         subprocess.run(
-            ["python", "./randomActivityGen.py", f"--net-file={test.net_file}", f"--stat-file={test.gen_stats_in_file}",
-             f"--output-file=out/{test.name}.stat.xml", "--quiet", f"--random",
+            ["python", "../randomActivityGen.py", f"--net-file={test.net_file}", f"--stat-file={test.gen_stats_in_file}",
+             f"--output-file=../out/{test.name}.stat.xml", "--quiet", f"--random",
              f"--primary-school.count=0", f"--high-school.count=0", f"--college.count={real_schools_count}"])
 
-        write_school_coords(sumolib.net.readNet(test.net_file), ET.parse(f"out/{test.name}.stat.xml"), test.name)
+        write_school_coords(sumolib.net.readNet(test.net_file), ET.parse(f"../out/{test.name}.stat.xml"), test.name)
 
 
 if __name__ == '__main__':
-    runs_per_city = 10
+    runs_per_city = 1
     [run_multiple_test(test, runs_per_city) for test in test_instances]
