@@ -108,7 +108,7 @@ def test_total_placement(results: list, max_distance: float) -> bool:
     :return: bool whether all are placed within max distance
     """
     for result in results:
-        if result >= max_distance:
+        if result > max_distance:
             return False
     return True
 
