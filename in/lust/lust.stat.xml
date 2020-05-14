@@ -1,0 +1,19 @@
+<city>
+    <general inhabitants="105000" households="50000"/>
+    <parameters uniformRandomTraffic="0.15" />
+
+    <workHours>
+        <opening hour="25200" proportion="15"/>
+        <opening hour="27000" proportion="20"/>
+        <opening hour="28800" proportion="30"/>
+        <opening hour="30600" proportion="20"/>
+        <opening hour="32400" proportion="5"/>
+        <opening hour="43200" proportion="10"/>
+        <closing hour="43200" proportion="10"/>
+        <closing hour="63000" proportion="15"/>
+        <closing hour="64800" proportion="20"/>
+        <closing hour="66600" proportion="25"/>
+        <closing hour="70200" proportion="20"/>
+        <closing hour="72000" proportion="10"/>
+    </workHours>
+</city>

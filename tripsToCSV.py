@@ -88,15 +88,15 @@ if args["--png"] or args["--gif"]:
             x, y, z = point
             x *= width_scale
             y = (net_height - y) * height_scale
-            r = 2
-            draw.ellipse([x - r, y - r, x + r, y + r], fill=(0, 0, 0))
-            if 20000 < z < 35000:
+            r = 1
+            draw.ellipse([x - r, y - r, x + r, y + r], fill=(0, 0, 0, 140))
+            if 23000 < z < 33000:
                 # Early rush hour
-                drawBefore12.ellipse([x - r, y - r, x + r, y + r], fill=(0, 0, 0))
+                drawBefore12.ellipse([x - r, y - r, x + r, y + r], fill=(0, 0, 0, 140))
                 before += 1
-            if 50000 < z < 65000:
+            if 58000 < z < 73000:
                 # Late rush hour
-                drawAfter12.ellipse([x - r, y - r, x + r, y + r], fill=(0, 0, 0))
+                drawAfter12.ellipse([x - r, y - r, x + r, y + r], fill=(0, 0, 0, 140))
                 after += 1
 
         img.save(f"out/cities/{fname}-trips.png")
