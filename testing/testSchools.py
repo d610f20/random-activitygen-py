@@ -37,12 +37,12 @@ def calc_school_divergence(test: TestInstance, plot: bool) -> List[float]:
 
     # Get mean school coordinates for real and generated statistics
     gen_coords = np.array(
-        [position_on_edge(net.getEdge((school_edge.get("edge"))), float(school_edge.get("pos"))) for school_edge in
-         [xml_school for xml_school in ET.parse(test.gen_stats_out_file).find("schools").findall("school")]])
+        [position_on_edge(net.getEdge((xml_school.get("edge"))), float(xml_school.get("pos"))) for xml_school in
+         ET.parse(test.gen_stats_out_file).find("schools").findall("school")])
 
     real_coords = np.array(
-        [position_on_edge(net.getEdge((school_edge.get("edge"))), float(school_edge.get("pos"))) for school_edge in
-         [xml_school for xml_school in ET.parse(test.real_stats_file).find("schools").findall("school")]])
+        [position_on_edge(net.getEdge((xml_school.get("edge"))), float(xml_school.get("pos"))) for xml_school in
+         ET.parse(test.real_stats_file).find("schools").findall("school")])
 
     # Get euclidean distance between all points in both sets as a cost matrix.
     # Note that the ordering is seemingly important for linear_sum_assignment to work.
