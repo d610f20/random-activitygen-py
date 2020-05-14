@@ -2,9 +2,6 @@ import os
 import pathlib
 import subprocess
 import sys
-from pathlib import Path
-from pprint import pprint
-from sys import stderr
 from typing import List
 
 import numpy as np
@@ -17,6 +14,8 @@ import csv
 
 from scipy.stats import ttest_1samp
 
+from testing.utility import TestInstance, test_instances
+
 if 'SUMO_HOME' in os.environ:
     tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
     sys.path.append(tools)
@@ -24,39 +23,6 @@ else:
     sys.exit("Please declare environment variable 'SUMO_HOME' to use sumolib")
 
 import sumolib
-
-
-class TestInstance:
-    def __init__(self, name: str, net_file: str, gen_stats_in_file: str, gen_stats_out_file: str, real_stats_file: str):
-        self.name = name
-        self.net_file = net_file
-        self.gen_stats_in_file = gen_stats_in_file
-        self.gen_stats_out_file = gen_stats_out_file
-        self.real_stats_file = real_stats_file
-
-        try:
-            Path(self.net_file).resolve(strict=True)
-            Path(self.gen_stats_in_file).resolve(strict=True)
-            Path(self.gen_stats_out_file).resolve(strict=True)
-            Path(self.real_stats_file).resolve(strict=True)
-        except FileNotFoundError:
-            print(f"Files for test instance: {self.name} does not exist", file=stderr)
-            pprint(self.__dict__)
-            exit(1)
-
-
-test_instances = [
-    TestInstance("Esbjerg", "../in/cities/esbjerg.net.xml", "../in/cities/esbjerg.stat.xml",
-                 "../out/cities/esbjerg.stat.xml", "../stats/esbjerg.stat.xml"),
-    TestInstance("Slagelse", "../in/cities/slagelse.net.xml", "../in/cities/slagelse.stat.xml",
-                 "../out/cities/slagelse.stat.xml", "../stats/slagelse.stat.xml"),
-    TestInstance("Randers", "../in/cities/randers.net.xml", "../in/cities/randers.stat.xml",
-                 "../out/cities/randers.stat.xml", "../stats/randers.stat.xml"),
-    TestInstance("Vejen", "../in/cities/vejen.net.xml", "../in/cities/vejen.stat.xml",
-                 "../out/cities/vejen.stat.xml", "../stats/vejen.stat.xml"),
-    TestInstance("Aalborg", "../in/cities/aalborg.net.xml", "../in/cities/aalborg.stat.xml",
-                 "../out/cities/aalborg.stat.xml", "../stats/aalborg.stat.xml")
-]
 
 
 def calc_school_divergence(test: TestInstance, plot: bool) -> List[float]:
@@ -207,7 +173,8 @@ def run_multiple_test(test: TestInstance, bound: float, times: int = 1) -> None:
     for n in range(0, times):
         # run tool
         subprocess.run(
-            ["python", "../randomActivityGen.py", f"--net-file={test.net_file}", f"--stat-file={test.gen_stats_in_file}",
+            ["python", "../randomActivityGen.py", f"--net-file={test.net_file}",
+             f"--stat-file={test.gen_stats_in_file}",
              f"--output-file={test.gen_stats_out_file}", "--quiet", "--random", f"--primary-school.count=0",
              f"--high-school.count=0", f"--college.count={num_real_schools}"])
         # calculate and collect derivations
