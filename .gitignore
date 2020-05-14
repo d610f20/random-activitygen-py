@@ -1,5 +1,5 @@
 # Ignore written divergence CSV
-divergences/
+testing/divergences/
 
 # Ignore logfile
 randomActivityGen-log.txt
