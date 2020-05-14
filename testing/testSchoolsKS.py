@@ -19,12 +19,12 @@ import sumolib
 
 
 class TestInstance:
-    def __init__(self, name: str, net_file: str, gen_stats_in_file: str, real_stats_file: str, centre):
+    def __init__(self, name: str, net_file: str, gen_stats_in_file: str, real_stats_file: str, centre: str):
         self.name = name
-        self.centre = centre
         self.net_file = net_file
         self.gen_stats_in_file = gen_stats_in_file
         self.real_stats_file = real_stats_file
+        self.centre = centre
 
         try:
             Path(self.net_file).resolve(strict=True)
