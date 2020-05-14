@@ -33,7 +33,7 @@ class TestInstance:
         subprocess.run(
             ["python", "../randomActivityGen.py", f"--net-file={self.net_file}",
              f"--stat-file={self.gen_stats_in_file}", f"--output-file={self.gen_stats_out_file}",
-             f"--centre.pos={self.centre}", f"--random",
+             f"--centre.pos={self.centre}", f"--random", "--quiet",
              f"--primary-school.count=0", f"--high-school.count=0", f"--college.count={num_schools}"])
 
 
