@@ -14,7 +14,7 @@ import csv
 
 from scipy.stats import ttest_1samp
 
-from testing.utility import TestInstance, test_instances
+from testing.testInstance import TestInstance, test_instances
 
 if 'SUMO_HOME' in os.environ:
     tools = os.path.join(os.environ['SUMO_HOME'], 'tools')

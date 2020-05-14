@@ -1,6 +1,9 @@
 # Ignore written divergence CSV
 testing/divergences/
 
+# Ignore written divergence CSV
+testing/school_coordinates
+
 # Ignore logfile
 randomActivityGen-log.txt
 
