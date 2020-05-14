@@ -46,16 +46,16 @@ class TestInstance:
 
 
 test_instances = [
-    TestInstance("Esbjerg", "in/cities/esbjerg.net.xml", "in/cities/esbjerg.stat.xml", "out/cities/esbjerg.stat.xml",
-                 "stats/esbjerg.stat.xml"),
-    TestInstance("Slagelse", "in/cities/slagelse.net.xml", "in/cities/slagelse.stat.xml",
-                 "out/cities/slagelse.stat.xml", "stats/slagelse.stat.xml"),
-    TestInstance("Randers", "in/cities/randers.net.xml", "in/cities/randers.stat.xml", "out/cities/randers.stat.xml",
-                 "stats/randers.stat.xml"),
-    TestInstance("Vejen", "in/cities/vejen.net.xml", "in/cities/vejen.stat.xml", "out/cities/vejen.stat.xml",
-                 "stats/vejen.stat.xml"),
-    TestInstance("Aalborg", "in/cities/aalborg.net.xml", "in/cities/aalborg.stat.xml", "out/cities/aalborg.stat.xml",
-                 "stats/aalborg.stat.xml")
+    TestInstance("Esbjerg", "../in/cities/esbjerg.net.xml", "../in/cities/esbjerg.stat.xml",
+                 "../out/cities/esbjerg.stat.xml", "../stats/esbjerg.stat.xml"),
+    TestInstance("Slagelse", "../in/cities/slagelse.net.xml", "../in/cities/slagelse.stat.xml",
+                 "../out/cities/slagelse.stat.xml", "../stats/slagelse.stat.xml"),
+    TestInstance("Randers", "../in/cities/randers.net.xml", "../in/cities/randers.stat.xml",
+                 "../out/cities/randers.stat.xml", "../stats/randers.stat.xml"),
+    TestInstance("Vejen", "../in/cities/vejen.net.xml", "../in/cities/vejen.stat.xml",
+                 "../out/cities/vejen.stat.xml", "../stats/vejen.stat.xml"),
+    TestInstance("Aalborg", "../in/cities/aalborg.net.xml", "../in/cities/aalborg.stat.xml",
+                 "../out/cities/aalborg.stat.xml", "../stats/aalborg.stat.xml")
 ]
 
 
