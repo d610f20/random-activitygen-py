@@ -4,23 +4,8 @@ import xml.etree.ElementTree as ET
 import numpy as np
 from scipy.stats import t
 
-
-class TestInstance:
-    def __init__(self, name: str, gen_stats_file: str, real_stats_file: str):
-        self.name = name
-        self.gen_stats_file = gen_stats_file
-        self.real_stats_file = real_stats_file
-
-
-test_instances = [
-    TestInstance("Esbjerg", "out/cities/esbjerg.stat.xml", "stats/esbjerg.stat.xml"),
-    TestInstance("Slagelse", "out/cities/slagelse.stat.xml", "stats/slagelse.stat.xml"),
-    TestInstance("Randers", "out/cities/randers.stat.xml", "stats/randers.stat.xml"),
-    TestInstance("Vejen", "out/cities/vejen.stat.xml", "stats/vejen.stat.xml"),
-    TestInstance("Aalborg", "out/cities/aalborg.stat.xml", "stats/aalborg.stat.xml"),
-]
-
 # ===================== MEASUREMENTS ======================
+from testing.testInstance import test_instances
 
 correct_gates_sum = 0
 incorrect_gates_sum = 0
@@ -29,7 +14,7 @@ results = []
 for test in test_instances:
     print(test.name)
 
-    gen_stats = ET.parse(test.gen_stats_file)
+    gen_stats = ET.parse(test.gen_stats_out_file)
     real_stats = ET.parse(test.real_stats_file)
 
     # Get gate edges
@@ -47,14 +32,14 @@ for test in test_instances:
     # Add results to sum
     correct_gates_sum += correct_gates
     incorrect_gates_sum += incorrect_gates
-    results.append((len(real_gate_edges), len(gen_gate_edges), correct_gates, incorrect_gates, correct_gates / len(gen_gate_edges)))
+    results.append((len(real_gate_edges), len(gen_gate_edges), correct_gates, incorrect_gates,
+                    correct_gates / len(gen_gate_edges)))
 
     # Print results
     print("  Generated / real gate count:", len(gen_gate_edges), "/", len(real_gate_edges))
     print("  Correct gates:", correct_gates)
     print("  Incorrect edges:", incorrect_gates)
     print("  % correct:", correct_gates / len(gen_gate_edges))
-
 
 print("Summed results")
 print("  Correct gates:", correct_gates_sum)
