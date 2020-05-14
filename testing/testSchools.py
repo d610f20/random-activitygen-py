@@ -1,6 +1,5 @@
 import os
 import pathlib
-import subprocess
 import sys
 from typing import List
 
@@ -15,6 +14,7 @@ import csv
 from scipy.stats import ttest_1samp
 
 from testing.testInstance import TestInstance, test_instances
+from utility import position_on_edge
 
 if 'SUMO_HOME' in os.environ:
     tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
@@ -36,10 +36,13 @@ def calc_school_divergence(test: TestInstance, plot: bool) -> List[float]:
     net: sumolib.net.Net = sumolib.net.readNet(test.net_file)
 
     # Get mean school coordinates for real and generated statistics
-    gen_coords = np.array(get_mean_coords([net.getEdge(xml_school.get("edge")).getShape() for xml_school in
-                                           ET.parse(test.gen_stats_out_file).find("schools").findall("school")]))
-    real_coords = np.array(get_mean_coords([net.getEdge(xml_school.get("edge")).getShape() for xml_school in
-                                            ET.parse(test.real_stats_file).find("schools").findall("school")]))
+    gen_coords = np.array(
+        [position_on_edge(net.getEdge((school_edge.get("edge"))), float(school_edge.get("pos"))) for school_edge in
+         [xml_school for xml_school in ET.parse(test.gen_stats_out_file).find("schools").findall("school")]])
+
+    real_coords = np.array(
+        [position_on_edge(net.getEdge((school_edge.get("edge"))), float(school_edge.get("pos"))) for school_edge in
+         [xml_school for xml_school in ET.parse(test.real_stats_file).find("schools").findall("school")]])
 
     # Get euclidean distance between all points in both sets as a cost matrix.
     # Note that the ordering is seemingly important for linear_sum_assignment to work.
@@ -80,24 +83,6 @@ def plot_school_assignment(net: sumolib.net.Net, test_name: str, gen_coords: np.
     plt.axis('off')
     # plt.title(f"School placement test for {test_name}")  # Title disabled for paper
     plt.show()
-
-
-def get_mean_coords(schools: list) -> List:
-    """
-    Takes a list of schools and returns a list of schools with their coordinates averaged out.
-     This is probably suboptimal and could be made better with inverse zip.
-    :param schools: the list of schools to get mean coords of
-    :return: a new list of the schools mean coordinates
-    """
-    # Get centre of each school edge coordinate
-    normalised_coords = []
-    for school in schools:
-        x, y = [], []
-        for coords in school:
-            x.append(coords[0])
-            y.append(coords[1])
-        normalised_coords.append((np.mean(x), np.mean(y)))
-    return normalised_coords
 
 
 def test_total_placement(results: list, max_distance: float) -> bool:
