@@ -2,19 +2,24 @@
 Usage:
     tripsToCSV.py --net-file=FILE --trips-file=FILE [--png] [--gif] [--hist]
 
-Input Options:
+Input options:
     -n, --net-file FILE         Input road network
     -s, --trips-file FILE       Input trips file
-"""
-import datetime
-import matplotlib.pyplot as plt
-import matplotlib.dates as mdates
-import os
-import sys
-import csv
-import xml.etree.ElementTree as ET
-import random
 
+Other options:
+    --png           Render and save png images of the trips.
+    --gif           Render and save a gif of the trips over time.
+    --hist          Display a histogram of the amount of trips.
+"""
+
+import csv
+import datetime
+import os
+import random
+import sys
+import xml.etree.ElementTree as ET
+
+import matplotlib.pyplot as plt
 from PIL import Image, ImageDraw
 from docopt import docopt
 from matplotlib.ticker import FuncFormatter, MultipleLocator
@@ -75,6 +80,7 @@ if args["--png"] or args["--gif"]:
     width_scale = width / net_width
     height_scale = height / net_height
 
+    # Render pngs of trips
     if args["--png"]:
         img = Image.new("RGB", (width, height), (255, 255, 255))
         imgBefore12 = Image.new("RGB", (width, height), (255, 255, 255))
@@ -104,6 +110,7 @@ if args["--png"] or args["--gif"]:
         imgAfter12.save(f"out/cities/{fname}-trips-late-rush-hour.png")
         print(before, after)
 
+    # Render gif of trips
     if args["--gif"]:
         timeslot_size = 300  # 5 minutes
         buckets = [(timeslot, [datapoint for datapoint in data if timeslot < datapoint[2] < timeslot + timeslot_size * 3]) for timeslot in range(0, 86400, timeslot_size)]
@@ -124,6 +131,7 @@ if args["--png"] or args["--gif"]:
 
         images[0].save(f"out/cities/{fname}-trips.gif", save_all=True, append_images=images[1:], optimize=False, duration=8, loop=0)
 
+# Render histogram of trips
 if args["--hist"]:
     time_data = [datapoint[2] for datapoint in data]
 
