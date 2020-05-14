@@ -171,13 +171,10 @@ def run_multiple_test(test: TestInstance, bound: float, times: int = 1) -> None:
 
     divs = []
     for n in range(0, times):
-        # run tool
-        subprocess.run(
-            ["python", "../randomActivityGen.py", f"--net-file={test.net_file}",
-             f"--stat-file={test.gen_stats_in_file}",
-             f"--output-file={test.gen_stats_out_file}", "--quiet", "--random", f"--centre.pos={test.centre}",
-             f"--primary-school.count=0", f"--high-school.count=0", f"--college.count={num_real_schools}"])
-        # calculate and collect derivations
+        # Run tool
+        test.run_tool(num_real_schools)
+
+        # Calculate and collect derivations
         divs += [calc_school_divergence(test, True)]
 
     # test within bound on derivations
@@ -190,13 +187,8 @@ def calc_divergence(test: TestInstance) -> List[float]:
     :param test: TestInstance to test on
     :return: list of divergences
     """
-    # Get number of real schools
-    num_real_schools = len(ET.parse(test.real_stats_file).find("schools").findall("school"))
-
-    subprocess.run(
-        ["python", "../randomActivityGen.py", f"--net-file={test.net_file}", f"--stat-file={test.gen_stats_in_file}",
-         f"--output-file={test.gen_stats_out_file}", "--quiet", "--random", f"--centre.pos={test.centre}",
-         f"--primary-school.count=0", f"--high-school.count=0", f"--college.count={num_real_schools}"])
+    # Run tool with number of real schools
+    test.run_tool(len(ET.parse(test.real_stats_file).find("schools").findall("school")))
     return calc_school_divergence(test, False)
 
 

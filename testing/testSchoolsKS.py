@@ -77,12 +77,7 @@ def run_multiple_test(test: TestInstance, times: int):
     # execute a test-instance n times
     for n in range(0, times):
         # run randomActivityGen with correct number of schools
-        subprocess.run(
-            ["python", "../randomActivityGen.py", f"--net-file={test.net_file}",
-             f"--stat-file={test.gen_stats_in_file}", f"--centre.pos={test.centre}",
-             f"--output-file=../out/{test.name}.stat.xml", "--quiet",
-             f"--random",
-             f"--primary-school.count=0", f"--high-school.count=0", f"--college.count={real_schools_count}"])
+        test.run_tool(real_schools_count)
 
         write_school_coords(sumolib.net.readNet(test.net_file), ET.parse(f"../out/{test.name}.stat.xml"), test.name)
 

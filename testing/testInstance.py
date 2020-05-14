@@ -1,3 +1,4 @@
+import subprocess
 from pathlib import Path
 from pprint import pprint
 from sys import stderr
@@ -22,6 +23,18 @@ class TestInstance:
             print(f"Files for test instance: {self.name} does not exist", file=stderr)
             pprint(self.__dict__)
             exit(1)
+
+    def run_tool(self, num_schools: int) -> None:
+        """
+        Run the tool, randomActivityGen, with given number of schools assigned to colleges.
+        :param num_schools: number of schools to generate for test
+        :return: None
+        """
+        subprocess.run(
+            ["python", "../randomActivityGen.py", f"--net-file={self.net_file}",
+             f"--stat-file={self.gen_stats_in_file}", f"--centre.pos={self.centre}",
+             f"--output-file=../out/{self.name}.stat.xml", "--quiet", f"--random",
+             f"--primary-school.count=0", f"--high-school.count=0", f"--college.count={num_schools}"])
 
 
 # Define paths and attributes for tests
