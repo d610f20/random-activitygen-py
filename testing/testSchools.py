@@ -240,21 +240,22 @@ def write_divergences(test: TestInstance, dir: str) -> None:
     :param dir: directory to place files in
     :return: None
     """
+    path = f"{dir}/{test.name}-divergences.csv"
     if not os.path.exists(dir):
         os.mkdir(dir)
-    if not os.path.exists(f"{dir}/{test.name}.txt"):
-        pathlib.Path(f"{dir}/{test.name}.txt").touch()
+    if not os.path.exists(path):
+        pathlib.Path(path).touch()
 
-    with open(f"{dir}/{test.name}.txt", "r", newline='') as f:
+    with open(path, "r", newline='') as f:
         if len(f.readlines()) == 0:
             f.close()
-            with open(f"{dir}/{test.name}.txt", "w", newline='') as f:
+            with open(path, "w", newline='') as f:
                 writer = csv.writer(f, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
                 writer.writerow(calc_divergence(test))
                 f.close()
         else:
             f.close()
-            with open(f"{dir}/{test.name}.txt", "a+", newline='') as f:
+            with open(path, "a+", newline='') as f:
                 writer = csv.writer(f, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
                 writer.writerow(calc_divergence(test))
                 f.close()
@@ -267,7 +268,7 @@ def read_divergences(test: TestInstance, dir: str) -> np.ndarray:
     :param dir: containing directory of files
     :return: list of divergences
     """
-    with open(f"{dir}/{test.name}.txt", "r+", newline='') as f:
+    with open(f"{dir}/{test.name}-divergences.csv", "r+", newline='') as f:
         return np.array(list(csv.reader(f, delimiter=',', quotechar='|')), np.float32)
 
 
@@ -281,7 +282,7 @@ if __name__ == '__main__':
 
     # [run_multiple_test(test, bound, 2) for test in test_instances]  # Multiple runs per test
 
-    [write_divergences(test, "divergences") for test in test_instances]  # Write one run of divergences to file
+    # [write_divergences(test, "divergences") for test in test_instances]  # Write one run of divergences to file
     # [t_test(test, read_divergences(test, "divergences"), bound, 1) for test in test_instances]  # Run t-test on all
 
     # sns.distplot(read_divergences(test_instances[0], "divergences"))  # Plot a pretty distribution histogram from file
