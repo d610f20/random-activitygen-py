@@ -1,11 +1,10 @@
 import math
 import xml.etree.ElementTree as ET
-
 import numpy as np
 from scipy.stats import t
+from testing.testInstance import test_instances
 
 # ===================== MEASUREMENTS ======================
-from testing.testInstance import test_instances
 
 correct_gates_sum = 0
 incorrect_gates_sum = 0
