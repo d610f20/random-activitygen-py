@@ -78,8 +78,8 @@ Two ways of testing school placement has been implemented; assignment divergence
 Assignment divergence testing can be configured to be made on the basis of one or more runs, be visualised or not, and have different bounds defined. 
 
 ### City gates
-City gates are tested by comparing how many generated gates are placed on an edge where a real school is. The
-real schools can be found in `stats/`. A Student's t-test is performed on the number of correctly placed city gates.
+City gates are tested by comparing how many generated gates are placed on an edge where a real city gate is. The
+real city gates can be found in `stats/`. A Student's t-test is performed on the number of correctly placed city gates.
 
 ### Population and industry density
 Population and industry density was tested by comparison with trips created by `randomTrips.py` and the traffic from the [LuST](https://github.com/lcodeca/LuSTScenario) scenario.
