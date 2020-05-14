@@ -67,3 +67,12 @@ $SUMO_HOME/tools/osmGet.py -b 9.8012,56.9581,10.0765,57.1142 --prefix aalborg
 # Builds a SUMO network from the given osm network
 $SUMO_HOME/tools/osmBuild.py --osm-file aalborg-metro_bbox.osm.xml --prefix aalborg
 ```
+
+## Testing
+This tool is developed during a bachelors project which results in a paper. Therefore, testing is a large part of the effort. 
+Source code for these tests is found under `testing/` as Python scripts. Documentation exists in the source code for the interested reader but generally each script can simply be run and it will output the results and draw any plots. 
+
+### School testing
+Two ways of testing school placement has been implemented; assignment divergence and KS-tests. The latter are executed in a mixture of Matlab and R.
+
+Assignment divergence testing can be configured to be made on the basis of one or more runs, be visualised or not, and have different bounds defined. 
