@@ -76,7 +76,6 @@ def verify_stats(stats: ET.ElementTree):
     """
     Do various verification on the stats file to ensure that it is usable. If population and work hours are missing,
     some default values will be insert as these are required by ActivityGen.
-
     :param stats: stats file parsed with ElementTree
     """
     city = stats.getroot()
