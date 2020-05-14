@@ -207,7 +207,7 @@ def run_multiple_test(test: TestInstance, bound: float, times: int = 1) -> None:
     for n in range(0, times):
         # run tool
         subprocess.run(
-            ["python", "./randomActivityGen.py", f"--net-file={test.net_file}", f"--stat-file={test.gen_stats_in_file}",
+            ["python", "../randomActivityGen.py", f"--net-file={test.net_file}", f"--stat-file={test.gen_stats_in_file}",
              f"--output-file={test.gen_stats_out_file}", "--quiet", "--random", f"--primary-school.count=0",
              f"--high-school.count=0", f"--college.count={num_real_schools}"])
         # calculate and collect derivations
@@ -227,7 +227,7 @@ def calc_divergence(test: TestInstance) -> List[float]:
     num_real_schools = len(ET.parse(test.real_stats_file).find("schools").findall("school"))
 
     subprocess.run(
-        ["python", "./randomActivityGen.py", f"--net-file={test.net_file}", f"--stat-file={test.gen_stats_in_file}",
+        ["python", "../randomActivityGen.py", f"--net-file={test.net_file}", f"--stat-file={test.gen_stats_in_file}",
          f"--output-file={test.gen_stats_out_file}", "--quiet", "--random", f"--primary-school.count=0",
          f"--high-school.count=0", f"--college.count={num_real_schools}"])
     return calc_school_divergence(test, False)
@@ -281,7 +281,7 @@ if __name__ == '__main__':
 
     # [run_multiple_test(test, bound, 2) for test in test_instances]  # Multiple runs per test
 
-    # [write_divergences(test, "divergences") for test in test_instances]  # Write one run of divergences to file
+    [write_divergences(test, "divergences") for test in test_instances]  # Write one run of divergences to file
     # [t_test(test, read_divergences(test, "divergences"), bound, 1) for test in test_instances]  # Run t-test on all
 
     # sns.distplot(read_divergences(test_instances[0], "divergences"))  # Plot a pretty distribution histogram from file
