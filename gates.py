@@ -16,11 +16,14 @@ else:
 import sumolib
 
 
-def setup_city_gates(net: sumolib.net.Net, stats: ET.ElementTree, gate_count: int):
+def setup_city_gates(net: sumolib.net.Net, stats: ET.ElementTree, gate_count: str, city_radius: float):
     """
     Generate the requested amount of city gates based on the network and insert them into stats.
     """
+
+    gate_count = find_gate_count_auto(city_radius) if gate_count == "auto" else int(gate_count)
     assert gate_count >= 0, "Number of city gates cannot be negative"
+
     # Find existing gates to determine how many we need to insert
     xml_gates = stats.find("cityGates")
     if xml_gates is None:
@@ -72,7 +75,7 @@ def setup_city_gates(net: sumolib.net.Net, stats: ET.ElementTree, gate_count: in
         edge, pos = (gate.getOutgoing()[0], 0) if len(gate.getOutgoing()) > 0 \
             else (gate.getIncoming()[0], gate.getIncoming()[0].getLength())
         logging.debug(
-            f"Adding entrance to statistics, edge: {edge.getID()}, incoming traffic: {incoming_traffic}, outgoing "
+            f"[gates] Adding entrance to statistics, edge: {edge.getID()}, incoming traffic: {incoming_traffic}, outgoing "
             f"traffic: {outgoing_traffic}")
         ET.SubElement(xml_gates, "entrance", attrib={
             "edge": edge.getID(),
@@ -80,3 +83,9 @@ def setup_city_gates(net: sumolib.net.Net, stats: ET.ElementTree, gate_count: in
             "outgoing": str(outgoing_traffic),
             "pos": str(pos)
         })
+
+
+def find_gate_count_auto(city_radius: float) -> int:
+    # Assume there's a gate very 1750 meters around the circumference
+    circumference = 2 * city_radius * math.pi
+    return int(circumference / 1750)

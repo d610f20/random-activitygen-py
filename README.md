@@ -4,6 +4,23 @@ This tool provides an easy way to generate pseudo-realistic traffic scenarios fo
 
 RandomActivityGen works best for single city networks, and works even better with a random [NETGENERATE](https://sumo.dlr.de/docs/NETGENERATE.html) network. More continuous, circular cities render better results as the tool does not adjust for geographic features such as waterfronts, mountains, and parks.
 
+## Setup
+
+The project uses Python 3.
+Dependencies can be installed by running:
+
+```
+pip install -r requirements.txt
+```
+
+Additional dependencies for running some scripts from the `testing` directory can be installed by running:
+
+```
+pip install -r testing/requirements.txt
+```
+
+The use of a virtual environment is recommended.
+
 ## Usage
 
 **Required input:**
@@ -37,6 +54,7 @@ The resulting `out/result.stats.xml` can be used with ACTIVITYGEN as follows:
 ```
 
 You now have a `.trips.rou.xml` file that you can use with a routing tool, for instance [DUAROUTER](https://sumo.dlr.de/docs/DUAROUTER.html).
+
 
 ## Obtaining real-world networks
 OpenStreetMaps is a good source for getting real world networks. These need to be converted into SUMO (`.net.xml`) networks before usage in both this tool and for SUMO in general.
