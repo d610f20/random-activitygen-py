@@ -1,8 +1,8 @@
 import math
 import xml.etree.ElementTree as ET
+
 import numpy as np
 from scipy.stats import t
-from matplotlib import pyplot as plt
 
 
 class TestInstance:

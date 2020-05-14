@@ -3,10 +3,9 @@ import os
 import random
 import sys
 import xml.etree.ElementTree as ET
-from typing import Tuple
 
 from perlin import NoiseSampler, get_edge_pair_centroid
-from utility import radius_of_network, k_means_clusters
+from utility import k_means_clusters
 
 if 'SUMO_HOME' in os.environ:
     tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
@@ -18,6 +17,14 @@ import sumolib
 
 
 def find_school_edges(net: sumolib.net.Net, num_schools: int, pop_noise: NoiseSampler):
+    """
+    Uses k-means clustering to partition network into number of clusters equal to number of schools to be placed.
+    Finds the edge in each cluster that allows both pedestrians and passengers with highest perlin noise, and returns a
+    list of all these
+    :param num_schools: number of schools that should be placed in total
+    :return: the edges schools
+    should be placed on
+    """
     # Use k-means, to split the net into num_schools number of clusters, each containing approx same number of edges
     districts = k_means_clusters(net, num_schools)
 
@@ -47,6 +54,13 @@ def find_school_edges(net: sumolib.net.Net, num_schools: int, pop_noise: NoiseSa
 
 
 def insert_schools(args, new_school_edges: list, stats: ET.ElementTree, school_type: str):
+    """
+    Inserts schools in the given stats file, with random fields within certain bounds, either given as a parameter
+    from user, or from default values for the school_type
+        :param new_school_edges: edges to place schools on
+        :param stats: stats file to write to
+        :param school_type: type of schools that are being placed, different school types have different bounds for random fields
+    """
     school_open_earliest = int(args["--schools.open"].split(",")[0]) * 3600
     school_open_latest = int(args["--schools.open"].split(",")[1]) * 3600
     school_close_earliest = int(args["--schools.close"].split(",")[0]) * 3600
@@ -85,6 +99,11 @@ def insert_schools(args, new_school_edges: list, stats: ET.ElementTree, school_t
 
 
 def get_school_count(args, stats: ET.ElementTree, school_type: str):
+    """
+    If no number is specified for a specific school type, the default ratio between population and school_type is
+    used (school_type.ratio)  to calculate number of schools
+    :return: the number of schools of a given school_type to be placed
+    """
     if args[f"--{school_type}.count"] == "auto":
         schools_per_1000_inhabitants = float(args[f"--{school_type}.ratio"])
 
@@ -101,6 +120,10 @@ def get_school_count(args, stats: ET.ElementTree, school_type: str):
 
 
 def setup_schools(args, net: sumolib.net.Net, stats: ET.ElementTree, pop_noise: NoiseSampler):
+    """
+    Removes all existing schools in stats file, finds total number of schools to be placed in the net, splits net
+    into k-clusters, and then places a school on the edge with highest perlin noise in each cluster
+    """
     xml_schools = stats.find('schools')
     # Remove all previous schools if any exists, effectively overwriting these
     if xml_schools is not None:

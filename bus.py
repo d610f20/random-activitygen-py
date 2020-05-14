@@ -16,6 +16,9 @@ import sumolib
 
 
 def setup_bus_stops(net: sumolib.net.Net, stats: ET.ElementTree, min_distance, k):
+    """
+    Generates bus stops from net, and writes them into stats.
+    """
     logging.debug(f"[bus-stops] Using min_distance: {min_distance}, and k (attempts): {k}")
     edges = net.getEdges()
 
@@ -56,6 +59,9 @@ def setup_bus_stops(net: sumolib.net.Net, stats: ET.ElementTree, min_distance, k
 
 
 def _road_point_generator(roads):
+    """
+    Picks a random point on on a road from roads
+    """
     assert len(roads) > 0
 
     # Length of all roads combined

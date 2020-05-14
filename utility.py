@@ -1,13 +1,11 @@
 import logging
 import os
 import sys
-
-import numpy as np
+import xml.etree.ElementTree as ET
 from typing import Tuple
 
+import numpy as np
 from scipy.cluster.vq import kmeans
-
-import xml.etree.ElementTree as ET
 
 if 'SUMO_HOME' in os.environ:
     tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
@@ -44,14 +42,19 @@ def distance(pos1: Tuple[float, float], pos2: Tuple[float, float]):
     return np.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
 
 
-def k_means_clusters(net: sumolib.net.Net, num_clusters: int):
+def k_means_clusters(net: sumolib.net.Net, k: int):
+    """
+    Return k clusters of edges from running k-means on net file
+    :param net: the net whose edges should be partitioned to clusters
+    :param k: how many clusters the network should be divided into
+    """
     from perlin import get_edge_pair_centroid
     edges = net.getEdges()
 
     centroid_edges = [get_edge_pair_centroid(edge.getShape()) for edge in edges]
-    centroids = kmeans(np.array(centroid_edges), num_clusters, iter=25)
+    centroids = kmeans(np.array(centroid_edges), k, iter=25)
 
-    clusters = [[] for _ in range(num_clusters)]
+    clusters = [[] for _ in range(k)]
     # Iterate through each edge, to decide which cluster it belongs to
     for edge in edges:
         # Find the center point of the edge, and set distance to first centroid returned from kmeans
@@ -102,7 +105,7 @@ def verify_stats(stats: ET.ElementTree):
     # Similarly at least and one opening and closing workhour is required
     work_hours = city.find("workHours")
     if work_hours is None:
-        # Work hours are missing, so we add some default work hours
+        # Work hours are missing, so we add some default work hours based on Danish work hours
         logging.info("[utility] Work hours are missing from statistics, adding a default configuration")
         work_hours = ET.SubElement(city, "workHours")
         ET.SubElement(work_hours, "opening", {"hour": "25200", "proportion": "15"})  # 15% at 7.00
@@ -118,7 +121,7 @@ def verify_stats(stats: ET.ElementTree):
 
 def position_on_edge(edge: sumolib.net.edge.Edge, pos: float):
     """
-    :return: coordinate for pos meters from the start of the edge, following any shapes along edge
+    :return: coordinate achieved by moving along the edge by pos meters.
     """
     # Go through pair of coords, until meeting an edge, where if we travel through it, we have moved more than pos
     # meters in total
@@ -183,6 +186,9 @@ def setup_logging(args: dict):
 
 
 def smoothstep(t: float):
+    """
+    A sigmoid-like tweening function
+    """
     return t * t * (3 - 2 * t)
 
 

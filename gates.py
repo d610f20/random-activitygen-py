@@ -17,6 +17,10 @@ import sumolib
 
 
 def setup_city_gates(net: sumolib.net.Net, stats: ET.ElementTree, gate_count: str, city_radius: float):
+    """
+    Generate the requested amount of city gates based on the network and insert them into stats.
+    """
+
     gate_count = find_gate_count_auto(city_radius) if gate_count == "auto" else int(gate_count)
     assert gate_count >= 0, "Number of city gates cannot be negative"
 
@@ -33,7 +37,7 @@ def setup_city_gates(net: sumolib.net.Net, stats: ET.ElementTree, gate_count: st
         return
     logging.debug(f"[gates] Inserting {n} new city gates")
 
-    # Finds all nodes that are dead ends, i.e. nodes that only have one neighbouring node
+    # Find all nodes that are dead ends, i.e. nodes that only have one neighbouring node
     # and at least one of the connecting edges is a road (as opposed to path) and allows private vehicles
     dead_ends = [node for node in net.getNodes() if len(node.getNeighboringNodes()) == 1
                  and any([any([lane.allows("private") for lane in edge.getLanes()]) for edge in
