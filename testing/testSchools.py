@@ -1,10 +1,6 @@
 import os
 import pathlib
-import subprocess
 import sys
-from pathlib import Path
-from pprint import pprint
-from sys import stderr
 from typing import List
 
 import numpy as np
@@ -17,6 +13,9 @@ import csv
 
 from scipy.stats import ttest_1samp
 
+from testing.testInstance import TestInstance, test_instances
+from utility import position_on_edge
+
 if 'SUMO_HOME' in os.environ:
     tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
     sys.path.append(tools)
@@ -24,39 +23,6 @@ else:
     sys.exit("Please declare environment variable 'SUMO_HOME' to use sumolib")
 
 import sumolib
-
-
-class TestInstance:
-    def __init__(self, name: str, net_file: str, gen_stats_in_file: str, gen_stats_out_file: str, real_stats_file: str):
-        self.name = name
-        self.net_file = net_file
-        self.gen_stats_in_file = gen_stats_in_file
-        self.gen_stats_out_file = gen_stats_out_file
-        self.real_stats_file = real_stats_file
-
-        try:
-            Path(self.net_file).resolve(strict=True)
-            Path(self.gen_stats_in_file).resolve(strict=True)
-            Path(self.gen_stats_out_file).resolve(strict=True)
-            Path(self.real_stats_file).resolve(strict=True)
-        except FileNotFoundError:
-            print(f"Files for test instance: {self.name} does not exist", file=stderr)
-            pprint(self.__dict__)
-            exit(1)
-
-
-test_instances = [
-    TestInstance("Esbjerg", "in/cities/esbjerg.net.xml", "in/cities/esbjerg.stat.xml", "out/cities/esbjerg.stat.xml",
-                 "stats/esbjerg.stat.xml"),
-    TestInstance("Slagelse", "in/cities/slagelse.net.xml", "in/cities/slagelse.stat.xml",
-                 "out/cities/slagelse.stat.xml", "stats/slagelse.stat.xml"),
-    TestInstance("Randers", "in/cities/randers.net.xml", "in/cities/randers.stat.xml", "out/cities/randers.stat.xml",
-                 "stats/randers.stat.xml"),
-    TestInstance("Vejen", "in/cities/vejen.net.xml", "in/cities/vejen.stat.xml", "out/cities/vejen.stat.xml",
-                 "stats/vejen.stat.xml"),
-    TestInstance("Aalborg", "in/cities/aalborg.net.xml", "in/cities/aalborg.stat.xml", "out/cities/aalborg.stat.xml",
-                 "stats/aalborg.stat.xml")
-]
 
 
 def calc_school_divergence(test: TestInstance, plot: bool) -> List[float]:
@@ -70,10 +36,13 @@ def calc_school_divergence(test: TestInstance, plot: bool) -> List[float]:
     net: sumolib.net.Net = sumolib.net.readNet(test.net_file)
 
     # Get mean school coordinates for real and generated statistics
-    gen_coords = np.array(get_mean_coords([net.getEdge(xml_school.get("edge")).getShape() for xml_school in
-                                           ET.parse(test.gen_stats_out_file).find("schools").findall("school")]))
-    real_coords = np.array(get_mean_coords([net.getEdge(xml_school.get("edge")).getShape() for xml_school in
-                                            ET.parse(test.real_stats_file).find("schools").findall("school")]))
+    gen_coords = np.array(
+        [position_on_edge(net.getEdge((xml_school.get("edge"))), float(xml_school.get("pos"))) for xml_school in
+         ET.parse(test.gen_stats_out_file).find("schools").findall("school")])
+
+    real_coords = np.array(
+        [position_on_edge(net.getEdge((xml_school.get("edge"))), float(xml_school.get("pos"))) for xml_school in
+         ET.parse(test.real_stats_file).find("schools").findall("school")])
 
     # Get euclidean distance between all points in both sets as a cost matrix.
     # Note that the ordering is seemingly important for linear_sum_assignment to work.
@@ -116,24 +85,6 @@ def plot_school_assignment(net: sumolib.net.Net, test_name: str, gen_coords: np.
     plt.show()
 
 
-def get_mean_coords(schools: list) -> List:
-    """
-    Takes a list of schools and returns a list of schools with their coordinates averaged out.
-     This is probably suboptimal and could be made better with inverse zip.
-    :param schools: the list of schools to get mean coords of
-    :return: a new list of the schools mean coordinates
-    """
-    # Get centre of each school edge coordinate
-    normalised_coords = []
-    for school in schools:
-        x, y = [], []
-        for coords in school:
-            x.append(coords[0])
-            y.append(coords[1])
-        normalised_coords.append((np.mean(x), np.mean(y)))
-    return normalised_coords
-
-
 def test_total_placement(results: list, max_distance: float) -> bool:
     """
     Tests whether each result is within some max distance
@@ -142,7 +93,7 @@ def test_total_placement(results: list, max_distance: float) -> bool:
     :return: bool whether all are placed within max distance
     """
     for result in results:
-        if result >= max_distance:
+        if result > max_distance:
             return False
     return True
 
@@ -205,12 +156,10 @@ def run_multiple_test(test: TestInstance, bound: float, times: int = 1) -> None:
 
     divs = []
     for n in range(0, times):
-        # run tool
-        subprocess.run(
-            ["python", "./randomActivityGen.py", f"--net-file={test.net_file}", f"--stat-file={test.gen_stats_in_file}",
-             f"--output-file={test.gen_stats_out_file}", "--quiet", "--random", f"--primary-school.count=0",
-             f"--high-school.count=0", f"--college.count={num_real_schools}"])
-        # calculate and collect derivations
+        # Run tool
+        test.run_tool(num_real_schools)
+
+        # Calculate and collect derivations
         divs += [calc_school_divergence(test, True)]
 
     # test within bound on derivations
@@ -223,13 +172,8 @@ def calc_divergence(test: TestInstance) -> List[float]:
     :param test: TestInstance to test on
     :return: list of divergences
     """
-    # Get number of real schools
-    num_real_schools = len(ET.parse(test.real_stats_file).find("schools").findall("school"))
-
-    subprocess.run(
-        ["python", "./randomActivityGen.py", f"--net-file={test.net_file}", f"--stat-file={test.gen_stats_in_file}",
-         f"--output-file={test.gen_stats_out_file}", "--quiet", "--random", f"--primary-school.count=0",
-         f"--high-school.count=0", f"--college.count={num_real_schools}"])
+    # Run tool with number of real schools
+    test.run_tool(len(ET.parse(test.real_stats_file).find("schools").findall("school")))
     return calc_school_divergence(test, False)
 
 
@@ -240,21 +184,22 @@ def write_divergences(test: TestInstance, dir: str) -> None:
     :param dir: directory to place files in
     :return: None
     """
+    path = f"{dir}/{test.name}-divergences.csv"
     if not os.path.exists(dir):
         os.mkdir(dir)
-    if not os.path.exists(f"{dir}/{test.name}.txt"):
-        pathlib.Path(f"{dir}/{test.name}.txt").touch()
+    if not os.path.exists(path):
+        pathlib.Path(path).touch()
 
-    with open(f"{dir}/{test.name}.txt", "r", newline='') as f:
+    with open(path, "r", newline='') as f:
         if len(f.readlines()) == 0:
             f.close()
-            with open(f"{dir}/{test.name}.txt", "w", newline='') as f:
+            with open(path, "w", newline='') as f:
                 writer = csv.writer(f, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
                 writer.writerow(calc_divergence(test))
                 f.close()
         else:
             f.close()
-            with open(f"{dir}/{test.name}.txt", "a+", newline='') as f:
+            with open(path, "a+", newline='') as f:
                 writer = csv.writer(f, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
                 writer.writerow(calc_divergence(test))
                 f.close()
@@ -267,7 +212,7 @@ def read_divergences(test: TestInstance, dir: str) -> np.ndarray:
     :param dir: containing directory of files
     :return: list of divergences
     """
-    with open(f"{dir}/{test.name}.txt", "r+", newline='') as f:
+    with open(f"{dir}/{test.name}-divergences.csv", "r+", newline='') as f:
         return np.array(list(csv.reader(f, delimiter=',', quotechar='|')), np.float32)
 
 
