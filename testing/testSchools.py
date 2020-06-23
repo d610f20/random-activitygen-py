@@ -157,7 +157,7 @@ def run_multiple_test(test: TestInstance, bound: float, times: int = 1) -> None:
     divs = []
     for n in range(0, times):
         # Run tool
-        test.run_tool(num_real_schools)
+        test.run_tool(num_real_schools, 0)
 
         # Calculate and collect derivations
         divs += [calc_school_divergence(test, True)]
@@ -173,7 +173,7 @@ def calc_divergence(test: TestInstance) -> List[float]:
     :return: list of divergences
     """
     # Run tool with number of real schools
-    test.run_tool(len(ET.parse(test.real_stats_file).find("schools").findall("school")))
+    test.run_tool(len(ET.parse(test.real_stats_file).find("schools").findall("school")), 0)
     return calc_school_divergence(test, False)
 
 
