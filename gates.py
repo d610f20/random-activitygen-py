@@ -43,23 +43,10 @@ def setup_city_gates(net: sumolib.net.Net, stats: ET.ElementTree, gate_count: st
                  and any([any([lane.allows("private") for lane in edge.getLanes()]) for edge in
                           node.getIncoming() + node.getOutgoing()])]
 
-    # Find n unit vectors pointing in different directions
-    # If n = 4 and base_rad = 0 we get the cardinal directions:
-    #      N
-    #      |
-    # W<---o--->E
-    #      |
-    #      S
-    base_rad = random.random() * math.tau
-    rads = [(base_rad + i * math.tau / n) % math.tau for i in range(0, n)]
-    directions = [(math.cos(rad), math.sin(rad)) for rad in rads]
+    # Pick random dead ends as gates
+    random.shuffle(dead_ends)
 
-    for direction in directions:
-        # Find the dead ends furthest in each direction using the dot product and argmax. Those nodes will be our gates.
-        # Dead ends are removed from the list to avoid duplicates.
-        gate_index = int(np.argmax([np.dot(node.getCoord(), direction) for node in dead_ends]))
-        gate = dead_ends[gate_index]
-        dead_ends.remove(gate)
+    for gate in dead_ends[:n]:
 
         # Decide proportion of the incoming and outgoing vehicles coming through this gate
         # These numbers are relatively to the values of the other gates
