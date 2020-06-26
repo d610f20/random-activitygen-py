@@ -29,7 +29,6 @@ def write_school_coords(net: sumolib.net.Net, stats: ET.ElementTree, filename):
         os.mkdir(directory)
 
     xml_schools = [xml_school for xml_school in stats.find("schools").findall("school")]
-
     if xml_schools is None:
         print(f"Cannot write schools to CSV: no schools found in the generated stats file for {filename}")
         return
@@ -79,7 +78,7 @@ def run_multiple_test(test: TestInstance, times: int):
         # run randomActivityGen with correct number of schools
         test.run_tool(real_schools_count)
 
-        write_school_coords(sumolib.net.readNet(test.net_file), ET.parse(f"../out/{test.name}.stat.xml"), test.name)
+        write_school_coords(sumolib.net.readNet(test.net_file), ET.parse(f"../out/cities/{test.name}.stat.xml"), test.name)
 
 
 if __name__ == '__main__':

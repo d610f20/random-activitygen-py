@@ -16,6 +16,14 @@ else:
 import sumolib
 
 
+def find_random_school_edges(net: sumolib.net.Net, num_schools: int):
+    school_edges = []
+    for i in range(0, num_schools):
+        rand_index = random.randint(0, len(net.getEdges()))
+        new_edge = net.getEdges()[rand_index]
+        school_edges.append(new_edge)
+    return school_edges
+
 def find_school_edges(net: sumolib.net.Net, num_schools: int, pop_noise: NoiseSampler):
     """
     Uses k-means clustering to partition network into number of clusters equal to number of schools to be placed.
@@ -140,8 +148,7 @@ def setup_schools(args, net: sumolib.net.Net, stats: ET.ElementTree, pop_noise: 
 
     # Find edges to place schools on
     if 0 < school_count:
-        new_school_edges = find_school_edges(net, school_count, pop_noise)
-
+        new_school_edges = find_random_school_edges(net, school_count)
     # Place primary schools (if any) on the first edges in new_school_edges
     if 0 < primary_school_count:
         insert_schools(args, new_school_edges[:primary_school_count], stats, "primary-school")
