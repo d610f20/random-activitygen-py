@@ -144,7 +144,7 @@ def setup_schools(args, net: sumolib.net.Net, stats: ET.ElementTree, pop_noise: 
 
     # Find edges to place schools on
     if 0 < school_count:
-        new_school_edges = find_random_school_edges(net, school_count, pop_noise)
+        new_school_edges = find_random_school_edges(net, school_count)
     # Place primary schools (if any) on the first edges in new_school_edges
     if 0 < primary_school_count:
         insert_schools(args, new_school_edges[:primary_school_count], stats, "primary-school")
