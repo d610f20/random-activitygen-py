@@ -13,8 +13,10 @@ results = []
 for test in test_instances:
     print(test.name)
 
-    gen_stats = ET.parse(test.gen_stats_out_file)
     real_stats = ET.parse(test.real_stats_file)
+    test.run_tool(0, len(real_stats.find("cityGates").findall("entrance")))
+
+    gen_stats = ET.parse(test.gen_stats_out_file)
 
     # Get gate edges
     real_gate_edges = [xml_gate.get("edge") for xml_gate in real_stats.find("cityGates").findall("entrance")]

@@ -24,17 +24,19 @@ class TestInstance:
             pprint(self.__dict__)
             exit(1)
 
-    def run_tool(self, num_schools: int) -> None:
+    def run_tool(self, num_schools: int, num_gates: int) -> None:
         """
         Run the tool, randomActivityGen, with given number of schools assigned to colleges.
         :param num_schools: number of schools to generate for test
+        :param num_gates: number of gates to generate for test
         :return: None
         """
         subprocess.run(
             ["python", "../randomActivityGen.py", f"--net-file={self.net_file}",
              f"--stat-file={self.gen_stats_in_file}", f"--output-file={self.gen_stats_out_file}",
              f"--centre.pos={self.centre}", f"--random", "--quiet",
-             f"--primary-school.count=0", f"--high-school.count=0", f"--college.count={num_schools}"])
+             f"--primary-school.count=0", f"--high-school.count=0", f"--college.count={num_schools}",
+             f"--gates.count={num_gates}"])
 
 
 # Define paths and attributes for tests

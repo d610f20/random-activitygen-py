@@ -77,7 +77,7 @@ def run_multiple_test(test: TestInstance, times: int):
     # execute a test-instance n times
     for n in range(0, times):
         # run randomActivityGen with correct number of schools
-        test.run_tool(real_schools_count)
+        test.run_tool(real_schools_count, 0)
 
         write_school_coords(sumolib.net.readNet(test.net_file), ET.parse(f"../out/{test.name}.stat.xml"), test.name)
 
